@@ -1,0 +1,141 @@
+
+service: vadali-media-backend
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  httpApi:
+    cors: true
+
+functions:
+  # Auth
+  login:
+    handler: src/handlers.login
+    events:
+      - httpApi: 'POST /login'
+  register:
+    handler: src/handlers.register
+    events:
+      - httpApi: 'POST /register'
+
+  # Users
+  getUsers:
+    handler: src/handlers.getUsers
+    events:
+      - httpApi: 'GET /users'
+  getUser:
+    handler: src/handlers.getUser
+    events:
+      - httpApi: 'GET /users/{id}'
+  createUser:
+    handler: src/handlers.createUser
+    events:
+      - httpApi: 'POST /users'
+  updateUser:
+    handler: src/handlers.updateUser
+    events:
+      - httpApi: 'PUT /users/{id}'
+  deleteUser:
+    handler: src/handlers.deleteUser
+    events:
+      - httpApi: 'DELETE /users/{id}'
+
+  # Articles
+  getArticles:
+    handler: src/handlers.getArticles
+    events:
+      - httpApi: 'GET /articles'
+  getArticleById:
+    handler: src/handlers.getArticleById
+    events:
+      - httpApi: 'GET /articles/id/{id}'
+  getArticleBySlug:
+    handler: src/handlers.getArticleBySlug
+    events:
+      - httpApi: 'GET /articles/slug/{slug}'
+  createArticle:
+    handler: src/handlers.createArticle
+    events:
+      - httpApi: 'POST /articles'
+  updateArticle:
+    handler: src/handlers.updateArticle
+    events:
+      - httpApi: 'PUT /articles/{id}'
+  deleteArticle:
+    handler: src/handlers.deleteArticle
+    events:
+      - httpApi: 'DELETE /articles/{id}'
+  updateArticleStatus:
+    handler: src/handlers.updateArticleStatus
+    events:
+      - httpApi: 'PUT /articles/{id}/status'
+  updateFeaturedStatus:
+    handler: src/handlers.updateFeaturedStatus
+    events:
+      - httpApi: 'POST /articles/featured'
+
+  # Categories
+  getCategories:
+    handler: src/handlers.getCategories
+    events:
+      - httpApi: 'GET /categories'
+  createCategory:
+    handler: src/handlers.createCategory
+    events:
+      - httpApi: 'POST /categories'
+  updateCategory:
+    handler: src/handlers.updateCategory
+    events:
+      - httpApi: 'PUT /categories/{id}'
+  deleteCategory:
+    handler: src/handlers.deleteCategory
+    events:
+      - httpApi: 'DELETE /categories/{id}'
+      
+  # Comments
+  getPendingComments:
+    handler: src/handlers.getPendingComments
+    events:
+      - httpApi: 'GET /comments/pending'
+  postComment:
+    handler: src/handlers.postComment
+    events:
+      - httpApi: 'POST /articles/{id}/comments'
+  updateCommentStatus:
+    handler: src/handlers.updateCommentStatus
+    events:
+      - httpApi: 'PUT /articles/{articleId}/comments/{commentId}/status'
+
+  # Notifications
+  getNotificationsForUser:
+    handler: src/handlers.getNotificationsForUser
+    events:
+      - httpApi: 'GET /notifications/user/{userId}'
+
+  # Tags
+  getAllTags:
+    handler: src/handlers.getAllTags
+    events:
+      - httpApi: 'GET /tags'
+      
+  # Misc
+  getSubscribers:
+    handler: src/handlers.getSubscribers
+    events:
+      - httpApi: 'GET /subscribers'
+  subscribe:
+    handler: src/handlers.subscribe
+    events:
+      - httpApi: 'POST /subscribe'
+  contact:
+    handler: src/handlers.contact
+    events:
+      - httpApi: 'POST /contact'
+
+package:
+  individually: false
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline

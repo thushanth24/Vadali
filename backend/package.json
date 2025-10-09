@@ -1,0 +1,26 @@
+
+{
+  "name": "vadali-media-backend",
+  "version": "1.0.0",
+  "description": "Serverless backend for Vadali Media",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.138",
+    "@types/uuid": "^9.0.8",
+    "esbuild": "^0.19.0",
+    "serverless": "^3.34.0",
+    "serverless-esbuild": "^1.31.0",
+    "serverless-offline": "8.8.1",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.588.0",
+    "@aws-sdk/lib-dynamodb": "^3.588.0",
+    "uuid": "^9.0.1"
+  }
+}
