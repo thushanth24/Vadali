@@ -29609,7 +29609,9 @@ var require_dist_cjs58 = __commonJS({
 var handlers_exports = {};
 __export(handlers_exports, {
   contact: () => contact,
+  createCategory: () => createCategory,
   createUser: () => createUser2,
+  deleteCategory: () => deleteCategory,
   deleteUser: () => deleteUser,
   getAllTags: () => getAllTags,
   getArticleById: () => getArticleById,
@@ -29625,6 +29627,7 @@ __export(handlers_exports, {
   subscribe: () => subscribe,
   updateArticle: () => updateArticle,
   updateArticleStatus: () => updateArticleStatus,
+  updateCategory: () => updateCategory,
   updateFeaturedStatus: () => updateFeaturedStatus,
   updateUser: () => updateUser
 });
@@ -31797,21 +31800,21 @@ var CategoryRepository = class extends BaseRepository {
     };
   }
   async findByName(name) {
-    const result = await this.query({
-      indexName: "NameIndex",
-      keyConditionExpression: "#name = :name",
+    const result = await this.scan({
+      filterExpression: "#name = :name",
       expressionAttributeNames: { "#name": "name" },
-      expressionAttributeValues: { ":name": name }
+      expressionAttributeValues: { ":name": name },
+      limit: 1
     });
-    return result.items[0] || null;
+    return result.items[0] ?? null;
   }
   async findBySlug(slug) {
-    const result = await this.query({
-      indexName: "SlugIndex",
-      keyConditionExpression: "slug = :slug",
-      expressionAttributeValues: { ":slug": slug }
+    const result = await this.scan({
+      filterExpression: "slug = :slug",
+      expressionAttributeValues: { ":slug": slug },
+      limit: 1
     });
-    return result.items[0] || null;
+    return result.items[0] ?? null;
   }
 };
 
@@ -32329,6 +32332,125 @@ var getCategories = async () => {
     return respond(500, { message: "Failed to fetch categories" });
   }
 };
+var createCategory = async (event) => {
+  try {
+    const payload2 = JSON.parse(event.body || "{}");
+    const rawName = typeof payload2.name === "string" ? payload2.name.trim() : "";
+    const rawSlug = typeof payload2.slug === "string" ? payload2.slug.trim() : "";
+    const description = typeof payload2.description === "string" ? payload2.description.trim() : void 0;
+    if (!rawName || !rawSlug) {
+      return respond(400, { message: "Category name and slug are required" });
+    }
+    const name = rawName;
+    const slug = rawSlug.toLowerCase();
+    const [existingByName, existingBySlug] = await Promise.all([
+      categoryRepository.findByName(name),
+      categoryRepository.findBySlug(slug)
+    ]);
+    if (existingByName) {
+      return respond(409, { message: "A category with this name already exists" });
+    }
+    if (existingBySlug) {
+      return respond(409, { message: "A category with this slug already exists" });
+    }
+    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+    const newCategory = {
+      id: v4_default(),
+      name,
+      slug,
+      description,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    };
+    await categoryRepository.create(newCategory);
+    return respond(201, newCategory);
+  } catch (error2) {
+    console.error("Error creating category:", error2);
+    return respond(500, { message: "Failed to create category" });
+  }
+};
+var updateCategory = async (event) => {
+  try {
+    const { id } = event.pathParameters || {};
+    if (!id) {
+      return respond(400, { message: "Category ID is required" });
+    }
+    const existingCategory = await categoryRepository.getById(id);
+    if (!existingCategory) {
+      return respond(404, { message: "Category not found" });
+    }
+    const payload2 = JSON.parse(event.body || "{}");
+    const updates = {};
+    if (typeof payload2.name === "string") {
+      const trimmedName = payload2.name.trim();
+      if (!trimmedName) {
+        return respond(400, { message: "Category name cannot be empty" });
+      }
+      if (trimmedName !== existingCategory.name) {
+        const byName = await categoryRepository.findByName(trimmedName);
+        if (byName && byName.id !== id) {
+          return respond(409, { message: "A category with this name already exists" });
+        }
+      }
+      updates.name = trimmedName;
+    }
+    if (typeof payload2.slug === "string") {
+      const trimmedSlug = payload2.slug.trim().toLowerCase();
+      if (!trimmedSlug) {
+        return respond(400, { message: "Category slug cannot be empty" });
+      }
+      if (trimmedSlug !== existingCategory.slug) {
+        const bySlug = await categoryRepository.findBySlug(trimmedSlug);
+        if (bySlug && bySlug.id !== id) {
+          return respond(409, { message: "A category with this slug already exists" });
+        }
+      }
+      updates.slug = trimmedSlug;
+    }
+    if (typeof payload2.description === "string") {
+      updates.description = payload2.description.trim();
+    }
+    if (Object.keys(updates).length === 0) {
+      return respond(400, { message: "No valid category fields provided for update" });
+    }
+    const updatedCategory = await categoryRepository.update(id, updates);
+    if (!updatedCategory) {
+      return respond(404, { message: "Category not found" });
+    }
+    return respond(200, updatedCategory);
+  } catch (error2) {
+    console.error("Error updating category:", error2);
+    return respond(500, { message: "Failed to update category" });
+  }
+};
+var deleteCategory = async (event) => {
+  try {
+    const { id } = event.pathParameters || {};
+    if (!id) {
+      return respond(400, { message: "Category ID is required" });
+    }
+    const category = await categoryRepository.getById(id);
+    if (!category) {
+      return respond(404, { message: "Category not found" });
+    }
+    const { items: linkedArticles } = await articleRepository.scan({
+      filterExpression: "categoryId = :categoryId",
+      expressionAttributeValues: { ":categoryId": id },
+      limit: 1
+    });
+    if (linkedArticles.length > 0) {
+      return respond(400, { message: "Category is in use by existing articles and cannot be deleted" });
+    }
+    const deleted = await categoryRepository.delete(id);
+    if (!deleted) {
+      return respond(500, { message: "Failed to delete category" });
+    }
+    return respond(204, null);
+  } catch (error2) {
+    console.error("Error deleting category:", error2);
+    return respond(500, { message: "Failed to delete category" });
+  }
+};
 var getNotificationsForUser = async (event) => {
   const { userId } = event.pathParameters || {};
   const { items: userNotifications } = await notificationRepository.scan({
@@ -32391,7 +32513,9 @@ var contact = async (event) => {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   contact,
+  createCategory,
   createUser,
+  deleteCategory,
   deleteUser,
   getAllTags,
   getArticleById,
@@ -32407,6 +32531,7 @@ var contact = async (event) => {
   subscribe,
   updateArticle,
   updateArticleStatus,
+  updateCategory,
   updateFeaturedStatus,
   updateUser
 });

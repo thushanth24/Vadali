@@ -1,0 +1,4921 @@
+{
+  "service": {
+    "service": "vadali-media-backend",
+    "serviceObject": {
+      "name": "vadali-media-backend"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs20.x",
+      "region": "us-east-1",
+      "iamRoleStatements": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "dynamodb:GetItem",
+            "dynamodb:PutItem",
+            "dynamodb:UpdateItem",
+            "dynamodb:DeleteItem",
+            "dynamodb:Scan",
+            "dynamodb:Query"
+          ],
+          "Resource": [
+            "arn:aws:dynamodb:us-east-1:*:table/vadali-media-articles-dev",
+            "arn:aws:dynamodb:us-east-1:*:table/vadali-media-articles-dev/index/*",
+            "arn:aws:dynamodb:us-east-1:*:table/vadali-media-users-dev",
+            "arn:aws:dynamodb:us-east-1:*:table/vadali-media-users-dev/index/*",
+            "arn:aws:dynamodb:us-east-1:*:table/vadali-media-categories-dev",
+            "arn:aws:dynamodb:us-east-1:*:table/vadali-media-categories-dev/index/*"
+          ]
+        }
+      ],
+      "httpApi": {
+        "cors": {
+          "allowedOrigins": [
+            "http://localhost:3000"
+          ],
+          "allowedHeaders": [
+            "Content-Type",
+            "Authorization",
+            "X-Amz-Date",
+            "X-Api-Key",
+            "X-Amz-Security-Token",
+            "X-Amz-User-Agent"
+          ],
+          "allowedMethods": [
+            "OPTIONS",
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH"
+          ],
+          "allowCredentials": true
+        }
+      },
+      "stage": "dev",
+      "environment": {
+        "ARTICLES_TABLE": "vadali-media-articles-dev",
+        "USERS_TABLE": "vadali-media-users-dev",
+        "CATEGORIES_TABLE": "vadali-media-categories-dev",
+        "ALLOWED_ORIGIN": "http://localhost:3000"
+      },
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            }
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "LoginLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-login"
+            }
+          },
+          "RegisterLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-register"
+            }
+          },
+          "RefreshTokenLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-refreshToken"
+            }
+          },
+          "LogoutLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-logout"
+            }
+          },
+          "GetUsersLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-getUsers"
+            }
+          },
+          "GetUserLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-getUser"
+            }
+          },
+          "CreateUserLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-createUser"
+            }
+          },
+          "UpdateUserLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-updateUser"
+            }
+          },
+          "DeleteUserLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-deleteUser"
+            }
+          },
+          "GetArticlesLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-getArticles"
+            }
+          },
+          "GetArticleByIdLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-getArticleById"
+            }
+          },
+          "GetArticleBySlugLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-getArticleBySlug"
+            }
+          },
+          "CreateArticleLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-createArticle"
+            }
+          },
+          "UpdateArticleLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-updateArticle"
+            }
+          },
+          "DeleteArticleLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-deleteArticle"
+            }
+          },
+          "UpdateArticleStatusLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-updateArticleStatus"
+            }
+          },
+          "UpdateFeaturedStatusLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-updateFeaturedStatus"
+            }
+          },
+          "GetCategoriesLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-getCategories"
+            }
+          },
+          "CreateCategoryLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-createCategory"
+            }
+          },
+          "UpdateCategoryLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-updateCategory"
+            }
+          },
+          "DeleteCategoryLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-deleteCategory"
+            }
+          },
+          "GetPendingCommentsLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-getPendingComments"
+            }
+          },
+          "PostCommentLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-postComment"
+            }
+          },
+          "UpdateCommentStatusLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-updateCommentStatus"
+            }
+          },
+          "GetNotificationsForUserLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-getNotificationsForUser"
+            }
+          },
+          "GetAllTagsLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-getAllTags"
+            }
+          },
+          "GetSubscribersLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-getSubscribers"
+            }
+          },
+          "SubscribeLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-subscribe"
+            }
+          },
+          "ContactLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/vadali-media-backend-dev-contact"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "vadali-media-backend",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/vadali-media-backend-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/vadali-media-backend-dev*:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iamRoleStatements\"][0]"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "vadali-media-backend",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "LoginLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.login",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-login",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "LoginLogGroup"
+            ]
+          },
+          "RegisterLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.register",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-register",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "RegisterLogGroup"
+            ]
+          },
+          "RefreshTokenLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.refreshToken",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-refreshToken",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "RefreshTokenLogGroup"
+            ]
+          },
+          "LogoutLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.logout",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-logout",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "LogoutLogGroup"
+            ]
+          },
+          "GetUsersLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.getUsers",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-getUsers",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetUsersLogGroup"
+            ]
+          },
+          "GetUserLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.getUser",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-getUser",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetUserLogGroup"
+            ]
+          },
+          "CreateUserLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.createUser",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-createUser",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "CreateUserLogGroup"
+            ]
+          },
+          "UpdateUserLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.updateUser",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-updateUser",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "UpdateUserLogGroup"
+            ]
+          },
+          "DeleteUserLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.deleteUser",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-deleteUser",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "DeleteUserLogGroup"
+            ]
+          },
+          "GetArticlesLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.getArticles",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-getArticles",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetArticlesLogGroup"
+            ]
+          },
+          "GetArticleByIdLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.getArticleById",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-getArticleById",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetArticleByIdLogGroup"
+            ]
+          },
+          "GetArticleBySlugLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.getArticleBySlug",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-getArticleBySlug",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetArticleBySlugLogGroup"
+            ]
+          },
+          "CreateArticleLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.createArticle",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-createArticle",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "CreateArticleLogGroup"
+            ]
+          },
+          "UpdateArticleLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.updateArticle",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-updateArticle",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "UpdateArticleLogGroup"
+            ]
+          },
+          "DeleteArticleLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.deleteArticle",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-deleteArticle",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "DeleteArticleLogGroup"
+            ]
+          },
+          "UpdateArticleStatusLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.updateArticleStatus",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-updateArticleStatus",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "UpdateArticleStatusLogGroup"
+            ]
+          },
+          "UpdateFeaturedStatusLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.updateFeaturedStatus",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-updateFeaturedStatus",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "UpdateFeaturedStatusLogGroup"
+            ]
+          },
+          "GetCategoriesLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.getCategories",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-getCategories",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetCategoriesLogGroup"
+            ]
+          },
+          "CreateCategoryLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.createCategory",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-createCategory",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "CreateCategoryLogGroup"
+            ]
+          },
+          "UpdateCategoryLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.updateCategory",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-updateCategory",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "UpdateCategoryLogGroup"
+            ]
+          },
+          "DeleteCategoryLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.deleteCategory",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-deleteCategory",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "DeleteCategoryLogGroup"
+            ]
+          },
+          "GetPendingCommentsLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.getPendingComments",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-getPendingComments",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetPendingCommentsLogGroup"
+            ]
+          },
+          "PostCommentLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.postComment",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-postComment",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "PostCommentLogGroup"
+            ]
+          },
+          "UpdateCommentStatusLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.updateCommentStatus",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-updateCommentStatus",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "UpdateCommentStatusLogGroup"
+            ]
+          },
+          "GetNotificationsForUserLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.getNotificationsForUser",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-getNotificationsForUser",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetNotificationsForUserLogGroup"
+            ]
+          },
+          "GetAllTagsLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.getAllTags",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-getAllTags",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetAllTagsLogGroup"
+            ]
+          },
+          "GetSubscribersLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.getSubscribers",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-getSubscribers",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "GetSubscribersLogGroup"
+            ]
+          },
+          "SubscribeLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.subscribe",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-subscribe",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "SubscribeLogGroup"
+            ]
+          },
+          "ContactLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z/vadali-media-backend.zip"
+              },
+              "Handler": "src/handlers.contact",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "vadali-media-backend-dev-contact",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "ARTICLES_TABLE": "vadali-media-articles-dev",
+                  "USERS_TABLE": "vadali-media-users-dev",
+                  "CATEGORIES_TABLE": "vadali-media-categories-dev",
+                  "ALLOWED_ORIGIN": "http://localhost:3000"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "ContactLogGroup"
+            ]
+          },
+          "LoginLambdaVersion6zHFIOOSXfzzn6TDvnRy5N60XFKK5KBN8BTXNsIEeLM": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "LoginLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "RegisterLambdaVersion9zWxmH4qa9Qn3x7wshVcGwKqCUmlrEiJ4EFRvlpk": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "RegisterLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "RefreshTokenLambdaVersionV2B5kv7jFlwkX3aVmlLAkgO9gDyHxopoRtVqKzdnk": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "RefreshTokenLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "LogoutLambdaVersionZ9NXiKAasLc4L5EjAjoRWmwTK1IILRlwLtOre0XX3pk": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "LogoutLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "GetUsersLambdaVersionmALPhjU3RVxgoo8lieEmSqhIV4Jl3kT2SNh07fFg": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetUsersLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "GetUserLambdaVersionEyOjUpkyAIqziacQCebVeBNMxwiE0WMkXwyLinG8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetUserLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "CreateUserLambdaVersion5JDaymVsIu1eQkbqmsraZ4slERrTaXPIhM1hxoRpSg": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "CreateUserLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "UpdateUserLambdaVersionNjUeLgREy7ZkkoLLPzMAxdw9QRKQKSPXoKVnf9iOIXQ": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "UpdateUserLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "DeleteUserLambdaVersionFzGf539shMvFjjhxn4U8XOBtVJshlVDxfr2LzKgy3g8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "DeleteUserLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "GetArticlesLambdaVersioniBcXwsGPIad5wDS6zp3wFCo2uWXmRoV9edhnk0F9g": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetArticlesLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "GetArticleByIdLambdaVersionRy6hJdKNiHjmXYCrt1gaK9SI2sujcfEz24siHsupws": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetArticleByIdLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "GetArticleBySlugLambdaVersiontCYv836oyG402cVl0YV4RjkTyJMEVhpPqbQCR8zS7I": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetArticleBySlugLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "CreateArticleLambdaVersionkZERBlU4LJwq9wLvFeTUvI6okxC7GYf3zSzId1kfKqE": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "CreateArticleLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "UpdateArticleLambdaVersionfm45JvZ0GNhY6juKObt7OhAAciTe0s6Iw4j79mME6Y": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "UpdateArticleLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "DeleteArticleLambdaVersionOmbHeJyGqJrI3iU0i7IxA13u1mG1LgdBtEebQQ70Vs": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "DeleteArticleLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "UpdateArticleStatusLambdaVersionECvgIdXN2zJiZZYu2caR2DPjBVWERLOsqFrMfph5g4": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "UpdateArticleStatusLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "UpdateFeaturedStatusLambdaVersion1KSKzZfYkZaofuOKwfBwVPi5YGriqp4CwJAO8JHQwA": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "UpdateFeaturedStatusLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "GetCategoriesLambdaVersionbpuRjfqeA9TDzbSAH2kKLA6sroPRfu8gegSGsIykq8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetCategoriesLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "CreateCategoryLambdaVersionKx3KVLD01L41kT9ABZ46EcwHERLW1civTlm0WMvvSM": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "CreateCategoryLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "UpdateCategoryLambdaVersionZFXH3JTPxHfzVWkz6200LlDKCVOlLVCFd82OtYpcc0": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "UpdateCategoryLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "DeleteCategoryLambdaVersionWw2Q1TtT6y01AjiY3OOAxq19Jd6DvQa3hauNAV44": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "DeleteCategoryLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "GetPendingCommentsLambdaVersionTK2Cw2WD26hqxcPS2SmqzsEpqG4oBsdJTs6lPgyNc9o": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetPendingCommentsLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "PostCommentLambdaVersionU2r1qw3ZyJpgj4gpevccNjlg6082E5t66Q2fxIqHE": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "PostCommentLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "UpdateCommentStatusLambdaVersionXRMDYZ8XBKeRoiWfwVwknQ72VkONiimfqhjeJkq4": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "UpdateCommentStatusLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "GetNotificationsForUserLambdaVersionuJlIV8PFpl3KSOpigxmUpocnNAvH8naK3WOsBcYdPKg": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetNotificationsForUserLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "GetAllTagsLambdaVersion8OFDvhXi2UNjWfVoNl7JL2XculM8SneZ80K0X4HYeY": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetAllTagsLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "GetSubscribersLambdaVersion1LpYxFvJRqzv6fVug2SiVTTdA7DMeL9pHRZQIKuos": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "GetSubscribersLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "SubscribeLambdaVersionUuZgzohmpuZl70sprWGnlWup4f0woYjEaDq9tp8lF4": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SubscribeLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "ContactLambdaVersion3J2GhU3UZyTBmTyGldVH7bkIw5FNnSBPbd6YIZuSbRY": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ContactLambdaFunction"
+              },
+              "CodeSha256": "lt5GlCxTPxsOrI44t/eLSdx+fU/EXAB41wv31f+byRE="
+            }
+          },
+          "HttpApi": {
+            "Type": "AWS::ApiGatewayV2::Api",
+            "Properties": {
+              "Name": "dev-vadali-media-backend",
+              "ProtocolType": "HTTP",
+              "CorsConfiguration": {
+                "AllowCredentials": true,
+                "AllowHeaders": [
+                  "Content-Type",
+                  "Authorization",
+                  "X-Amz-Date",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent"
+                ],
+                "AllowMethods": [
+                  "OPTIONS",
+                  "GET",
+                  "POST",
+                  "PUT",
+                  "DELETE",
+                  "PATCH"
+                ],
+                "AllowOrigins": [
+                  "http://localhost:3000"
+                ]
+              }
+            }
+          },
+          "HttpApiStage": {
+            "Type": "AWS::ApiGatewayV2::Stage",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "StageName": "$default",
+              "AutoDeploy": true,
+              "DefaultRouteSettings": {
+                "DetailedMetricsEnabled": false
+              }
+            }
+          },
+          "LoginLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "LoginLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationLogin": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"LoginLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostAuthLogin": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /auth/login",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationLogin"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationLogin"
+          },
+          "RegisterLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "RegisterLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationRegister": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"RegisterLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostAuthRegister": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /auth/register",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationRegister"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationRegister"
+          },
+          "RefreshTokenLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "RefreshTokenLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationRefreshToken": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"RefreshTokenLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostAuthRefresh": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /auth/refresh",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationRefreshToken"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationRefreshToken"
+          },
+          "LogoutLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "LogoutLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationLogout": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"LogoutLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostAuthLogout": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /auth/logout",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationLogout"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationLogout"
+          },
+          "GetUsersLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetUsersLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationGetUsers": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GetUsersLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetUsers": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /users",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationGetUsers"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationGetUsers"
+          },
+          "GetUserLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetUserLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationGetUser": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GetUserLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetUsersIdVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /users/{id}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationGetUser"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationGetUser"
+          },
+          "CreateUserLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "CreateUserLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationCreateUser": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"CreateUserLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostUsers": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /users",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationCreateUser"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationCreateUser"
+          },
+          "UpdateUserLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "UpdateUserLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationUpdateUser": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"UpdateUserLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePutUsersIdVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "PUT /users/{id}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationUpdateUser"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationUpdateUser"
+          },
+          "DeleteUserLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "DeleteUserLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationDeleteUser": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"DeleteUserLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteDeleteUsersIdVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "DELETE /users/{id}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationDeleteUser"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationDeleteUser"
+          },
+          "GetArticlesLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetArticlesLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationGetArticles": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GetArticlesLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetArticles": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /articles",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationGetArticles"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationGetArticles"
+          },
+          "GetArticleByIdLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetArticleByIdLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationGetArticleById": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GetArticleByIdLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetArticlesIdIdVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /articles/id/{id}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationGetArticleById"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationGetArticleById"
+          },
+          "GetArticleBySlugLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetArticleBySlugLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationGetArticleBySlug": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GetArticleBySlugLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetArticlesSlugSlugVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /articles/slug/{slug}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationGetArticleBySlug"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationGetArticleBySlug"
+          },
+          "CreateArticleLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "CreateArticleLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationCreateArticle": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"CreateArticleLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostArticles": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /articles",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationCreateArticle"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationCreateArticle"
+          },
+          "UpdateArticleLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "UpdateArticleLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationUpdateArticle": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"UpdateArticleLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePutArticlesIdVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "PUT /articles/{id}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationUpdateArticle"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationUpdateArticle"
+          },
+          "DeleteArticleLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "DeleteArticleLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationDeleteArticle": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"DeleteArticleLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteDeleteArticlesIdVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "DELETE /articles/{id}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationDeleteArticle"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationDeleteArticle"
+          },
+          "UpdateArticleStatusLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "UpdateArticleStatusLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationUpdateArticleStatus": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"UpdateArticleStatusLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePutArticlesIdVarStatus": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "PUT /articles/{id}/status",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationUpdateArticleStatus"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationUpdateArticleStatus"
+          },
+          "UpdateFeaturedStatusLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "UpdateFeaturedStatusLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationUpdateFeaturedStatus": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"UpdateFeaturedStatusLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostArticlesFeatured": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /articles/featured",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationUpdateFeaturedStatus"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationUpdateFeaturedStatus"
+          },
+          "GetCategoriesLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetCategoriesLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationGetCategories": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GetCategoriesLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetCategories": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /categories",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationGetCategories"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationGetCategories"
+          },
+          "CreateCategoryLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "CreateCategoryLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationCreateCategory": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"CreateCategoryLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostCategories": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /categories",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationCreateCategory"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationCreateCategory"
+          },
+          "UpdateCategoryLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "UpdateCategoryLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationUpdateCategory": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"UpdateCategoryLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePutCategoriesIdVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "PUT /categories/{id}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationUpdateCategory"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationUpdateCategory"
+          },
+          "DeleteCategoryLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "DeleteCategoryLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationDeleteCategory": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"DeleteCategoryLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteDeleteCategoriesIdVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "DELETE /categories/{id}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationDeleteCategory"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationDeleteCategory"
+          },
+          "GetPendingCommentsLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetPendingCommentsLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationGetPendingComments": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GetPendingCommentsLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetCommentsPending": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /comments/pending",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationGetPendingComments"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationGetPendingComments"
+          },
+          "PostCommentLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "PostCommentLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationPostComment": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"PostCommentLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostArticlesIdVarComments": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /articles/{id}/comments",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationPostComment"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationPostComment"
+          },
+          "UpdateCommentStatusLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "UpdateCommentStatusLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationUpdateCommentStatus": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"UpdateCommentStatusLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePutArticlesArticleidVarCommentsCommentidVarStatus": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "PUT /articles/{articleId}/comments/{commentId}/status",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationUpdateCommentStatus"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationUpdateCommentStatus"
+          },
+          "GetNotificationsForUserLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetNotificationsForUserLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationGetNotificationsForUser": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GetNotificationsForUserLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetNotificationsUserUseridVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /notifications/user/{userId}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationGetNotificationsForUser"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationGetNotificationsForUser"
+          },
+          "GetAllTagsLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetAllTagsLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationGetAllTags": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GetAllTagsLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetTags": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /tags",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationGetAllTags"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationGetAllTags"
+          },
+          "GetSubscribersLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "GetSubscribersLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationGetSubscribers": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GetSubscribersLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetSubscribers": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /subscribers",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationGetSubscribers"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationGetSubscribers"
+          },
+          "SubscribeLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SubscribeLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationSubscribe": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SubscribeLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostSubscribe": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /subscribe",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationSubscribe"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationSubscribe"
+          },
+          "ContactLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ContactLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationContact": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ContactLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostContact": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /contact",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationContact"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationContact"
+          },
+          "ArticlesTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "vadali-media-articles-dev",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "id",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "slug",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "categoryId",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "id",
+                  "KeyType": "HASH"
+                }
+              ],
+              "GlobalSecondaryIndexes": [
+                {
+                  "IndexName": "slug-index",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "slug",
+                      "KeyType": "HASH"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "category-index",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "categoryId",
+                      "KeyType": "HASH"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                }
+              ],
+              "BillingMode": "PAY_PER_REQUEST"
+            }
+          },
+          "UsersTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "vadali-media-users-dev",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "id",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "email",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "id",
+                  "KeyType": "HASH"
+                }
+              ],
+              "GlobalSecondaryIndexes": [
+                {
+                  "IndexName": "email-index",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "email",
+                      "KeyType": "HASH"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                }
+              ],
+              "BillingMode": "PAY_PER_REQUEST"
+            }
+          },
+          "CategoriesTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "vadali-media-categories-dev",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "id",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "id",
+                  "KeyType": "HASH"
+                }
+              ],
+              "BillingMode": "PAY_PER_REQUEST"
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "LoginLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "LoginLambdaVersion6zHFIOOSXfzzn6TDvnRy5N60XFKK5KBN8BTXNsIEeLM"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-LoginLambdaFunctionQualifiedArn"
+            }
+          },
+          "RegisterLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "RegisterLambdaVersion9zWxmH4qa9Qn3x7wshVcGwKqCUmlrEiJ4EFRvlpk"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-RegisterLambdaFunctionQualifiedArn"
+            }
+          },
+          "RefreshTokenLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "RefreshTokenLambdaVersionV2B5kv7jFlwkX3aVmlLAkgO9gDyHxopoRtVqKzdnk"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-RefreshTokenLambdaFunctionQualifiedArn"
+            }
+          },
+          "LogoutLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "LogoutLambdaVersionZ9NXiKAasLc4L5EjAjoRWmwTK1IILRlwLtOre0XX3pk"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-LogoutLambdaFunctionQualifiedArn"
+            }
+          },
+          "GetUsersLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetUsersLambdaVersionmALPhjU3RVxgoo8lieEmSqhIV4Jl3kT2SNh07fFg"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-GetUsersLambdaFunctionQualifiedArn"
+            }
+          },
+          "GetUserLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetUserLambdaVersionEyOjUpkyAIqziacQCebVeBNMxwiE0WMkXwyLinG8"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-GetUserLambdaFunctionQualifiedArn"
+            }
+          },
+          "CreateUserLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "CreateUserLambdaVersion5JDaymVsIu1eQkbqmsraZ4slERrTaXPIhM1hxoRpSg"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-CreateUserLambdaFunctionQualifiedArn"
+            }
+          },
+          "UpdateUserLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "UpdateUserLambdaVersionNjUeLgREy7ZkkoLLPzMAxdw9QRKQKSPXoKVnf9iOIXQ"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-UpdateUserLambdaFunctionQualifiedArn"
+            }
+          },
+          "DeleteUserLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "DeleteUserLambdaVersionFzGf539shMvFjjhxn4U8XOBtVJshlVDxfr2LzKgy3g8"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-DeleteUserLambdaFunctionQualifiedArn"
+            }
+          },
+          "GetArticlesLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetArticlesLambdaVersioniBcXwsGPIad5wDS6zp3wFCo2uWXmRoV9edhnk0F9g"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-GetArticlesLambdaFunctionQualifiedArn"
+            }
+          },
+          "GetArticleByIdLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetArticleByIdLambdaVersionRy6hJdKNiHjmXYCrt1gaK9SI2sujcfEz24siHsupws"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-GetArticleByIdLambdaFunctionQualifiedArn"
+            }
+          },
+          "GetArticleBySlugLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetArticleBySlugLambdaVersiontCYv836oyG402cVl0YV4RjkTyJMEVhpPqbQCR8zS7I"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-GetArticleBySlugLambdaFunctionQualifiedArn"
+            }
+          },
+          "CreateArticleLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "CreateArticleLambdaVersionkZERBlU4LJwq9wLvFeTUvI6okxC7GYf3zSzId1kfKqE"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-CreateArticleLambdaFunctionQualifiedArn"
+            }
+          },
+          "UpdateArticleLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "UpdateArticleLambdaVersionfm45JvZ0GNhY6juKObt7OhAAciTe0s6Iw4j79mME6Y"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-UpdateArticleLambdaFunctionQualifiedArn"
+            }
+          },
+          "DeleteArticleLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "DeleteArticleLambdaVersionOmbHeJyGqJrI3iU0i7IxA13u1mG1LgdBtEebQQ70Vs"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-DeleteArticleLambdaFunctionQualifiedArn"
+            }
+          },
+          "UpdateArticleStatusLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "UpdateArticleStatusLambdaVersionECvgIdXN2zJiZZYu2caR2DPjBVWERLOsqFrMfph5g4"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-UpdateArticleStatusLambdaFunctionQualifiedArn"
+            }
+          },
+          "UpdateFeaturedStatusLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "UpdateFeaturedStatusLambdaVersion1KSKzZfYkZaofuOKwfBwVPi5YGriqp4CwJAO8JHQwA"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-UpdateFeaturedStatusLambdaFunctionQualifiedArn"
+            }
+          },
+          "GetCategoriesLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetCategoriesLambdaVersionbpuRjfqeA9TDzbSAH2kKLA6sroPRfu8gegSGsIykq8"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-GetCategoriesLambdaFunctionQualifiedArn"
+            }
+          },
+          "CreateCategoryLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "CreateCategoryLambdaVersionKx3KVLD01L41kT9ABZ46EcwHERLW1civTlm0WMvvSM"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-CreateCategoryLambdaFunctionQualifiedArn"
+            }
+          },
+          "UpdateCategoryLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "UpdateCategoryLambdaVersionZFXH3JTPxHfzVWkz6200LlDKCVOlLVCFd82OtYpcc0"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-UpdateCategoryLambdaFunctionQualifiedArn"
+            }
+          },
+          "DeleteCategoryLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "DeleteCategoryLambdaVersionWw2Q1TtT6y01AjiY3OOAxq19Jd6DvQa3hauNAV44"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-DeleteCategoryLambdaFunctionQualifiedArn"
+            }
+          },
+          "GetPendingCommentsLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetPendingCommentsLambdaVersionTK2Cw2WD26hqxcPS2SmqzsEpqG4oBsdJTs6lPgyNc9o"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-GetPendingCommentsLambdaFunctionQualifiedArn"
+            }
+          },
+          "PostCommentLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "PostCommentLambdaVersionU2r1qw3ZyJpgj4gpevccNjlg6082E5t66Q2fxIqHE"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-PostCommentLambdaFunctionQualifiedArn"
+            }
+          },
+          "UpdateCommentStatusLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "UpdateCommentStatusLambdaVersionXRMDYZ8XBKeRoiWfwVwknQ72VkONiimfqhjeJkq4"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-UpdateCommentStatusLambdaFunctionQualifiedArn"
+            }
+          },
+          "GetNotificationsForUserLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetNotificationsForUserLambdaVersionuJlIV8PFpl3KSOpigxmUpocnNAvH8naK3WOsBcYdPKg"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-GetNotificationsForUserLambdaFunctionQualifiedArn"
+            }
+          },
+          "GetAllTagsLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetAllTagsLambdaVersion8OFDvhXi2UNjWfVoNl7JL2XculM8SneZ80K0X4HYeY"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-GetAllTagsLambdaFunctionQualifiedArn"
+            }
+          },
+          "GetSubscribersLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "GetSubscribersLambdaVersion1LpYxFvJRqzv6fVug2SiVTTdA7DMeL9pHRZQIKuos"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-GetSubscribersLambdaFunctionQualifiedArn"
+            }
+          },
+          "SubscribeLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SubscribeLambdaVersionUuZgzohmpuZl70sprWGnlWup4f0woYjEaDq9tp8lF4"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-SubscribeLambdaFunctionQualifiedArn"
+            }
+          },
+          "ContactLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ContactLambdaVersion3J2GhU3UZyTBmTyGldVH7bkIw5FNnSBPbd6YIZuSbRY"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-ContactLambdaFunctionQualifiedArn"
+            }
+          },
+          "HttpApiId": {
+            "Description": "Id of the HTTP API",
+            "Value": {
+              "Ref": "HttpApi"
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-HttpApiId"
+            }
+          },
+          "HttpApiUrl": {
+            "Description": "URL of the HTTP API",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://",
+                  {
+                    "Ref": "HttpApi"
+                  },
+                  ".execute-api.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  }
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "sls-vadali-media-backend-dev-HttpApiUrl"
+            }
+          }
+        }
+      },
+      "coreCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            }
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "custom": {
+      "serverless-offline": {
+        "httpPort": 3001,
+        "lambdaPort": 3002
+      }
+    },
+    "plugins": [
+      "serverless-esbuild",
+      "serverless-offline"
+    ],
+    "pluginsData": {},
+    "functions": {
+      "login": {
+        "handler": "src/handlers.login",
+        "events": [
+          {
+            "httpApi": "POST /auth/login",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/auth/login"
+          }
+        ],
+        "name": "vadali-media-backend-dev-login",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "LoginLambdaVersion6zHFIOOSXfzzn6TDvnRy5N60XFKK5KBN8BTXNsIEeLM"
+      },
+      "register": {
+        "handler": "src/handlers.register",
+        "events": [
+          {
+            "httpApi": "POST /auth/register",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/auth/register"
+          }
+        ],
+        "name": "vadali-media-backend-dev-register",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "RegisterLambdaVersion9zWxmH4qa9Qn3x7wshVcGwKqCUmlrEiJ4EFRvlpk"
+      },
+      "refreshToken": {
+        "handler": "src/handlers.refreshToken",
+        "events": [
+          {
+            "httpApi": "POST /auth/refresh",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/auth/refresh"
+          }
+        ],
+        "name": "vadali-media-backend-dev-refreshToken",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "RefreshTokenLambdaVersionV2B5kv7jFlwkX3aVmlLAkgO9gDyHxopoRtVqKzdnk"
+      },
+      "logout": {
+        "handler": "src/handlers.logout",
+        "events": [
+          {
+            "httpApi": "POST /auth/logout",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/auth/logout"
+          }
+        ],
+        "name": "vadali-media-backend-dev-logout",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "LogoutLambdaVersionZ9NXiKAasLc4L5EjAjoRWmwTK1IILRlwLtOre0XX3pk"
+      },
+      "getUsers": {
+        "handler": "src/handlers.getUsers",
+        "events": [
+          {
+            "httpApi": "GET /users",
+            "resolvedMethod": "GET",
+            "resolvedPath": "/users"
+          }
+        ],
+        "name": "vadali-media-backend-dev-getUsers",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "GetUsersLambdaVersionmALPhjU3RVxgoo8lieEmSqhIV4Jl3kT2SNh07fFg"
+      },
+      "getUser": {
+        "handler": "src/handlers.getUser",
+        "events": [
+          {
+            "httpApi": "GET /users/{id}",
+            "resolvedMethod": "GET",
+            "resolvedPath": "/users/{id}"
+          }
+        ],
+        "name": "vadali-media-backend-dev-getUser",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "GetUserLambdaVersionEyOjUpkyAIqziacQCebVeBNMxwiE0WMkXwyLinG8"
+      },
+      "createUser": {
+        "handler": "src/handlers.createUser",
+        "events": [
+          {
+            "httpApi": "POST /users",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/users"
+          }
+        ],
+        "name": "vadali-media-backend-dev-createUser",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "CreateUserLambdaVersion5JDaymVsIu1eQkbqmsraZ4slERrTaXPIhM1hxoRpSg"
+      },
+      "updateUser": {
+        "handler": "src/handlers.updateUser",
+        "events": [
+          {
+            "httpApi": "PUT /users/{id}",
+            "resolvedMethod": "PUT",
+            "resolvedPath": "/users/{id}"
+          }
+        ],
+        "name": "vadali-media-backend-dev-updateUser",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "UpdateUserLambdaVersionNjUeLgREy7ZkkoLLPzMAxdw9QRKQKSPXoKVnf9iOIXQ"
+      },
+      "deleteUser": {
+        "handler": "src/handlers.deleteUser",
+        "events": [
+          {
+            "httpApi": "DELETE /users/{id}",
+            "resolvedMethod": "DELETE",
+            "resolvedPath": "/users/{id}"
+          }
+        ],
+        "name": "vadali-media-backend-dev-deleteUser",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "DeleteUserLambdaVersionFzGf539shMvFjjhxn4U8XOBtVJshlVDxfr2LzKgy3g8"
+      },
+      "getArticles": {
+        "handler": "src/handlers.getArticles",
+        "events": [
+          {
+            "httpApi": "GET /articles",
+            "resolvedMethod": "GET",
+            "resolvedPath": "/articles"
+          }
+        ],
+        "name": "vadali-media-backend-dev-getArticles",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "GetArticlesLambdaVersioniBcXwsGPIad5wDS6zp3wFCo2uWXmRoV9edhnk0F9g"
+      },
+      "getArticleById": {
+        "handler": "src/handlers.getArticleById",
+        "events": [
+          {
+            "httpApi": "GET /articles/id/{id}",
+            "resolvedMethod": "GET",
+            "resolvedPath": "/articles/id/{id}"
+          }
+        ],
+        "name": "vadali-media-backend-dev-getArticleById",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "GetArticleByIdLambdaVersionRy6hJdKNiHjmXYCrt1gaK9SI2sujcfEz24siHsupws"
+      },
+      "getArticleBySlug": {
+        "handler": "src/handlers.getArticleBySlug",
+        "events": [
+          {
+            "httpApi": "GET /articles/slug/{slug}",
+            "resolvedMethod": "GET",
+            "resolvedPath": "/articles/slug/{slug}"
+          }
+        ],
+        "name": "vadali-media-backend-dev-getArticleBySlug",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "GetArticleBySlugLambdaVersiontCYv836oyG402cVl0YV4RjkTyJMEVhpPqbQCR8zS7I"
+      },
+      "createArticle": {
+        "handler": "src/handlers.createArticle",
+        "events": [
+          {
+            "httpApi": "POST /articles",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/articles"
+          }
+        ],
+        "name": "vadali-media-backend-dev-createArticle",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "CreateArticleLambdaVersionkZERBlU4LJwq9wLvFeTUvI6okxC7GYf3zSzId1kfKqE"
+      },
+      "updateArticle": {
+        "handler": "src/handlers.updateArticle",
+        "events": [
+          {
+            "httpApi": "PUT /articles/{id}",
+            "resolvedMethod": "PUT",
+            "resolvedPath": "/articles/{id}"
+          }
+        ],
+        "name": "vadali-media-backend-dev-updateArticle",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "UpdateArticleLambdaVersionfm45JvZ0GNhY6juKObt7OhAAciTe0s6Iw4j79mME6Y"
+      },
+      "deleteArticle": {
+        "handler": "src/handlers.deleteArticle",
+        "events": [
+          {
+            "httpApi": "DELETE /articles/{id}",
+            "resolvedMethod": "DELETE",
+            "resolvedPath": "/articles/{id}"
+          }
+        ],
+        "name": "vadali-media-backend-dev-deleteArticle",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "DeleteArticleLambdaVersionOmbHeJyGqJrI3iU0i7IxA13u1mG1LgdBtEebQQ70Vs"
+      },
+      "updateArticleStatus": {
+        "handler": "src/handlers.updateArticleStatus",
+        "events": [
+          {
+            "httpApi": "PUT /articles/{id}/status",
+            "resolvedMethod": "PUT",
+            "resolvedPath": "/articles/{id}/status"
+          }
+        ],
+        "name": "vadali-media-backend-dev-updateArticleStatus",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "UpdateArticleStatusLambdaVersionECvgIdXN2zJiZZYu2caR2DPjBVWERLOsqFrMfph5g4"
+      },
+      "updateFeaturedStatus": {
+        "handler": "src/handlers.updateFeaturedStatus",
+        "events": [
+          {
+            "httpApi": "POST /articles/featured",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/articles/featured"
+          }
+        ],
+        "name": "vadali-media-backend-dev-updateFeaturedStatus",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "UpdateFeaturedStatusLambdaVersion1KSKzZfYkZaofuOKwfBwVPi5YGriqp4CwJAO8JHQwA"
+      },
+      "getCategories": {
+        "handler": "src/handlers.getCategories",
+        "events": [
+          {
+            "httpApi": "GET /categories",
+            "resolvedMethod": "GET",
+            "resolvedPath": "/categories"
+          }
+        ],
+        "name": "vadali-media-backend-dev-getCategories",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "GetCategoriesLambdaVersionbpuRjfqeA9TDzbSAH2kKLA6sroPRfu8gegSGsIykq8"
+      },
+      "createCategory": {
+        "handler": "src/handlers.createCategory",
+        "events": [
+          {
+            "httpApi": "POST /categories",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/categories"
+          }
+        ],
+        "name": "vadali-media-backend-dev-createCategory",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "CreateCategoryLambdaVersionKx3KVLD01L41kT9ABZ46EcwHERLW1civTlm0WMvvSM"
+      },
+      "updateCategory": {
+        "handler": "src/handlers.updateCategory",
+        "events": [
+          {
+            "httpApi": "PUT /categories/{id}",
+            "resolvedMethod": "PUT",
+            "resolvedPath": "/categories/{id}"
+          }
+        ],
+        "name": "vadali-media-backend-dev-updateCategory",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "UpdateCategoryLambdaVersionZFXH3JTPxHfzVWkz6200LlDKCVOlLVCFd82OtYpcc0"
+      },
+      "deleteCategory": {
+        "handler": "src/handlers.deleteCategory",
+        "events": [
+          {
+            "httpApi": "DELETE /categories/{id}",
+            "resolvedMethod": "DELETE",
+            "resolvedPath": "/categories/{id}"
+          }
+        ],
+        "name": "vadali-media-backend-dev-deleteCategory",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "DeleteCategoryLambdaVersionWw2Q1TtT6y01AjiY3OOAxq19Jd6DvQa3hauNAV44"
+      },
+      "getPendingComments": {
+        "handler": "src/handlers.getPendingComments",
+        "events": [
+          {
+            "httpApi": "GET /comments/pending",
+            "resolvedMethod": "GET",
+            "resolvedPath": "/comments/pending"
+          }
+        ],
+        "name": "vadali-media-backend-dev-getPendingComments",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "GetPendingCommentsLambdaVersionTK2Cw2WD26hqxcPS2SmqzsEpqG4oBsdJTs6lPgyNc9o"
+      },
+      "postComment": {
+        "handler": "src/handlers.postComment",
+        "events": [
+          {
+            "httpApi": "POST /articles/{id}/comments",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/articles/{id}/comments"
+          }
+        ],
+        "name": "vadali-media-backend-dev-postComment",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "PostCommentLambdaVersionU2r1qw3ZyJpgj4gpevccNjlg6082E5t66Q2fxIqHE"
+      },
+      "updateCommentStatus": {
+        "handler": "src/handlers.updateCommentStatus",
+        "events": [
+          {
+            "httpApi": "PUT /articles/{articleId}/comments/{commentId}/status",
+            "resolvedMethod": "PUT",
+            "resolvedPath": "/articles/{articleId}/comments/{commentId}/status"
+          }
+        ],
+        "name": "vadali-media-backend-dev-updateCommentStatus",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "UpdateCommentStatusLambdaVersionXRMDYZ8XBKeRoiWfwVwknQ72VkONiimfqhjeJkq4"
+      },
+      "getNotificationsForUser": {
+        "handler": "src/handlers.getNotificationsForUser",
+        "events": [
+          {
+            "httpApi": "GET /notifications/user/{userId}",
+            "resolvedMethod": "GET",
+            "resolvedPath": "/notifications/user/{userId}"
+          }
+        ],
+        "name": "vadali-media-backend-dev-getNotificationsForUser",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "GetNotificationsForUserLambdaVersionuJlIV8PFpl3KSOpigxmUpocnNAvH8naK3WOsBcYdPKg"
+      },
+      "getAllTags": {
+        "handler": "src/handlers.getAllTags",
+        "events": [
+          {
+            "httpApi": "GET /tags",
+            "resolvedMethod": "GET",
+            "resolvedPath": "/tags"
+          }
+        ],
+        "name": "vadali-media-backend-dev-getAllTags",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "GetAllTagsLambdaVersion8OFDvhXi2UNjWfVoNl7JL2XculM8SneZ80K0X4HYeY"
+      },
+      "getSubscribers": {
+        "handler": "src/handlers.getSubscribers",
+        "events": [
+          {
+            "httpApi": "GET /subscribers",
+            "resolvedMethod": "GET",
+            "resolvedPath": "/subscribers"
+          }
+        ],
+        "name": "vadali-media-backend-dev-getSubscribers",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "GetSubscribersLambdaVersion1LpYxFvJRqzv6fVug2SiVTTdA7DMeL9pHRZQIKuos"
+      },
+      "subscribe": {
+        "handler": "src/handlers.subscribe",
+        "events": [
+          {
+            "httpApi": "POST /subscribe",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/subscribe"
+          }
+        ],
+        "name": "vadali-media-backend-dev-subscribe",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "SubscribeLambdaVersionUuZgzohmpuZl70sprWGnlWup4f0woYjEaDq9tp8lF4"
+      },
+      "contact": {
+        "handler": "src/handlers.contact",
+        "events": [
+          {
+            "httpApi": "POST /contact",
+            "resolvedMethod": "POST",
+            "resolvedPath": "/contact"
+          }
+        ],
+        "name": "vadali-media-backend-dev-contact",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs20.x",
+        "vpc": {},
+        "versionLogicalId": "ContactLambdaVersion3J2GhU3UZyTBmTyGldVH7bkIw5FNnSBPbd6YIZuSbRY"
+      }
+    },
+    "resources": {
+      "Resources": {
+        "ArticlesTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "vadali-media-articles-dev",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "id",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "slug",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "categoryId",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "id",
+                "KeyType": "HASH"
+              }
+            ],
+            "GlobalSecondaryIndexes": [
+              {
+                "IndexName": "slug-index",
+                "KeySchema": [
+                  {
+                    "AttributeName": "slug",
+                    "KeyType": "HASH"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              },
+              {
+                "IndexName": "category-index",
+                "KeySchema": [
+                  {
+                    "AttributeName": "categoryId",
+                    "KeyType": "HASH"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              }
+            ],
+            "BillingMode": "PAY_PER_REQUEST"
+          }
+        },
+        "UsersTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "vadali-media-users-dev",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "id",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "email",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "id",
+                "KeyType": "HASH"
+              }
+            ],
+            "GlobalSecondaryIndexes": [
+              {
+                "IndexName": "email-index",
+                "KeySchema": [
+                  {
+                    "AttributeName": "email",
+                    "KeyType": "HASH"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              }
+            ],
+            "BillingMode": "PAY_PER_REQUEST"
+          }
+        },
+        "CategoriesTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "vadali-media-categories-dev",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "id",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "id",
+                "KeyType": "HASH"
+              }
+            ],
+            "BillingMode": "PAY_PER_REQUEST"
+          }
+        }
+      },
+      "Outputs": {}
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless.yml",
+    "initialServerlessConfig": {
+      "service": "vadali-media-backend",
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "package": {
+        "individually": false,
+        "artifactsS3KeyDirname": "serverless/vadali-media-backend/dev/code-artifacts"
+      },
+      "plugins": {
+        "$ref": "$[\"service\"][\"plugins\"]"
+      },
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      }
+    },
+    "layers": {},
+    "isDashboardMonitoringPreconfigured": false
+  },
+  "package": {
+    "individually": false,
+    "artifactDirectoryName": "serverless/vadali-media-backend/dev/1760086161674-2025-10-10T08:49:21.674Z",
+    "artifact": "vadali-media-backend.zip"
+  }
+}

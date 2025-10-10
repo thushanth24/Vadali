@@ -23,23 +23,23 @@ export class CategoryRepository extends BaseRepository<Category> {
   }
 
   async findByName(name: string): Promise<Category | null> {
-    const result = await this.query({
-      indexName: 'NameIndex',
-      keyConditionExpression: '#name = :name',
+    const result = await this.scan({
+      filterExpression: '#name = :name',
       expressionAttributeNames: { '#name': 'name' },
-      expressionAttributeValues: { ':name': name }
+      expressionAttributeValues: { ':name': name },
+      limit: 1
     });
     
-    return result.items[0] || null;
+    return result.items[0] ?? null;
   }
 
   async findBySlug(slug: string): Promise<Category | null> {
-    const result = await this.query({
-      indexName: 'SlugIndex',
-      keyConditionExpression: 'slug = :slug',
-      expressionAttributeValues: { ':slug': slug }
+    const result = await this.scan({
+      filterExpression: 'slug = :slug',
+      expressionAttributeValues: { ':slug': slug },
+      limit: 1
     });
     
-    return result.items[0] || null;
+    return result.items[0] ?? null;
   }
 }

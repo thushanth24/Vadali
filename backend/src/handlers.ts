@@ -437,7 +437,151 @@ export const getCategories: APIGatewayProxyHandlerV2 = async () => {
     }
 };
 
-// ... (rest of the code remains the same)
+export const createCategory: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const payload = JSON.parse(event.body || '{}');
+        const rawName = typeof payload.name === 'string' ? payload.name.trim() : '';
+        const rawSlug = typeof payload.slug === 'string' ? payload.slug.trim() : '';
+        const description = typeof payload.description === 'string'
+            ? payload.description.trim()
+            : undefined;
+
+        if (!rawName || !rawSlug) {
+            return respond(400, { message: 'Category name and slug are required' });
+        }
+
+        const name = rawName;
+        const slug = rawSlug.toLowerCase();
+
+        const [existingByName, existingBySlug] = await Promise.all([
+            categoryRepository.findByName(name),
+            categoryRepository.findBySlug(slug),
+        ]);
+
+        if (existingByName) {
+            return respond(409, { message: 'A category with this name already exists' });
+        }
+
+        if (existingBySlug) {
+            return respond(409, { message: 'A category with this slug already exists' });
+        }
+
+        const timestamp = new Date().toISOString();
+        const newCategory: Category = {
+            id: uuidv4(),
+            name,
+            slug,
+            description,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+        };
+
+        await categoryRepository.create(newCategory);
+        return respond(201, newCategory);
+    } catch (error) {
+        console.error('Error creating category:', error);
+        return respond(500, { message: 'Failed to create category' });
+    }
+};
+
+export const updateCategory: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const { id } = event.pathParameters || {};
+        if (!id) {
+            return respond(400, { message: 'Category ID is required' });
+        }
+
+        const existingCategory = await categoryRepository.getById(id);
+        if (!existingCategory) {
+            return respond(404, { message: 'Category not found' });
+        }
+
+        const payload = JSON.parse(event.body || '{}');
+        const updates: Partial<Category> = {};
+
+        if (typeof payload.name === 'string') {
+            const trimmedName = payload.name.trim();
+            if (!trimmedName) {
+                return respond(400, { message: 'Category name cannot be empty' });
+            }
+
+            if (trimmedName !== existingCategory.name) {
+                const byName = await categoryRepository.findByName(trimmedName);
+                if (byName && byName.id !== id) {
+                    return respond(409, { message: 'A category with this name already exists' });
+                }
+            }
+            updates.name = trimmedName;
+        }
+
+        if (typeof payload.slug === 'string') {
+            const trimmedSlug = payload.slug.trim().toLowerCase();
+            if (!trimmedSlug) {
+                return respond(400, { message: 'Category slug cannot be empty' });
+            }
+
+            if (trimmedSlug !== existingCategory.slug) {
+                const bySlug = await categoryRepository.findBySlug(trimmedSlug);
+                if (bySlug && bySlug.id !== id) {
+                    return respond(409, { message: 'A category with this slug already exists' });
+                }
+            }
+            updates.slug = trimmedSlug;
+        }
+
+        if (typeof payload.description === 'string') {
+            updates.description = payload.description.trim();
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return respond(400, { message: 'No valid category fields provided for update' });
+        }
+
+        const updatedCategory = await categoryRepository.update(id, updates);
+        if (!updatedCategory) {
+            return respond(404, { message: 'Category not found' });
+        }
+
+        return respond(200, updatedCategory);
+    } catch (error) {
+        console.error('Error updating category:', error);
+        return respond(500, { message: 'Failed to update category' });
+    }
+};
+
+export const deleteCategory: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const { id } = event.pathParameters || {};
+        if (!id) {
+            return respond(400, { message: 'Category ID is required' });
+        }
+
+        const category = await categoryRepository.getById(id);
+        if (!category) {
+            return respond(404, { message: 'Category not found' });
+        }
+
+        const { items: linkedArticles } = await articleRepository.scan({
+            filterExpression: 'categoryId = :categoryId',
+            expressionAttributeValues: { ':categoryId': id },
+            limit: 1,
+        });
+
+        if (linkedArticles.length > 0) {
+            return respond(400, { message: 'Category is in use by existing articles and cannot be deleted' });
+        }
+
+        const deleted = await categoryRepository.delete(id);
+        if (!deleted) {
+            return respond(500, { message: 'Failed to delete category' });
+        }
+
+        return respond(204, null);
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        return respond(500, { message: 'Failed to delete category' });
+    }
+};
 
 // --- NOTIFICATIONS ---
 export const getNotificationsForUser: APIGatewayProxyHandlerV2 = async (event) => {
