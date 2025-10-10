@@ -64,9 +64,11 @@ const App: React.FC = () => {
           <Route path="editorial-policy" element={<EditorialPolicyPage />} />
         </Route>
 
-        {/* Standalone Auth & System Pages */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        {/* Auth Pages with Layout */}
+        <Route path="/" element={<MainLayout />}>
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+        </Route>
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         <Route path="/maintenance" element={<MaintenancePage />} />

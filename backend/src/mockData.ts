@@ -1,7 +1,15 @@
 import { User, Category, Article, UserRole, ArticleStatus, Notification, NotificationType, Subscriber } from './types';
 
 export let users: User[] = [
-  { id: 'u1', name: 'நிர்வாக பயனர்', email: 'admin@news.com', role: UserRole.ADMIN, avatarUrl: 'https://picsum.photos/seed/u1/100/100', bio: 'Responsible for site administration and content oversight.' },
+  {
+    id: 'u1',
+    name: 'நிர்வாக பயனர்',
+    email: 'admin@vadali.com',
+    password: '$2b$10$P3D8gs2qo5yk9S3nh9y73O6tmDi2yCp6ZjozGIsJTKN0H7Ezao4bC',
+    role: UserRole.ADMIN,
+    avatarUrl: 'https://picsum.photos/seed/u1/100/100',
+    bio: 'Responsible for site administration and content oversight.'
+  },
   { id: 'u2', name: 'ஆசிரியர் எரிக்கா', email: 'editor@news.com', role: UserRole.EDITOR, avatarUrl: 'https://picsum.photos/seed/u2/100/100', bio: 'Experienced editor with a keen eye for detail and a passion for quality journalism.' },
   { id: 'u3', name: 'ஆசிரியர் அருண்', email: 'author@news.com', role: UserRole.AUTHOR, avatarUrl: 'https://picsum.photos/seed/u3/100/100', bio: 'Technology correspondent covering AI, machine learning, and innovation.' },
   { id: 'u4', name: 'செய்தியாளர் ரீட்டா', email: 'reporter@news.com', role: UserRole.AUTHOR, avatarUrl: 'https://picsum.photos/seed/u4/100/100', bio: 'Financial reporter specializing in global markets and economic policy.' },

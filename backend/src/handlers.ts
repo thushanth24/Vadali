@@ -2,6 +2,8 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 import { users, articles, categories, notifications, subscribers } from './mockData';
 import { Article, ArticleStatus, Category, Comment, Notification, Subscriber, User, UserRole } from './types';
+import { comparePasswords, createAuthResponse } from './auth';
+import { UserRepository } from './repositories/UserRepository';
 
 const respond = (statusCode: number, body: any) => ({
     statusCode,
@@ -11,11 +13,60 @@ const respond = (statusCode: number, body: any) => ({
     body: JSON.stringify(body),
 });
 
+const userRepository = new UserRepository();
+
 // --- USER & AUTH ---
 export const login: APIGatewayProxyHandlerV2 = async (event) => {
-    const { email } = JSON.parse(event.body || '{}');
-    const user = users.find(u => u.email === email);
-    return respond(200, user || null);
+    const { email, password } = JSON.parse(event.body || '{}');
+
+    if (!email || !password) {
+        return respond(400, { message: 'Email and password are required' });
+    }
+
+    const trimmedEmail = String(email).trim();
+    const normalizedEmail = trimmedEmail.toLowerCase();
+    const emailCandidates = Array.from(new Set([trimmedEmail, normalizedEmail]));
+
+    try {
+        for (const candidate of emailCandidates) {
+            const dbUser = await userRepository.findByEmail(candidate);
+            if (dbUser) {
+                const passwordMatches = await comparePasswords(password, dbUser.password || '');
+                if (passwordMatches) {
+                    const authResponse = createAuthResponse(dbUser);
+                    try {
+                        await userRepository.updateRefreshToken(dbUser.id, authResponse.refreshToken);
+                    } catch (updateError) {
+                        console.error('Failed to persist refresh token for user', updateError);
+                    }
+                    return respond(200, authResponse);
+                }
+                break;
+            }
+        }
+    } catch (repoError) {
+        console.error('Login repository lookup failed, falling back to mock data', repoError);
+    }
+
+    const fallbackUser = users.find(u => u.email === trimmedEmail || u.email.toLowerCase() === normalizedEmail);
+    if (fallbackUser) {
+        const storedPassword = fallbackUser.password || '';
+        let passwordMatches = false;
+
+        if (storedPassword.startsWith("$2")) {
+            passwordMatches = await comparePasswords(password, storedPassword);
+        } else if (storedPassword.length > 0) {
+            passwordMatches = storedPassword === password;
+        }
+
+        if (passwordMatches) {
+            const authResponse = createAuthResponse(fallbackUser);
+            fallbackUser.refreshToken = authResponse.refreshToken;
+            return respond(200, authResponse);
+        }
+    }
+
+    return respond(401, { message: 'Invalid email or password' });
 };
 export const register: APIGatewayProxyHandlerV2 = async (event) => {
     const { name, email } = JSON.parse(event.body || '{}');
@@ -254,3 +305,4 @@ export const contact: APIGatewayProxyHandlerV2 = async (event) => {
     console.log('Contact form submitted (mock):', JSON.parse(event.body || '{}'));
     return respond(204, null);
 };
+

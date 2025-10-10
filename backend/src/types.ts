@@ -23,18 +23,39 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string;
   role: UserRole;
   avatarUrl: string;
   bio?: string;
+  createdAt: string;
+  updatedAt: string;
+  refreshToken?: string;
+}
+
+export interface AuthResponse {
+  user: Omit<User, 'password' | 'refreshToken'>;
+  token: string;
+  refreshToken: string;
 }
 
 export interface Comment {
   id: string;
   authorName: string;
+  authorEmail?: string;
   authorAvatarUrl: string;
   text: string;
   date: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommentWithArticle extends Omit<Comment, 'article'> {
+  article: {
+    id: string;
+    title: string;
+    slug: string;
+  };
 }
 
 export interface Category {
@@ -61,6 +82,8 @@ export interface Article {
   isAdvertisement?: boolean;
   isFeatured?: boolean;
   rejectionReason?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Notification {
@@ -77,4 +100,7 @@ export interface Subscriber {
   id: string;
   email: string;
   subscribedAt: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

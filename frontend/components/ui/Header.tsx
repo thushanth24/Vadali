@@ -13,7 +13,32 @@ const Header: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
-    fetchCategories().then(setCategories);
+    let isMounted = true;
+
+    fetchCategories()
+      .then((response) => {
+        if (!isMounted) return;
+
+        if (Array.isArray(response)) {
+          setCategories(response);
+          return;
+        }
+
+        const maybeWrapped = response as { categories?: Category[] };
+        if (maybeWrapped?.categories && Array.isArray(maybeWrapped.categories)) {
+          setCategories(maybeWrapped.categories);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load categories', error);
+        if (isMounted) {
+          setCategories([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleLogout = () => {
