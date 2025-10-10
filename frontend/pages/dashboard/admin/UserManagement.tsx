@@ -18,6 +18,7 @@ const UserManagement: React.FC = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<UserRole>(UserRole.AUTHOR);
+    const [password, setPassword] = useState('');
 
     const loadUsers = async () => {
         try {
@@ -57,12 +58,14 @@ const UserManagement: React.FC = () => {
             setEmail('');
             setRole(UserRole.AUTHOR);
         }
+        setPassword('');
         setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingUser(null);
+        setPassword('');
     };
 
     const handleClosePasswordModal = () => {
@@ -84,14 +87,26 @@ const UserManagement: React.FC = () => {
             return;
         }
 
+        const trimmedPassword = password.trim();
+
         try {
             if (editingUser) {
-                await updateUser(editingUser.id, { name, email, role });
-                toast.success('User updated successfully');
+                await updateUser(editingUser.id, { 
+                    name, 
+                    email, 
+                    role,
+                    ...(trimmedPassword ? { password: trimmedPassword } : {}),
+                });
+                toast.success(trimmedPassword ? 'User updated and password reset successfully' : 'User updated successfully');
             } else {
-                const newUser = await createUser({ name, email, role });
+                const newUser = await createUser({ 
+                    name, 
+                    email, 
+                    role,
+                    ...(trimmedPassword ? { password: trimmedPassword } : {}),
+                });
                 toast.success('User created successfully');
-                if (newUser.temporaryPassword) {
+                if (!trimmedPassword && newUser.temporaryPassword) {
                     setGeneratedPassword(newUser.temporaryPassword);
                     setIsPasswordModalOpen(true);
                 }
@@ -238,6 +253,24 @@ const UserManagement: React.FC = () => {
                             <option value={UserRole.EDITOR}>Editor</option>
                             <option value={UserRole.ADMIN}>Admin</option>
                         </select>
+                    </div>
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder={editingUser ? 'Leave blank to keep current password' : 'Leave blank to auto-generate a password'}
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                            {editingUser
+                                ? 'Provide a new password to reset it.'
+                                : 'Leave blank to generate a random temporary password.'}
+                        </p>
                     </div>
                     <div className="flex justify-end space-x-3 pt-4">
                         <Button type="button" variant="secondary" onClick={handleCloseModal}>

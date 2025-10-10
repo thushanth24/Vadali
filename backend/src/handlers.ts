@@ -109,15 +109,12 @@ export const createUser: APIGatewayProxyHandlerV2 = async (event) => {
             return respond(409, { message: 'User with this email already exists' });
         }
 
-        let plainTextPassword = userData.password;
-        // Hash password if provided, otherwise generate one
-        if (userData.password) {
-            userData.password = await bcrypt.hash(userData.password, 10);
-        } else {
-            // Generate a temporary password
-            plainTextPassword = uuidv4().substring(0, 8); // 8-char temporary password
-            userData.password = await bcrypt.hash(plainTextPassword, 10);
-        }
+        const providedPassword = typeof userData.password === 'string' && userData.password.trim().length > 0;
+        const plainTextPassword = providedPassword 
+            ? userData.password.trim()
+            : uuidv4().substring(0, 8); // 8-char temporary password
+
+        userData.password = await bcrypt.hash(plainTextPassword, 10);
 
         const newUser = await userRepository.createUser({
             name: userData.name,
@@ -133,7 +130,7 @@ export const createUser: APIGatewayProxyHandlerV2 = async (event) => {
 
         // Return the user, and the temporary password if it was generated
         const response: any = { ...userWithoutPassword };
-        if (!userData.password) { // This condition seems wrong, it should be if a temp password was generated
+        if (!providedPassword) {
             response.temporaryPassword = plainTextPassword;
         }
 

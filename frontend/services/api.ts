@@ -230,14 +230,32 @@ export const fetchUser = async (userId: string): Promise<User | undefined> => {
   return apiRequest<User | undefined>(`/users/${userId}`);
 }
 
-export const createUser = async (userData: Partial<User>): Promise<User> => {
+interface CreateUserPayload {
+  name: string;
+  email: string;
+  role?: UserRole;
+  avatarUrl?: string;
+  bio?: string;
+  password?: string;
+}
+
+interface UpdateUserPayload {
+  name?: string;
+  email?: string;
+  role?: UserRole;
+  avatarUrl?: string;
+  bio?: string;
+  password?: string;
+}
+
+export const createUser = async (userData: CreateUserPayload): Promise<User> => {
     return apiRequest<User>('/users', {
         method: 'POST',
         body: JSON.stringify(userData),
     });
 };
 
-export const updateUser = async (userId: string, userData: Partial<User>): Promise<User> => {
+export const updateUser = async (userId: string, userData: UpdateUserPayload): Promise<User> => {
     return apiRequest<User>(`/users/${userId}`, {
         method: 'PUT',
         body: JSON.stringify(userData),
