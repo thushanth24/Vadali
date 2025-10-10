@@ -5,19 +5,67 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:Scan
+        - dynamodb:Query
+      Resource:
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ARTICLES_TABLE}
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ARTICLES_TABLE}/index/*
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.USERS_TABLE}
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.USERS_TABLE}/index/*
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.CATEGORIES_TABLE}
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.CATEGORIES_TABLE}/index/*
   httpApi:
-    cors: true
+    cors:
+      allowedOrigins:
+        - 'http://localhost:3000'
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+        - X-Amz-Date
+        - X-Api-Key
+        - X-Amz-Security-Token
+        - X-Amz-User-Agent
+      allowedMethods:
+        - OPTIONS
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+      allowCredentials: true
+  stage: ${opt:stage, 'dev'}
+  environment:
+    ARTICLES_TABLE: vadali-media-articles-${self:provider.stage}
+    USERS_TABLE: vadali-media-users-${self:provider.stage}
+    CATEGORIES_TABLE: vadali-media-categories-${self:provider.stage}
+    ALLOWED_ORIGIN: ${env:FRONTEND_ORIGIN, 'http://localhost:3000'}
 
 functions:
   # Auth
   login:
     handler: src/handlers.login
     events:
-      - httpApi: 'POST /login'
+      - httpApi: 'POST /auth/login'
   register:
     handler: src/handlers.register
     events:
-      - httpApi: 'POST /register'
+      - httpApi: 'POST /auth/register'
+
+  refreshToken:
+    handler: src/handlers.refreshToken
+    events:
+      - httpApi: 'POST /auth/refresh'
+  logout:
+    handler: src/handlers.logout
+    events:
+      - httpApi: 'POST /auth/logout'
 
   # Users
   getUsers:
@@ -139,3 +187,77 @@ package:
 plugins:
   - serverless-esbuild
   - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3001
+    lambdaPort: 3002
+
+resources:
+  Resources:
+    # --- ARTICLES TABLE ---
+    ArticlesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.ARTICLES_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: slug
+            AttributeType: S
+          - AttributeName: categoryId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH # Partition Key
+        GlobalSecondaryIndexes:
+          - IndexName: slug-index
+            KeySchema:
+              - AttributeName: slug
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: category-index
+            KeySchema:
+              - AttributeName: categoryId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+
+    # --- USERS TABLE ---
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: email-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+        
+    # --- CATEGORIES TABLE ---
+    CategoriesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.CATEGORIES_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+
