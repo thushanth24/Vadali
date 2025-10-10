@@ -1,0 +1,20 @@
+{
+  "name": "create-admin-script",
+  "version": "1.0.0",
+  "description": "Script to create an admin user",
+  "main": "createAdmin.js",
+  "scripts": {
+    "start": "ts-node createAdmin.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.906.0",
+    "@aws-sdk/lib-dynamodb": "^3.906.0",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "axios": "^1.6.2",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  }
+}
