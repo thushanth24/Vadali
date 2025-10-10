@@ -26,6 +26,7 @@ export interface User {
   role: UserRole;
   avatarUrl: string;
   bio?: string;
+  temporaryPassword?: string;
 }
 
 export interface Comment {

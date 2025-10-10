@@ -3084,7 +3084,8 @@ var require_dist_cjs3 = __commonJS({
           return runtimeConfig.httpHandler;
         },
         updateHttpClientConfig(key, value) {
-          runtimeConfig.httpHandler?.updateHttpClientConfig(key, value);
+          var _a2;
+          (_a2 = runtimeConfig.httpHandler) == null ? void 0 : _a2.updateHttpClientConfig(key, value);
         },
         httpHandlerConfigs() {
           return runtimeConfig.httpHandler.httpHandlerConfigs();
@@ -3740,10 +3741,8 @@ var require_dist_cjs4 = __commonJS({
     });
     module2.exports = __toCommonJS2(index_exports);
     var import_lru_cache = __toESM2(require_lru_cache());
-    var EndpointCache3 = class {
-      static {
-        __name(this, "EndpointCache");
-      }
+    var _a2;
+    var EndpointCache3 = (_a2 = class {
       cache;
       constructor(capacity) {
         this.cache = new import_lru_cache.default(capacity);
@@ -3834,7 +3833,7 @@ var require_dist_cjs4 = __commonJS({
       clear() {
         this.cache.clear();
       }
-    };
+    }, __name(_a2, "EndpointCache"), _a2);
   }
 });
 
@@ -4143,6 +4142,7 @@ var require_dist_cjs7 = __commonJS({
     });
     module2.exports = __toCommonJS2(index_exports);
     var loggerMiddleware = /* @__PURE__ */ __name(() => (next, context) => async (args) => {
+      var _a2, _b;
       try {
         const response = await next(args);
         const { clientName, commandName, logger: logger2, dynamoDbDocumentClientOptions = {} } = context;
@@ -4150,7 +4150,7 @@ var require_dist_cjs7 = __commonJS({
         const inputFilterSensitiveLog = overrideInputFilterSensitiveLog ?? context.inputFilterSensitiveLog;
         const outputFilterSensitiveLog = overrideOutputFilterSensitiveLog ?? context.outputFilterSensitiveLog;
         const { $metadata, ...outputWithoutMetadata } = response.output;
-        logger2?.info?.({
+        (_a2 = logger2 == null ? void 0 : logger2.info) == null ? void 0 : _a2.call(logger2, {
           clientName,
           commandName,
           input: inputFilterSensitiveLog(args.input),
@@ -4162,7 +4162,7 @@ var require_dist_cjs7 = __commonJS({
         const { clientName, commandName, logger: logger2, dynamoDbDocumentClientOptions = {} } = context;
         const { overrideInputFilterSensitiveLog } = dynamoDbDocumentClientOptions;
         const inputFilterSensitiveLog = overrideInputFilterSensitiveLog ?? context.inputFilterSensitiveLog;
-        logger2?.error?.({
+        (_b = logger2 == null ? void 0 : logger2.error) == null ? void 0 : _b.call(logger2, {
           clientName,
           commandName,
           input: inputFilterSensitiveLog(args.input),
@@ -4222,7 +4222,7 @@ var require_invoke_store = __commonJS({
        */
       static get(key) {
         const context = this.storage.getStore();
-        return context?.[key];
+        return context == null ? void 0 : context[key];
       }
       /**
        * Set a custom value in the current context
@@ -4263,7 +4263,8 @@ var require_invoke_store = __commonJS({
       }
     };
     var instance;
-    if (!noGlobalAwsLambda && globalThis.awslambda?.InvokeStore) {
+    var _a2;
+    if (!noGlobalAwsLambda && ((_a2 = globalThis.awslambda) == null ? void 0 : _a2.InvokeStore)) {
       instance = globalThis.awslambda.InvokeStore;
     } else {
       instance = InvokeStoreImpl;
@@ -4358,11 +4359,11 @@ var require_dist_cjs8 = __commonJS({
 });
 
 // node_modules/@smithy/core/dist-es/getSmithyContext.js
-var import_types2, getSmithyContext;
+var import_types, getSmithyContext;
 var init_getSmithyContext = __esm({
   "node_modules/@smithy/core/dist-es/getSmithyContext.js"() {
-    import_types2 = __toESM(require_dist_cjs());
-    getSmithyContext = (context) => context[import_types2.SMITHY_CONTEXT_KEY] || (context[import_types2.SMITHY_CONTEXT_KEY] = {});
+    import_types = __toESM(require_dist_cjs());
+    getSmithyContext = (context) => context[import_types.SMITHY_CONTEXT_KEY] || (context[import_types.SMITHY_CONTEXT_KEY] = {});
   }
 });
 
@@ -4407,6 +4408,7 @@ var init_httpAuthSchemeMiddleware = __esm({
     import_util_middleware2 = __toESM(require_dist_cjs2());
     init_resolveAuthOptions();
     httpAuthSchemeMiddleware = (config, mwOptions) => (next, context) => async (args) => {
+      var _a2;
       const options = config.httpAuthSchemeProvider(await mwOptions.httpAuthSchemeParametersProvider(config, context, args.input));
       const authSchemePreference = config.authSchemePreference ? await config.authSchemePreference() : [];
       const resolvedOptions = resolveAuthOptions(options, authSchemePreference);
@@ -4424,7 +4426,7 @@ var init_httpAuthSchemeMiddleware = __esm({
           failureReasons.push(`HttpAuthScheme \`${option.schemeId}\` did not have an IdentityProvider configured.`);
           continue;
         }
-        const { identityProperties = {}, signingProperties = {} } = option.propertiesExtractor?.(config, context) || {};
+        const { identityProperties = {}, signingProperties = {} } = ((_a2 = option.propertiesExtractor) == null ? void 0 : _a2.call(option, config, context)) || {};
         option.identityProperties = Object.assign(option.identityProperties || {}, identityProperties);
         option.signingProperties = Object.assign(option.signingProperties || {}, signingProperties);
         smithyContext.selectedHttpAuthScheme = {
@@ -4472,6 +4474,7 @@ var require_dist_cjs9 = __commonJS({
     "use strict";
     var protocolHttp = require_dist_cjs3();
     var deserializerMiddleware = (options, deserializer) => (next, context) => async (args) => {
+      var _a2, _b, _c, _d;
       const { response } = await next(args);
       try {
         const parsed = await deserializer(response, options);
@@ -4488,10 +4491,10 @@ var require_dist_cjs9 = __commonJS({
           try {
             error2.message += "\n  " + hint;
           } catch (e3) {
-            if (!context.logger || context.logger?.constructor?.name === "NoOpLogger") {
+            if (!context.logger || ((_b = (_a2 = context.logger) == null ? void 0 : _a2.constructor) == null ? void 0 : _b.name) === "NoOpLogger") {
               console.warn(hint);
             } else {
-              context.logger?.warn?.(hint);
+              (_d = (_c = context.logger) == null ? void 0 : _c.warn) == null ? void 0 : _d.call(_c, hint);
             }
           }
           if (typeof error2.$responseBodyText !== "undefined") {
@@ -4522,8 +4525,9 @@ var require_dist_cjs9 = __commonJS({
       }) || [void 0, void 0])[1];
     };
     var serializerMiddleware = (options, serializer) => (next, context) => async (args) => {
+      var _a2;
       const endpointConfig = options;
-      const endpoint = context.endpointV2?.url && endpointConfig.urlParser ? async () => endpointConfig.urlParser(context.endpointV2.url) : endpointConfig.endpoint;
+      const endpoint = ((_a2 = context.endpointV2) == null ? void 0 : _a2.url) && endpointConfig.urlParser ? async () => endpointConfig.urlParser(context.endpointV2.url) : endpointConfig.endpoint;
       if (!endpoint) {
         throw new Error("No valid endpoint provider available.");
       }
@@ -4869,11 +4873,12 @@ var require_ChecksumStream = __commonJS({
       source;
       base64Encoder;
       constructor({ expectedChecksum, checksum, source, checksumSourceLocation, base64Encoder }) {
+        var _a2;
         super();
         if (typeof source.pipe === "function") {
           this.source = source;
         } else {
-          throw new Error(`@smithy/util-stream: unsupported source type ${source?.constructor?.name ?? source} in ChecksumStream.`);
+          throw new Error(`@smithy/util-stream: unsupported source type ${((_a2 = source == null ? void 0 : source.constructor) == null ? void 0 : _a2.name) ?? source} in ChecksumStream.`);
         }
         this.base64Encoder = base64Encoder ?? util_base64_1.toBase64;
         this.expectedChecksum = expectedChecksum;
@@ -4916,10 +4921,14 @@ var require_stream_type_check = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.isBlob = exports2.isReadableStream = void 0;
-    var isReadableStream = (stream) => typeof ReadableStream === "function" && (stream?.constructor?.name === ReadableStream.name || stream instanceof ReadableStream);
+    var isReadableStream = (stream) => {
+      var _a2;
+      return typeof ReadableStream === "function" && (((_a2 = stream == null ? void 0 : stream.constructor) == null ? void 0 : _a2.name) === ReadableStream.name || stream instanceof ReadableStream);
+    };
     exports2.isReadableStream = isReadableStream;
     var isBlob = (blob) => {
-      return typeof Blob === "function" && (blob?.constructor?.name === Blob.name || blob instanceof Blob);
+      var _a2;
+      return typeof Blob === "function" && (((_a2 = blob == null ? void 0 : blob.constructor) == null ? void 0 : _a2.name) === Blob.name || blob instanceof Blob);
     };
     exports2.isBlob = isBlob;
   }
@@ -4949,8 +4958,9 @@ var require_createChecksumStream_browser = __commonJS({
     var stream_type_check_1 = require_stream_type_check();
     var ChecksumStream_browser_1 = require_ChecksumStream_browser();
     var createChecksumStream = ({ expectedChecksum, checksum, source, checksumSourceLocation, base64Encoder }) => {
+      var _a2;
       if (!(0, stream_type_check_1.isReadableStream)(source)) {
-        throw new Error(`@smithy/util-stream: unsupported source type ${source?.constructor?.name ?? source} in ChecksumStream.`);
+        throw new Error(`@smithy/util-stream: unsupported source type ${((_a2 = source == null ? void 0 : source.constructor) == null ? void 0 : _a2.name) ?? source} in ChecksumStream.`);
       }
       const encoder = base64Encoder ?? util_base64_1.toBase64;
       if (typeof TransformStream !== "function") {
@@ -5093,7 +5103,7 @@ var require_createBufferedReadableStream = __commonJS({
             const newSize = merge(buffers, mode, chunk);
             if (!streamBufferingLoggedWarning && bytesSeen > size * 2) {
               streamBufferingLoggedWarning = true;
-              logger2?.warn(`@smithy/util-stream - stream chunk size ${chunkSize} is below threshold of ${size}, automatically buffering.`);
+              logger2 == null ? void 0 : logger2.warn(`@smithy/util-stream - stream chunk size ${chunkSize} is below threshold of ${size}, automatically buffering.`);
             }
             if (newSize >= size) {
               controller.enqueue(flush(buffers, mode));
@@ -5132,7 +5142,7 @@ var require_createBufferedReadableStream = __commonJS({
       throw new Error(`@smithy/util-stream - invalid index ${mode} given to flush()`);
     }
     function sizeOf(chunk) {
-      return chunk?.byteLength ?? chunk?.length ?? 0;
+      return (chunk == null ? void 0 : chunk.byteLength) ?? (chunk == null ? void 0 : chunk.length) ?? 0;
     }
     function modeOf(chunk, allowBuffer = true) {
       if (allowBuffer && typeof Buffer !== "undefined" && chunk instanceof Buffer) {
@@ -5155,7 +5165,7 @@ var require_createBufferedReadable = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.createBufferedReadable = createBufferedReadable;
-    var node_stream_1 = require("node:stream");
+    var node_stream_1 = require("stream");
     var ByteArrayCollector_1 = require_ByteArrayCollector();
     var createBufferedReadableStream_1 = require_createBufferedReadableStream();
     var stream_type_check_1 = require_stream_type_check();
@@ -5194,7 +5204,7 @@ var require_createBufferedReadable = __commonJS({
           const newSize = (0, createBufferedReadableStream_1.merge)(buffers, mode, chunk);
           if (!streamBufferingLoggedWarning && bytesSeen > size * 2) {
             streamBufferingLoggedWarning = true;
-            logger2?.warn(`@smithy/util-stream - stream chunk size ${chunkSize} is below threshold of ${size}, automatically buffering.`);
+            logger2 == null ? void 0 : logger2.warn(`@smithy/util-stream - stream chunk size ${chunkSize} is below threshold of ${size}, automatically buffering.`);
           }
           if (newSize >= size) {
             downstream.push((0, createBufferedReadableStream_1.flush)(buffers, mode));
@@ -5268,7 +5278,7 @@ var require_headStream_browser = __commonJS({
         const { done, value } = await reader.read();
         if (value) {
           chunks.push(value);
-          byteLengthCounter += value?.byteLength ?? 0;
+          byteLengthCounter += (value == null ? void 0 : value.byteLength) ?? 0;
         }
         if (byteLengthCounter >= bytes) {
           break;
@@ -5416,7 +5426,7 @@ var require_dist_cjs16 = __commonJS({
           }));
         }, timeoutInMs - offset);
         const doWithSocket = (socket) => {
-          if (socket?.connecting) {
+          if (socket == null ? void 0 : socket.connecting) {
             socket.on("connect", () => {
               timing.clearTimeout(timeoutId);
             });
@@ -5466,7 +5476,10 @@ var require_dist_cjs16 = __commonJS({
         };
         if (request.socket) {
           request.socket.setTimeout(timeout, onTimeout);
-          request.on("close", () => request.socket?.removeListener("timeout", onTimeout));
+          request.on("close", () => {
+            var _a2;
+            return (_a2 = request.socket) == null ? void 0 : _a2.removeListener("timeout", onTimeout);
+          });
         } else {
           request.setTimeout(timeout, onTimeout);
         }
@@ -5535,12 +5548,13 @@ var require_dist_cjs16 = __commonJS({
       socketWarningTimestamp = 0;
       metadata = { handlerProtocol: "http/1.1" };
       static create(instanceOrOptions) {
-        if (typeof instanceOrOptions?.handle === "function") {
+        if (typeof (instanceOrOptions == null ? void 0 : instanceOrOptions.handle) === "function") {
           return instanceOrOptions;
         }
         return new _NodeHttpHandler(instanceOrOptions);
       }
       static checkSocketUsage(agent, socketWarningTimestamp, logger2 = console) {
+        var _a2, _b, _c;
         const { sockets, requests, maxSockets } = agent;
         if (typeof maxSockets !== "number" || maxSockets === Infinity) {
           return socketWarningTimestamp;
@@ -5551,10 +5565,10 @@ var require_dist_cjs16 = __commonJS({
         }
         if (sockets && requests) {
           for (const origin in sockets) {
-            const socketsInUse = sockets[origin]?.length ?? 0;
-            const requestsEnqueued = requests[origin]?.length ?? 0;
+            const socketsInUse = ((_a2 = sockets[origin]) == null ? void 0 : _a2.length) ?? 0;
+            const requestsEnqueued = ((_b = requests[origin]) == null ? void 0 : _b.length) ?? 0;
             if (socketsInUse >= maxSockets && requestsEnqueued >= 2 * maxSockets) {
-              logger2?.warn?.(`@smithy/node-http-handler:WARN - socket usage at capacity=${socketsInUse} and ${requestsEnqueued} additional requests are enqueued.
+              (_c = logger2 == null ? void 0 : logger2.warn) == null ? void 0 : _c.call(logger2, `@smithy/node-http-handler:WARN - socket usage at capacity=${socketsInUse} and ${requestsEnqueued} additional requests are enqueued.
 See https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/node-configuring-maxsockets.html
 or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler config.`);
               return Date.now();
@@ -5583,13 +5597,13 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
           requestTimeout: requestTimeout ?? socketTimeout,
           socketAcquisitionWarningTimeout,
           httpAgent: (() => {
-            if (httpAgent instanceof http.Agent || typeof httpAgent?.destroy === "function") {
+            if (httpAgent instanceof http.Agent || typeof (httpAgent == null ? void 0 : httpAgent.destroy) === "function") {
               return httpAgent;
             }
             return new http.Agent({ keepAlive, maxSockets, ...httpAgent });
           })(),
           httpsAgent: (() => {
-            if (httpsAgent instanceof https.Agent || typeof httpsAgent?.destroy === "function") {
+            if (httpsAgent instanceof https.Agent || typeof (httpsAgent == null ? void 0 : httpsAgent.destroy) === "function") {
               return httpsAgent;
             }
             return new https.Agent({ keepAlive, maxSockets, ...httpsAgent });
@@ -5598,8 +5612,9 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
         };
       }
       destroy() {
-        this.config?.httpAgent?.destroy();
-        this.config?.httpsAgent?.destroy();
+        var _a2, _b, _c, _d;
+        (_b = (_a2 = this.config) == null ? void 0 : _a2.httpAgent) == null ? void 0 : _b.destroy();
+        (_d = (_c = this.config) == null ? void 0 : _c.httpsAgent) == null ? void 0 : _d.destroy();
       }
       async handle(request, { abortSignal, requestTimeout } = {}) {
         if (!this.config) {
@@ -5621,7 +5636,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
           if (!this.config) {
             throw new Error("Node HTTP request handler config is not resolved");
           }
-          if (abortSignal?.aborted) {
+          if (abortSignal == null ? void 0 : abortSignal.aborted) {
             const abortError = new Error("Request aborted");
             abortError.name = "AbortError";
             reject(abortError);
@@ -5809,8 +5824,9 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
         this.sessionCache.set(authority, existingConnectionPool);
       }
       release(requestContext, session) {
+        var _a2;
         const cacheKey = this.getUrlString(requestContext);
-        this.sessionCache.get(cacheKey)?.offerLast(session);
+        (_a2 = this.sessionCache.get(cacheKey)) == null ? void 0 : _a2.offerLast(session);
       }
       destroy() {
         for (const [key, connectionPool] of this.sessionCache) {
@@ -5842,7 +5858,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
       metadata = { handlerProtocol: "h2" };
       connectionManager = new NodeHttp2ConnectionManager({});
       static create(instanceOrOptions) {
-        if (typeof instanceOrOptions?.handle === "function") {
+        if (typeof (instanceOrOptions == null ? void 0 : instanceOrOptions.handle) === "function") {
           return instanceOrOptions;
         }
         return new _NodeHttp2Handler(instanceOrOptions);
@@ -5872,6 +5888,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
         const { requestTimeout: configRequestTimeout, disableConcurrentStreams } = this.config;
         const effectiveRequestTimeout = requestTimeout ?? configRequestTimeout;
         return new Promise((_resolve, _reject) => {
+          var _a2;
           let fulfilled = false;
           let writeRequestBodyPromise = void 0;
           const resolve = async (arg) => {
@@ -5882,7 +5899,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             await writeRequestBodyPromise;
             _reject(arg);
           };
-          if (abortSignal?.aborted) {
+          if (abortSignal == null ? void 0 : abortSignal.aborted) {
             fulfilled = true;
             const abortError = new Error("Request aborted");
             abortError.name = "AbortError";
@@ -5899,7 +5916,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
           const authority = `${protocol}//${auth}${hostname}${port ? `:${port}` : ""}`;
           const requestContext = { destination: new URL(authority) };
           const session = this.connectionManager.lease(requestContext, {
-            requestTimeout: this.config?.sessionTimeout,
+            requestTimeout: (_a2 = this.config) == null ? void 0 : _a2.sessionTimeout,
             disableConcurrentStreams: disableConcurrentStreams || false
           });
           const rejectWithDestroy = (err2) => {
@@ -6078,7 +6095,7 @@ var require_dist_cjs17 = __commonJS({
       config;
       configProvider;
       static create(instanceOrOptions) {
-        if (typeof instanceOrOptions?.handle === "function") {
+        if (typeof (instanceOrOptions == null ? void 0 : instanceOrOptions.handle) === "function") {
           return instanceOrOptions;
         }
         return new _FetchHttpHandler(instanceOrOptions);
@@ -6097,13 +6114,14 @@ var require_dist_cjs17 = __commonJS({
       destroy() {
       }
       async handle(request, { abortSignal, requestTimeout: requestTimeout$1 } = {}) {
+        var _a2;
         if (!this.config) {
           this.config = await this.configProvider;
         }
         const requestTimeoutInMs = requestTimeout$1 ?? this.config.requestTimeout;
         const keepAlive = this.config.keepAlive === true;
         const credentials = this.config.credentials;
-        if (abortSignal?.aborted) {
+        if (abortSignal == null ? void 0 : abortSignal.aborted) {
           const abortError = new Error("Request aborted");
           abortError.name = "AbortError";
           return Promise.reject(abortError);
@@ -6131,7 +6149,7 @@ var require_dist_cjs17 = __commonJS({
           method,
           credentials
         };
-        if (this.config?.cache) {
+        if ((_a2 = this.config) == null ? void 0 : _a2.cache) {
           requestOptions.cache = this.config.cache;
         }
         if (body) {
@@ -6208,7 +6226,8 @@ var require_dist_cjs17 = __commonJS({
       }
     };
     var streamCollector3 = async (stream) => {
-      if (typeof Blob === "function" && stream instanceof Blob || stream.constructor?.name === "Blob") {
+      var _a2;
+      if (typeof Blob === "function" && stream instanceof Blob || ((_a2 = stream.constructor) == null ? void 0 : _a2.name) === "Blob") {
         if (Blob.prototype.arrayBuffer !== void 0) {
           return new Uint8Array(await stream.arrayBuffer());
         }
@@ -6319,8 +6338,9 @@ var require_sdk_stream_mixin_browser = __commonJS({
     var stream_type_check_1 = require_stream_type_check();
     var ERR_MSG_STREAM_HAS_BEEN_TRANSFORMED = "The stream has already been transformed.";
     var sdkStreamMixin2 = (stream) => {
+      var _a2, _b;
       if (!isBlobInstance(stream) && !(0, stream_type_check_1.isReadableStream)(stream)) {
-        const name = stream?.__proto__?.constructor?.name || stream;
+        const name = ((_b = (_a2 = stream == null ? void 0 : stream.__proto__) == null ? void 0 : _a2.constructor) == null ? void 0 : _b.name) || stream;
         throw new Error(`Unexpected stream implementation, expect Blob or ReadableStream, got ${name}`);
       }
       let transformed = false;
@@ -6385,11 +6405,12 @@ var require_sdk_stream_mixin = __commonJS({
     var sdk_stream_mixin_browser_1 = require_sdk_stream_mixin_browser();
     var ERR_MSG_STREAM_HAS_BEEN_TRANSFORMED = "The stream has already been transformed.";
     var sdkStreamMixin2 = (stream) => {
+      var _a2, _b;
       if (!(stream instanceof stream_1.Readable)) {
         try {
           return (0, sdk_stream_mixin_browser_1.sdkStreamMixin)(stream);
         } catch (e3) {
-          const name = stream?.__proto__?.constructor?.name || stream;
+          const name = ((_b = (_a2 = stream == null ? void 0 : stream.__proto__) == null ? void 0 : _a2.constructor) == null ? void 0 : _b.name) || stream;
           throw new Error(`Unexpected stream implementation, expect Stream.Readable instance, got ${name}`);
         }
       }
@@ -6635,6 +6656,7 @@ var init_schemaDeserializationMiddleware = __esm({
     import_protocol_http2 = __toESM(require_dist_cjs3());
     import_util_middleware4 = __toESM(require_dist_cjs2());
     schemaDeserializationMiddleware = (config) => (next, context) => async (args) => {
+      var _a2, _b, _c, _d;
       const { response } = await next(args);
       const { operationSchema } = (0, import_util_middleware4.getSmithyContext)(context);
       try {
@@ -6655,10 +6677,10 @@ var init_schemaDeserializationMiddleware = __esm({
           try {
             error2.message += "\n  " + hint;
           } catch (e3) {
-            if (!context.logger || context.logger?.constructor?.name === "NoOpLogger") {
+            if (!context.logger || ((_b = (_a2 = context.logger) == null ? void 0 : _a2.constructor) == null ? void 0 : _b.name) === "NoOpLogger") {
               console.warn(hint);
             } else {
-              context.logger?.warn?.(hint);
+              (_d = (_c = context.logger) == null ? void 0 : _c.warn) == null ? void 0 : _d.call(_c, hint);
             }
           }
           if (typeof error2.$responseBodyText !== "undefined") {
@@ -6697,8 +6719,9 @@ var init_schemaSerializationMiddleware = __esm({
   "node_modules/@smithy/core/dist-es/submodules/schema/middleware/schemaSerializationMiddleware.js"() {
     import_util_middleware5 = __toESM(require_dist_cjs2());
     schemaSerializationMiddleware = (config) => (next, context) => async (args) => {
+      var _a2;
       const { operationSchema } = (0, import_util_middleware5.getSmithyContext)(context);
-      const endpoint = context.endpointV2?.url && config.urlParser ? async () => config.urlParser(context.endpointV2.url) : config.endpoint;
+      const endpoint = ((_a2 = context.endpointV2) == null ? void 0 : _a2.url) && config.urlParser ? async () => config.urlParser(context.endpointV2.url) : config.endpoint;
       const request = await config.protocol.serializeRequest(operationSchema, args.input, {
         ...config,
         ...context,
@@ -7008,6 +7031,7 @@ var init_NormalizedSchema = __esm({
       memberTraits;
       normalizedTraits;
       constructor(ref, memberName) {
+        var _a2, _b, _c;
         this.ref = ref;
         this.memberName = memberName;
         const traitStack = [];
@@ -7039,11 +7063,11 @@ var init_NormalizedSchema = __esm({
         }
         this.schema = deref(schema);
         if (this.schema && typeof this.schema === "object") {
-          this.traits = this.schema?.traits ?? {};
+          this.traits = ((_a2 = this.schema) == null ? void 0 : _a2.traits) ?? {};
         } else {
           this.traits = 0;
         }
-        this.name = (this.schema instanceof Schema ? this.schema.getName?.() : void 0) ?? this.memberName ?? String(schema);
+        this.name = (this.schema instanceof Schema ? (_c = (_b = this.schema).getName) == null ? void 0 : _c.call(_b) : void 0) ?? this.memberName ?? String(schema);
         if (this._isMemberSchema && !memberName) {
           throw new Error(`@smithy/core/schema - NormalizedSchema member init ${this.getName(true)} missing member name.`);
         }
@@ -7067,7 +7091,8 @@ var init_NormalizedSchema = __esm({
         return new _NormalizedSchema(sc);
       }
       getSchema() {
-        return deref(this.schema?.schemaRef ?? this.schema);
+        var _a2;
+        return deref(((_a2 = this.schema) == null ? void 0 : _a2.schemaRef) ?? this.schema);
       }
       getName(withNamespace = false) {
         const { name } = this;
@@ -7126,7 +7151,7 @@ var init_NormalizedSchema = __esm({
         return !!streaming || this.getSchema() === 42;
       }
       isIdempotencyToken() {
-        const match = (traits2) => (traits2 & 4) === 4 || !!traits2?.idempotencyToken;
+        const match = (traits2) => (traits2 & 4) === 4 || !!(traits2 == null ? void 0 : traits2.idempotencyToken);
         const { normalizedTraits, traits, memberTraits } = this;
         return match(normalizedTraits) || match(traits) || match(memberTraits);
       }
@@ -7148,7 +7173,7 @@ var init_NormalizedSchema = __esm({
           throw new Error(`@smithy/core/schema - cannot get key for non-map: ${this.getName(true)}`);
         }
         const schema = this.getSchema();
-        const memberSchema = isDoc ? 15 : schema?.keySchema ?? 0;
+        const memberSchema = isDoc ? 15 : (schema == null ? void 0 : schema.keySchema) ?? 0;
         return member([memberSchema, 0], "key");
       }
       getValueSchema() {
@@ -8756,6 +8781,7 @@ var init_EventStreamSerde = __esm({
         });
       }
       async deserializeEventStream({ response, responseSchema, initialResponseContainer }) {
+        var _a2;
         const marshaller = this.marshaller;
         const eventStreamMember = responseSchema.getEventStreamMember();
         const unionSchema = responseSchema.getMemberSchema(eventStreamMember);
@@ -8788,7 +8814,7 @@ var init_EventStreamSerde = __esm({
         if (firstEvent.done) {
           return asyncIterable;
         }
-        if (firstEvent.value?.[initialResponseMarker]) {
+        if ((_a2 = firstEvent.value) == null ? void 0 : _a2[initialResponseMarker]) {
           if (!responseSchema) {
             throw new Error("@smithy::core/protocols - initial-response event encountered in event stream but no response schema given.");
           }
@@ -8798,7 +8824,8 @@ var init_EventStreamSerde = __esm({
         }
         return {
           async *[Symbol.asyncIterator]() {
-            if (!firstEvent?.value?.[initialResponseMarker]) {
+            var _a3;
+            if (!((_a3 = firstEvent == null ? void 0 : firstEvent.value) == null ? void 0 : _a3[initialResponseMarker])) {
               yield firstEvent.value;
             }
             while (true) {
@@ -8812,6 +8839,7 @@ var init_EventStreamSerde = __esm({
         };
       }
       writeEventBody(unionMember, unionSchema, event) {
+        var _a2;
         const serializer = this.serializer;
         let eventType = unionMember;
         let explicitPayloadMember = null;
@@ -8874,7 +8902,7 @@ var init_EventStreamSerde = __esm({
           }
         }
         const messageSerialization = serializer.flush();
-        const body = typeof messageSerialization === "string" ? (this.serdeContext?.utf8Decoder ?? import_util_utf8.fromUtf8)(messageSerialization) : messageSerialization;
+        const body = typeof messageSerialization === "string" ? (((_a2 = this.serdeContext) == null ? void 0 : _a2.utf8Decoder) ?? import_util_utf8.fromUtf8)(messageSerialization) : messageSerialization;
         return {
           body,
           eventType,
@@ -8951,10 +8979,11 @@ var init_HttpProtocol = __esm({
         }
       }
       setHostPrefix(request, operationSchema, input) {
+        var _a2;
         const operationNs = NormalizedSchema.of(operationSchema);
         const inputNs = NormalizedSchema.of(operationSchema.input);
         if (operationNs.getMergedTraits().endpoint) {
-          let hostPrefix = operationNs.getMergedTraits().endpoint?.[0];
+          let hostPrefix = (_a2 = operationNs.getMergedTraits().endpoint) == null ? void 0 : _a2[0];
           if (typeof hostPrefix === "string") {
             const hostLabelInputs = [...inputNs.structIterator()].filter(([, member2]) => member2.getMergedTraits().hostLabel);
             for (const [name] of hostLabelInputs) {
@@ -9039,7 +9068,7 @@ var init_HttpBindingProtocol = __esm({
         const query = {};
         const headers = {};
         const endpoint = await context.endpoint();
-        const ns = NormalizedSchema.of(operationSchema?.input);
+        const ns = NormalizedSchema.of(operationSchema == null ? void 0 : operationSchema.input);
         const schema = ns.getSchema();
         let hasNonHttpBindingMember = false;
         let payload2;
@@ -9280,7 +9309,7 @@ var init_RpcProtocol = __esm({
         const query = {};
         const headers = {};
         const endpoint = await context.endpoint();
-        const ns = NormalizedSchema.of(operationSchema?.input);
+        const ns = NormalizedSchema.of(operationSchema == null ? void 0 : operationSchema.input);
         const schema = ns.getSchema();
         let payload2;
         const request = new import_protocol_http5.HttpRequest({
@@ -9431,7 +9460,7 @@ var init_requestBuilder = __esm({
       }
       bp(uriLabel) {
         this.resolvePathStack.push((basePath) => {
-          this.path = `${basePath?.endsWith("/") ? basePath.slice(0, -1) : basePath || ""}` + uriLabel;
+          this.path = `${(basePath == null ? void 0 : basePath.endsWith("/")) ? basePath.slice(0, -1) : basePath || ""}` + uriLabel;
         });
         return this;
       }
@@ -9496,12 +9525,13 @@ var init_FromStringShapeDeserializer = __esm({
         this.serdeContext = serdeContext;
       }
       read(_schema, data2) {
+        var _a2;
         const ns = NormalizedSchema.of(_schema);
         if (ns.isListSchema()) {
           return splitHeader(data2).map((item) => this.read(ns.getValueSchema(), item));
         }
         if (ns.isBlobSchema()) {
-          return (this.serdeContext?.base64Decoder ?? import_util_base64.fromBase64)(data2);
+          return (((_a2 = this.serdeContext) == null ? void 0 : _a2.base64Decoder) ?? import_util_base64.fromBase64)(data2);
         }
         if (ns.isTimestampSchema()) {
           const format2 = determineTimestampFormat(ns, this.settings);
@@ -9546,7 +9576,8 @@ var init_FromStringShapeDeserializer = __esm({
         return data2;
       }
       base64ToUtf8(base64String) {
-        return (this.serdeContext?.utf8Encoder ?? import_util_utf82.toUtf8)((this.serdeContext?.base64Decoder ?? import_util_base64.fromBase64)(base64String));
+        var _a2, _b;
+        return (((_a2 = this.serdeContext) == null ? void 0 : _a2.utf8Encoder) ?? import_util_utf82.toUtf8)((((_b = this.serdeContext) == null ? void 0 : _b.base64Decoder) ?? import_util_base64.fromBase64)(base64String));
       }
     };
   }
@@ -9573,15 +9604,16 @@ var init_HttpInterceptingShapeDeserializer = __esm({
         this.serdeContext = serdeContext;
       }
       read(schema, data2) {
+        var _a2, _b;
         const ns = NormalizedSchema.of(schema);
         const traits = ns.getMergedTraits();
-        const toString = this.serdeContext?.utf8Encoder ?? import_util_utf83.toUtf8;
+        const toString = ((_a2 = this.serdeContext) == null ? void 0 : _a2.utf8Encoder) ?? import_util_utf83.toUtf8;
         if (traits.httpHeader || traits.httpResponseCode) {
           return this.stringDeserializer.read(ns, toString(data2));
         }
         if (traits.httpPayload) {
           if (ns.isBlobSchema()) {
-            const toBytes = this.serdeContext?.utf8Decoder ?? import_util_utf83.fromUtf8;
+            const toBytes = ((_b = this.serdeContext) == null ? void 0 : _b.utf8Decoder) ?? import_util_utf83.fromUtf8;
             if (typeof data2 === "string") {
               return toBytes(data2);
             }
@@ -9618,6 +9650,7 @@ var init_ToStringShapeSerializer = __esm({
         this.serdeContext = serdeContext;
       }
       write(schema, value) {
+        var _a2, _b;
         const ns = NormalizedSchema.of(schema);
         switch (typeof value) {
           case "object":
@@ -9647,7 +9680,7 @@ var init_ToStringShapeSerializer = __esm({
               return;
             }
             if (ns.isBlobSchema() && "byteLength" in value) {
-              this.stringBuffer = (this.serdeContext?.base64Encoder ?? import_util_base642.toBase64)(value);
+              this.stringBuffer = (((_a2 = this.serdeContext) == null ? void 0 : _a2.base64Encoder) ?? import_util_base642.toBase64)(value);
               return;
             }
             if (ns.isListSchema() && Array.isArray(value)) {
@@ -9675,7 +9708,7 @@ var init_ToStringShapeSerializer = __esm({
                 intermediateValue = LazyJsonString.from(intermediateValue);
               }
               if (ns.getMergedTraits().httpHeader) {
-                this.stringBuffer = (this.serdeContext?.base64Encoder ?? import_util_base642.toBase64)(intermediateValue.toString());
+                this.stringBuffer = (((_b = this.serdeContext) == null ? void 0 : _b.base64Encoder) ?? import_util_base642.toBase64)(intermediateValue.toString());
                 return;
               }
             }
@@ -9812,11 +9845,11 @@ var init_DefaultIdentityProviderConfig = __esm({
 });
 
 // node_modules/@smithy/core/dist-es/util-identity-and-auth/httpAuthSchemes/httpApiKeyAuth.js
-var import_protocol_http7, import_types3, HttpApiKeyAuthSigner;
+var import_protocol_http7, import_types2, HttpApiKeyAuthSigner;
 var init_httpApiKeyAuth = __esm({
   "node_modules/@smithy/core/dist-es/util-identity-and-auth/httpAuthSchemes/httpApiKeyAuth.js"() {
     import_protocol_http7 = __toESM(require_dist_cjs3());
-    import_types3 = __toESM(require_dist_cjs());
+    import_types2 = __toESM(require_dist_cjs());
     HttpApiKeyAuthSigner = class {
       async sign(httpRequest, identity, signingProperties) {
         if (!signingProperties) {
@@ -9832,9 +9865,9 @@ var init_httpApiKeyAuth = __esm({
           throw new Error("request could not be signed with `apiKey` since the `apiKey` is not defined");
         }
         const clonedRequest = import_protocol_http7.HttpRequest.clone(httpRequest);
-        if (signingProperties.in === import_types3.HttpApiKeyAuthLocation.QUERY) {
+        if (signingProperties.in === import_types2.HttpApiKeyAuthLocation.QUERY) {
           clonedRequest.query[signingProperties.name] = identity.apiKey;
-        } else if (signingProperties.in === import_types3.HttpApiKeyAuthLocation.HEADER) {
+        } else if (signingProperties.in === import_types2.HttpApiKeyAuthLocation.HEADER) {
           clonedRequest.headers[signingProperties.name] = signingProperties.scheme ? `${signingProperties.scheme} ${identity.apiKey}` : identity.apiKey;
         } else {
           throw new Error("request can only be signed with `apiKey` locations `query` or `header`, but found: `" + signingProperties.in + "`");
@@ -9918,14 +9951,14 @@ var init_memoizeIdentityProvider = __esm({
       };
       if (isExpired === void 0) {
         return async (options) => {
-          if (!hasResult || options?.forceRefresh) {
+          if (!hasResult || (options == null ? void 0 : options.forceRefresh)) {
             resolved = await coalesceProvider(options);
           }
           return resolved;
         };
       }
       return async (options) => {
-        if (!hasResult || options?.forceRefresh) {
+        if (!hasResult || (options == null ? void 0 : options.forceRefresh)) {
           resolved = await coalesceProvider(options);
         }
         if (isConstant) {
@@ -10244,17 +10277,19 @@ var require_dist_cjs21 = __commonJS({
       return endpointFunctions[fn](...evaluatedArgs);
     };
     var evaluateCondition = ({ assign, ...fnArgs }, options) => {
+      var _a2, _b;
       if (assign && assign in options.referenceRecord) {
         throw new EndpointError2(`'${assign}' is already defined in Reference Record.`);
       }
       const value = callFunction(fnArgs, options);
-      options.logger?.debug?.(`${debugId} evaluateCondition: ${toDebugString(fnArgs)} = ${toDebugString(value)}`);
+      (_b = (_a2 = options.logger) == null ? void 0 : _a2.debug) == null ? void 0 : _b.call(_a2, `${debugId} evaluateCondition: ${toDebugString(fnArgs)} = ${toDebugString(value)}`);
       return {
         result: value === "" ? true : !!value,
         ...assign != null && { toAssign: { name: assign, value } }
       };
     };
     var evaluateConditions = (conditions = [], options) => {
+      var _a2, _b;
       const conditionsReferenceRecord = {};
       for (const condition of conditions) {
         const { result, toAssign } = evaluateCondition(condition, {
@@ -10269,7 +10304,7 @@ var require_dist_cjs21 = __commonJS({
         }
         if (toAssign) {
           conditionsReferenceRecord[toAssign.name] = toAssign.value;
-          options.logger?.debug?.(`${debugId} assign: ${toAssign.name} := ${toDebugString(toAssign.value)}`);
+          (_b = (_a2 = options.logger) == null ? void 0 : _a2.debug) == null ? void 0 : _b.call(_a2, `${debugId} assign: ${toAssign.name} := ${toDebugString(toAssign.value)}`);
         }
       }
       return { result: true, referenceRecord: conditionsReferenceRecord };
@@ -10319,6 +10354,7 @@ var require_dist_cjs21 = __commonJS({
       throw new EndpointError2(`Endpoint URL must be a string, got ${typeof expression}`);
     };
     var evaluateEndpointRule = (endpointRule, options) => {
+      var _a2, _b;
       const { conditions, endpoint } = endpointRule;
       const { result, referenceRecord } = evaluateConditions(conditions, options);
       if (!result) {
@@ -10329,7 +10365,7 @@ var require_dist_cjs21 = __commonJS({
         referenceRecord: { ...options.referenceRecord, ...referenceRecord }
       };
       const { url, properties, headers } = endpoint;
-      options.logger?.debug?.(`${debugId} Resolving endpoint from template: ${toDebugString(endpoint)}`);
+      (_b = (_a2 = options.logger) == null ? void 0 : _a2.debug) == null ? void 0 : _b.call(_a2, `${debugId} Resolving endpoint from template: ${toDebugString(endpoint)}`);
       return {
         ...headers != void 0 && {
           headers: getEndpointHeaders(headers, endpointRuleOptions)
@@ -10383,9 +10419,10 @@ var require_dist_cjs21 = __commonJS({
       throw new EndpointError2(`Rules evaluation failed`);
     };
     var resolveEndpoint4 = (ruleSetObject, options) => {
+      var _a2, _b, _c, _d;
       const { endpointParams, logger: logger2 } = options;
       const { parameters, rules } = ruleSetObject;
-      options.logger?.debug?.(`${debugId} Initial EndpointParams: ${toDebugString(endpointParams)}`);
+      (_b = (_a2 = options.logger) == null ? void 0 : _a2.debug) == null ? void 0 : _b.call(_a2, `${debugId} Initial EndpointParams: ${toDebugString(endpointParams)}`);
       const paramsWithDefault = Object.entries(parameters).filter(([, v3]) => v3.default != null).map(([k3, v3]) => [k3, v3.default]);
       if (paramsWithDefault.length > 0) {
         for (const [paramKey, paramDefaultValue] of paramsWithDefault) {
@@ -10399,7 +10436,7 @@ var require_dist_cjs21 = __commonJS({
         }
       }
       const endpoint = evaluateRules(rules, { endpointParams, logger: logger2, referenceRecord: {} });
-      options.logger?.debug?.(`${debugId} Resolved endpoint: ${toDebugString(endpoint)}`);
+      (_d = (_c = options.logger) == null ? void 0 : _c.debug) == null ? void 0 : _d.call(_c, `${debugId} Resolved endpoint: ${toDebugString(endpoint)}`);
       return endpoint;
     };
     exports2.EndpointCache = EndpointCache3;
@@ -10989,7 +11026,10 @@ var import_protocol_http9, getDateHeader;
 var init_getDateHeader = __esm({
   "node_modules/@aws-sdk/core/dist-es/submodules/httpAuthSchemes/utils/getDateHeader.js"() {
     import_protocol_http9 = __toESM(require_dist_cjs3());
-    getDateHeader = (response) => import_protocol_http9.HttpResponse.isInstance(response) ? response.headers?.date ?? response.headers?.Date : void 0;
+    getDateHeader = (response) => {
+      var _a2, _b;
+      return import_protocol_http9.HttpResponse.isInstance(response) ? ((_a2 = response.headers) == null ? void 0 : _a2.date) ?? ((_b = response.headers) == null ? void 0 : _b.Date) : void 0;
+    };
   }
 });
 
@@ -11047,14 +11087,15 @@ var init_AwsSdkSigV4Signer = __esm({
       return property;
     };
     validateSigningProperties = async (signingProperties) => {
+      var _a2, _b, _c;
       const context = throwSigningPropertyError("context", signingProperties.context);
       const config = throwSigningPropertyError("config", signingProperties.config);
-      const authScheme = context.endpointV2?.properties?.authSchemes?.[0];
+      const authScheme = (_c = (_b = (_a2 = context.endpointV2) == null ? void 0 : _a2.properties) == null ? void 0 : _b.authSchemes) == null ? void 0 : _c[0];
       const signerFunction = throwSigningPropertyError("signer", config.signer);
       const signer = await signerFunction(authScheme);
-      const signingRegion = signingProperties?.signingRegion;
-      const signingRegionSet = signingProperties?.signingRegionSet;
-      const signingName = signingProperties?.signingName;
+      const signingRegion = signingProperties == null ? void 0 : signingProperties.signingRegion;
+      const signingRegionSet = signingProperties == null ? void 0 : signingProperties.signingRegionSet;
+      const signingName = signingProperties == null ? void 0 : signingProperties.signingName;
       return {
         config,
         signer,
@@ -11065,6 +11106,7 @@ var init_AwsSdkSigV4Signer = __esm({
     };
     AwsSdkSigV4Signer = class {
       async sign(httpRequest, identity, signingProperties) {
+        var _a2;
         if (!import_protocol_http10.HttpRequest.isInstance(httpRequest)) {
           throw new Error("The request is not an instance of `HttpRequest` and cannot be signed");
         }
@@ -11072,11 +11114,11 @@ var init_AwsSdkSigV4Signer = __esm({
         const { config, signer } = validatedProps;
         let { signingRegion, signingName } = validatedProps;
         const handlerExecutionContext = signingProperties.context;
-        if (handlerExecutionContext?.authSchemes?.length ?? 0 > 1) {
+        if (((_a2 = handlerExecutionContext == null ? void 0 : handlerExecutionContext.authSchemes) == null ? void 0 : _a2.length) ?? 0 > 1) {
           const [first, second] = handlerExecutionContext.authSchemes;
-          if (first?.name === "sigv4a" && second?.name === "sigv4") {
-            signingRegion = second?.signingRegion ?? signingRegion;
-            signingName = second?.signingName ?? signingName;
+          if ((first == null ? void 0 : first.name) === "sigv4a" && (second == null ? void 0 : second.name) === "sigv4") {
+            signingRegion = (second == null ? void 0 : second.signingRegion) ?? signingRegion;
+            signingName = (second == null ? void 0 : second.signingName) ?? signingName;
           }
         }
         const signedRequest = await signer.sign(httpRequest, {
@@ -11122,11 +11164,12 @@ var init_AwsSdkSigV4ASigner = __esm({
     init_AwsSdkSigV4Signer();
     AwsSdkSigV4ASigner = class extends AwsSdkSigV4Signer {
       async sign(httpRequest, identity, signingProperties) {
+        var _a2;
         if (!import_protocol_http11.HttpRequest.isInstance(httpRequest)) {
           throw new Error("The request is not an instance of `HttpRequest` and cannot be signed");
         }
         const { config, signer, signingRegion, signingRegionSet, signingName } = await validateSigningProperties(signingProperties);
-        const configResolvedSigningRegionSet = await config.sigv4aSigningRegionSet?.();
+        const configResolvedSigningRegionSet = await ((_a2 = config.sigv4aSigningRegionSet) == null ? void 0 : _a2.call(config));
         const multiRegionOverride = (configResolvedSigningRegionSet ?? signingRegionSet ?? [signingRegion]).join(",");
         const signedRequest = await signer.sign(httpRequest, {
           signingDate: getSkewCorrectedDate(config.systemClockOffset),
@@ -11165,7 +11208,7 @@ var init_NODE_AUTH_SCHEME_PREFERENCE_OPTIONS = __esm({
     NODE_AUTH_SCHEME_PREFERENCE_CONFIG_KEY = "auth_scheme_preference";
     NODE_AUTH_SCHEME_PREFERENCE_OPTIONS = {
       environmentVariableSelector: (env, options) => {
-        if (options?.signingName) {
+        if (options == null ? void 0 : options.signingName) {
           const bearerTokenKey = getBearerTokenEnvKey(options.signingName);
           if (bearerTokenKey in env)
             return ["httpBearerAuth"];
@@ -11192,6 +11235,7 @@ var require_dist_cjs25 = __commonJS({
       name = "ProviderError";
       tryNextLink;
       constructor(message, options = true) {
+        var _a2;
         let logger2;
         let tryNextLink = true;
         if (typeof options === "boolean") {
@@ -11204,7 +11248,7 @@ var require_dist_cjs25 = __commonJS({
         super(message);
         this.tryNextLink = tryNextLink;
         Object.setPrototypeOf(this, _ProviderError.prototype);
-        logger2?.debug?.(`@smithy/property-provider ${tryNextLink ? "->" : "(!)"} ${message}`);
+        (_a2 = logger2 == null ? void 0 : logger2.debug) == null ? void 0 : _a2.call(logger2, `@smithy/property-provider ${tryNextLink ? "->" : "(!)"} ${message}`);
       }
       static from(error2, options = true) {
         return Object.assign(new this(error2.message, options), error2);
@@ -11235,7 +11279,7 @@ var require_dist_cjs25 = __commonJS({
           return credentials;
         } catch (err2) {
           lastProviderError = err2;
-          if (err2?.tryNextLink) {
+          if (err2 == null ? void 0 : err2.tryNextLink) {
             continue;
           }
           throw err2;
@@ -11264,14 +11308,14 @@ var require_dist_cjs25 = __commonJS({
       };
       if (isExpired === void 0) {
         return async (options) => {
-          if (!hasResult || options?.forceRefresh) {
+          if (!hasResult || (options == null ? void 0 : options.forceRefresh)) {
             resolved = await coalesceProvider();
           }
           return resolved;
         };
       }
       return async (options) => {
-        if (!hasResult || options?.forceRefresh) {
+        if (!hasResult || (options == null ? void 0 : options.forceRefresh)) {
           resolved = await coalesceProvider();
         }
         if (isConstant) {
@@ -11419,7 +11463,7 @@ var require_dist_cjs26 = __commonJS({
           continue;
         }
         const canonicalHeaderName = headerName.toLowerCase();
-        if (canonicalHeaderName in ALWAYS_UNSIGNABLE_HEADERS || unsignableHeaders?.has(canonicalHeaderName) || PROXY_HEADER_PATTERN.test(canonicalHeaderName) || SEC_HEADER_PATTERN.test(canonicalHeaderName)) {
+        if (canonicalHeaderName in ALWAYS_UNSIGNABLE_HEADERS || (unsignableHeaders == null ? void 0 : unsignableHeaders.has(canonicalHeaderName)) || PROXY_HEADER_PATTERN.test(canonicalHeaderName) || SEC_HEADER_PATTERN.test(canonicalHeaderName)) {
           if (!signableHeaders || signableHeaders && !signableHeaders.has(canonicalHeaderName)) {
             continue;
           }
@@ -11564,10 +11608,11 @@ var require_dist_cjs26 = __commonJS({
       return false;
     };
     var moveHeadersToQuery = (request, options = {}) => {
+      var _a2, _b;
       const { headers, query = {} } = protocolHttp.HttpRequest.clone(request);
       for (const name of Object.keys(headers)) {
         const lname = name.toLowerCase();
-        if (lname.slice(0, 6) === "x-amz-" && !options.unhoistableHeaders?.has(lname) || options.hoistableHeaders?.has(lname)) {
+        if (lname.slice(0, 6) === "x-amz-" && !((_a2 = options.unhoistableHeaders) == null ? void 0 : _a2.has(lname)) || ((_b = options.hoistableHeaders) == null ? void 0 : _b.has(lname))) {
           query[name] = headers[name];
           delete headers[name];
         }
@@ -11656,7 +11701,7 @@ ${utilHexEncoding.toHex(hashedRequest)}`;
         if (this.uriEscapePath) {
           const normalizedPathSegments = [];
           for (const pathSegment of path.split("/")) {
-            if (pathSegment?.length === 0)
+            if ((pathSegment == null ? void 0 : pathSegment.length) === 0)
               continue;
             if (pathSegment === ".")
               continue;
@@ -11666,7 +11711,7 @@ ${utilHexEncoding.toHex(hashedRequest)}`;
               normalizedPathSegments.push(pathSegment);
             }
           }
-          const normalizedPath = `${path?.startsWith("/") ? "/" : ""}${normalizedPathSegments.join("/")}${normalizedPathSegments.length > 0 && path?.endsWith("/") ? "/" : ""}`;
+          const normalizedPath = `${(path == null ? void 0 : path.startsWith("/")) ? "/" : ""}${normalizedPathSegments.join("/")}${normalizedPathSegments.length > 0 && (path == null ? void 0 : path.endsWith("/")) ? "/" : ""}`;
           const doubleEncoded = utilUriEscape.escapeUri(normalizedPath);
           return doubleEncoded.replace(/%2F/g, "/");
         }
@@ -11854,7 +11899,7 @@ ${utilHexEncoding.toHex(hashedRequest)}`;
 function normalizeCredentialProvider(config, { credentials, credentialDefaultProvider }) {
   let credentialsProvider;
   if (credentials) {
-    if (!credentials?.memoized) {
+    if (!(credentials == null ? void 0 : credentials.memoized)) {
       credentialsProvider = memoizeIdentityProvider(credentials, isIdentityExpired, doesIdentityRequireRefresh);
     } else {
       credentialsProvider = credentials;
@@ -12170,7 +12215,8 @@ function decode(at, to) {
   }
 }
 function bytesToUtf8(bytes, at, to) {
-  if (USE_BUFFER && bytes.constructor?.name === "Buffer") {
+  var _a2;
+  if (USE_BUFFER && ((_a2 = bytes.constructor) == null ? void 0 : _a2.name) === "Buffer") {
     return bytes.toString("utf-8", at, to);
   }
   if (textDecoder) {
@@ -12505,6 +12551,7 @@ function encodeHeader(major, value) {
   }
 }
 function encode(_input) {
+  var _a2;
   const encodeStack = [_input];
   while (encodeStack.length) {
     const input = encodeStack.pop();
@@ -12640,7 +12687,7 @@ function encode(_input) {
       encodeHeader(majorMap, keys.length);
       continue;
     }
-    throw new Error(`data type ${input?.constructor?.name ?? typeof input} not compatible for encoding.`);
+    throw new Error(`data type ${((_a2 = input == null ? void 0 : input.constructor) == null ? void 0 : _a2.name) ?? typeof input} not compatible for encoding.`);
   }
 }
 var import_util_utf85, USE_BUFFER2, initialSize, data, dataView2, cursor;
@@ -12758,6 +12805,7 @@ var init_CborCodec = __esm({
         this.value = this.serialize(schema, value);
       }
       serialize(schema, source) {
+        var _a2;
         const ns = NormalizedSchema.of(schema);
         if (source == null) {
           if (ns.isIdempotencyToken()) {
@@ -12767,7 +12815,7 @@ var init_CborCodec = __esm({
         }
         if (ns.isBlobSchema()) {
           if (typeof source === "string") {
-            return (this.serdeContext?.base64Decoder ?? import_util_base643.fromBase64)(source);
+            return (((_a2 = this.serdeContext) == null ? void 0 : _a2.base64Decoder) ?? import_util_base643.fromBase64)(source);
           }
           return source;
         }
@@ -12835,13 +12883,14 @@ var init_CborCodec = __esm({
         return this.readValue(schema, data2);
       }
       readValue(_schema, value) {
+        var _a2;
         const ns = NormalizedSchema.of(_schema);
         if (ns.isTimestampSchema() && typeof value === "number") {
           return _parseEpochTimestamp(value);
         }
         if (ns.isBlobSchema()) {
           if (typeof value === "string") {
-            return (this.serdeContext?.base64Decoder ?? import_util_base643.fromBase64)(value);
+            return (((_a2 = this.serdeContext) == null ? void 0 : _a2.base64Decoder) ?? import_util_base643.fromBase64)(value);
           }
           return value;
         }
@@ -13052,7 +13101,7 @@ var init_ProtocolLib = __esm({
         };
         const registry = TypeRegistry.for(namespace);
         try {
-          const errorSchema = getErrorSchema?.(registry, errorName) ?? registry.getSchema(errorIdentifier);
+          const errorSchema = (getErrorSchema == null ? void 0 : getErrorSchema(registry, errorName)) ?? registry.getSchema(errorIdentifier);
           return { errorSchema, errorMetadata };
         } catch (e3) {
           dataObject.message = dataObject.message ?? dataObject.Message ?? "UnknownError";
@@ -13066,7 +13115,8 @@ var init_ProtocolLib = __esm({
         }
       }
       setQueryCompatError(output, response) {
-        const queryErrorHeader = response.headers?.["x-amzn-query-error"];
+        var _a2;
+        const queryErrorHeader = (_a2 = response.headers) == null ? void 0 : _a2["x-amzn-query-error"];
         if (output !== void 0 && queryErrorHeader != null) {
           const [Code, Type] = queryErrorHeader.split(";");
           const entries = Object.entries(output);
@@ -13219,7 +13269,7 @@ var init_ConfigurableSerdeContext = __esm({
 
 // node_modules/@aws-sdk/core/dist-es/submodules/protocols/json/jsonReviver.js
 function jsonReviver(key, value, context) {
-  if (context?.source) {
+  if (context == null ? void 0 : context.source) {
     const numericString = context.source;
     if (typeof value === "number") {
       if (value > Number.MAX_SAFE_INTEGER || value < Number.MIN_SAFE_INTEGER || numericString !== String(value)) {
@@ -13299,13 +13349,14 @@ var require_dist_cjs27 = __commonJS({
         return isRemoved;
       };
       const cloneTo = (toStack) => {
+        var _a2;
         absoluteEntries.forEach((entry) => {
           toStack.add(entry.middleware, { ...entry });
         });
         relativeEntries.forEach((entry) => {
           toStack.addRelativeTo(entry.middleware, { ...entry });
         });
-        toStack.identifyOnResolve?.(stack.identifyOnResolve());
+        (_a2 = toStack.identifyOnResolve) == null ? void 0 : _a2.call(toStack, stack.identifyOnResolve());
         return toStack;
       };
       const expandRelativeMiddlewareList = (from) => {
@@ -13391,7 +13442,10 @@ var require_dist_cjs27 = __commonJS({
               if (!override)
                 throw new Error(`Duplicate middleware name '${getMiddlewareNameWithAliases(name, _aliases)}'`);
               for (const alias of aliases) {
-                const toOverrideIndex = absoluteEntries.findIndex((entry2) => entry2.name === alias || entry2.aliases?.some((a3) => a3 === alias));
+                const toOverrideIndex = absoluteEntries.findIndex((entry2) => {
+                  var _a2;
+                  return entry2.name === alias || ((_a2 = entry2.aliases) == null ? void 0 : _a2.some((a3) => a3 === alias));
+                });
                 if (toOverrideIndex === -1) {
                   continue;
                 }
@@ -13420,7 +13474,10 @@ var require_dist_cjs27 = __commonJS({
               if (!override)
                 throw new Error(`Duplicate middleware name '${getMiddlewareNameWithAliases(name, _aliases)}'`);
               for (const alias of aliases) {
-                const toOverrideIndex = relativeEntries.findIndex((entry2) => entry2.name === alias || entry2.aliases?.some((a3) => a3 === alias));
+                const toOverrideIndex = relativeEntries.findIndex((entry2) => {
+                  var _a2;
+                  return entry2.name === alias || ((_a2 = entry2.aliases) == null ? void 0 : _a2.some((a3) => a3 === alias));
+                });
                 if (toOverrideIndex === -1) {
                   continue;
                 }
@@ -13466,9 +13523,10 @@ var require_dist_cjs27 = __commonJS({
           return isRemoved;
         },
         concat: (from) => {
+          var _a2;
           const cloned = cloneTo(constructStack());
           cloned.use(from);
-          cloned.identifyOnResolve(identifyOnResolve || cloned.identifyOnResolve() || (from.identifyOnResolve?.() ?? false));
+          cloned.identifyOnResolve(identifyOnResolve || cloned.identifyOnResolve() || (((_a2 = from.identifyOnResolve) == null ? void 0 : _a2.call(from)) ?? false));
           return cloned;
         },
         applyToStack: cloneTo,
@@ -13556,7 +13614,8 @@ var require_dist_cjs28 = __commonJS({
         }
       }
       destroy() {
-        this.config?.requestHandler?.destroy?.();
+        var _a2, _b, _c;
+        (_c = (_b = (_a2 = this.config) == null ? void 0 : _a2.requestHandler) == null ? void 0 : _b.destroy) == null ? void 0 : _c.call(_b);
         delete this.handlers;
       }
     };
@@ -13779,7 +13838,7 @@ var require_dist_cjs28 = __commonJS({
       const $metadata = deserializeMetadata3(output);
       const statusCode = $metadata.httpStatusCode ? $metadata.httpStatusCode + "" : void 0;
       const response = new exceptionCtor({
-        name: parsedBody?.code || parsedBody?.Code || errorCode || statusCode || "UnknownError",
+        name: (parsedBody == null ? void 0 : parsedBody.code) || (parsedBody == null ? void 0 : parsedBody.Code) || errorCode || statusCode || "UnknownError",
         $fault: "client",
         $metadata
       });
@@ -14083,7 +14142,7 @@ var init_common = __esm({
   "node_modules/@aws-sdk/core/dist-es/submodules/protocols/common.js"() {
     import_smithy_client = __toESM(require_dist_cjs28());
     import_util_utf86 = __toESM(require_dist_cjs12());
-    collectBodyString = (streamBody, context) => (0, import_smithy_client.collectBody)(streamBody, context).then((body) => (context?.utf8Encoder ?? import_util_utf86.toUtf8)(body));
+    collectBodyString = (streamBody, context) => (0, import_smithy_client.collectBody)(streamBody, context).then((body) => ((context == null ? void 0 : context.utf8Encoder) ?? import_util_utf86.toUtf8)(body));
   }
 });
 
@@ -14097,7 +14156,7 @@ var init_parseJsonBody = __esm({
         try {
           return JSON.parse(encoded);
         } catch (e3) {
-          if (e3?.name === "SyntaxError") {
+          if ((e3 == null ? void 0 : e3.name) === "SyntaxError") {
             Object.defineProperty(e3, "$responseBodyText", {
               value: encoded
             });
@@ -14356,13 +14415,14 @@ var init_JsonShapeSerializer = __esm({
       flush() {
         const { rootSchema } = this;
         this.rootSchema = void 0;
-        if (rootSchema?.isStructSchema() || rootSchema?.isDocumentSchema()) {
+        if ((rootSchema == null ? void 0 : rootSchema.isStructSchema()) || (rootSchema == null ? void 0 : rootSchema.isDocumentSchema())) {
           const replacer = new JsonReplacer();
           return replacer.replaceInJson(JSON.stringify(this.buffer, replacer.createReplacer(), 0));
         }
         return this.buffer;
       }
       _write(schema, value, container) {
+        var _a2, _b;
         const isObject = value !== null && typeof value === "object";
         const ns = NormalizedSchema.of(schema);
         if (ns.isListSchema() && Array.isArray(value)) {
@@ -14396,17 +14456,17 @@ var init_JsonShapeSerializer = __esm({
           }
           return out;
         }
-        if (value === null && container?.isStructSchema()) {
+        if (value === null && (container == null ? void 0 : container.isStructSchema())) {
           return void 0;
         }
         if (ns.isBlobSchema() && (value instanceof Uint8Array || typeof value === "string") || ns.isDocumentSchema() && value instanceof Uint8Array) {
           if (ns === this.rootSchema) {
             return value;
           }
-          if (!this.serdeContext?.base64Encoder) {
+          if (!((_a2 = this.serdeContext) == null ? void 0 : _a2.base64Encoder)) {
             return (0, import_util_base645.toBase64)(value);
           }
-          return this.serdeContext?.base64Encoder(value);
+          return (_b = this.serdeContext) == null ? void 0 : _b.base64Encoder(value);
         }
         if ((ns.isTimestampSchema() || ns.isDocumentSchema()) && value instanceof Date) {
           const format2 = determineTimestampFormat(ns, this.settings);
@@ -15713,28 +15773,24 @@ var require_dist_cjs29 = __commonJS({
       return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&apos;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\r/g, "&#x0D;").replace(/\n/g, "&#x0A;").replace(/\u0085/g, "&#x85;").replace(/\u2028/, "&#x2028;");
     }
     __name(escapeElement, "escapeElement");
-    var XmlText2 = class {
+    var _a2;
+    var XmlText2 = (_a2 = class {
       constructor(value) {
         this.value = value;
-      }
-      static {
-        __name(this, "XmlText");
       }
       toString() {
         return escapeElement("" + this.value);
       }
-    };
-    var XmlNode2 = class _XmlNode {
+    }, __name(_a2, "XmlText"), _a2);
+    var _a3;
+    var XmlNode2 = (_a3 = class {
       constructor(name, children = []) {
         this.name = name;
         this.children = children;
       }
-      static {
-        __name(this, "XmlNode");
-      }
       attributes = {};
       static of(name, childText, withName) {
-        const node = new _XmlNode(name);
+        const node = new _a3(name);
         if (childText !== void 0) {
           node.addChildNode(new XmlText2(childText));
         }
@@ -15792,7 +15848,7 @@ var require_dist_cjs29 = __commonJS({
        */
       cc(input, field, withName = field) {
         if (input[field] != null) {
-          const node = _XmlNode.of(field, input[field]).withName(withName);
+          const node = _a3.of(field, input[field]).withName(withName);
           this.c(node);
         }
       }
@@ -15816,7 +15872,7 @@ var require_dist_cjs29 = __commonJS({
       lc(input, listName, memberName, valueProvider) {
         if (input[listName] != null) {
           const nodes = valueProvider();
-          const containerNode = new _XmlNode(memberName);
+          const containerNode = new _a3(memberName);
           nodes.map((node) => {
             containerNode.c(node);
           });
@@ -15835,7 +15891,7 @@ var require_dist_cjs29 = __commonJS({
         }
         return xmlText += !hasChildren ? "/>" : `>${this.children.map((c3) => c3.toString()).join("")}</${this.name}>`;
       }
-    };
+    }, __name(_a3, "XmlNode"), _a3);
     var import_xml_parser = require_xml_parser();
   }
 });
@@ -15863,6 +15919,7 @@ var init_XmlShapeDeserializer = __esm({
         this.stringDeserializer.setSerdeContext(serdeContext);
       }
       read(schema, bytes, key) {
+        var _a2;
         const ns = NormalizedSchema.of(schema);
         const memberSchemas = ns.getMemberSchemas();
         const isEventPayload = ns.isStructSchema() && ns.isMemberSchema() && !!Object.values(memberSchemas).find((memberNs) => {
@@ -15879,7 +15936,7 @@ var init_XmlShapeDeserializer = __esm({
           }
           return output;
         }
-        const xmlString = (this.serdeContext?.utf8Encoder ?? import_util_utf87.toUtf8)(bytes);
+        const xmlString = (((_a2 = this.serdeContext) == null ? void 0 : _a2.utf8Encoder) ?? import_util_utf87.toUtf8)(bytes);
         const parsedObject = this.parseXml(xmlString);
         return this.readSchema(schema, key ? parsedObject[key] : parsedObject);
       }
@@ -16001,6 +16058,7 @@ var init_QueryShapeSerializer = __esm({
         this.settings = settings;
       }
       write(schema, value, prefix = "") {
+        var _a2;
         if (this.buffer === void 0) {
           this.buffer = "";
         }
@@ -16011,7 +16069,7 @@ var init_QueryShapeSerializer = __esm({
         if (ns.isBlobSchema()) {
           if (typeof value === "string" || value instanceof Uint8Array) {
             this.writeKey(prefix);
-            this.writeValue((this.serdeContext?.base64Encoder ?? import_util_base646.toBase64)(value));
+            this.writeValue((((_a2 = this.serdeContext) == null ? void 0 : _a2.base64Encoder) ?? import_util_base646.toBase64)(value));
           }
         } else if (ns.isBooleanSchema() || ns.isNumericSchema() || ns.isStringSchema()) {
           if (value != null) {
@@ -16235,7 +16293,10 @@ var init_AwsQueryProtocol = __esm({
           Code: errorData.Code,
           Message: message
         };
-        const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, errorData, metadata, (registry, errorName) => registry.find((schema) => NormalizedSchema.of(schema).getMergedTraits().awsQueryError?.[0] === errorName));
+        const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, errorData, metadata, (registry, errorName) => registry.find((schema) => {
+          var _a2;
+          return ((_a2 = NormalizedSchema.of(schema).getMergedTraits().awsQueryError) == null ? void 0 : _a2[0]) === errorName;
+        }));
         const ns = NormalizedSchema.of(errorSchema);
         const ErrorCtor = TypeRegistry.for(errorSchema.namespace).getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
@@ -16253,7 +16314,8 @@ var init_AwsQueryProtocol = __esm({
         }, output);
       }
       loadQueryErrorCode(output, data2) {
-        const code = (data2.Errors?.[0]?.Error ?? data2.Errors?.Error ?? data2.Error)?.Code;
+        var _a2, _b, _c, _d;
+        const code = (_d = ((_b = (_a2 = data2.Errors) == null ? void 0 : _a2[0]) == null ? void 0 : _b.Error) ?? ((_c = data2.Errors) == null ? void 0 : _c.Error) ?? data2.Error) == null ? void 0 : _d.Code;
         if (code !== void 0) {
           return code;
         }
@@ -16262,11 +16324,12 @@ var init_AwsQueryProtocol = __esm({
         }
       }
       loadQueryError(data2) {
-        return data2.Errors?.[0]?.Error ?? data2.Errors?.Error ?? data2.Error;
+        var _a2, _b, _c;
+        return ((_b = (_a2 = data2.Errors) == null ? void 0 : _a2[0]) == null ? void 0 : _b.Error) ?? ((_c = data2.Errors) == null ? void 0 : _c.Error) ?? data2.Error;
       }
       loadQueryErrorMessage(data2) {
         const errorData = this.loadQueryError(data2);
-        return errorData?.message ?? errorData?.Message ?? data2.message ?? data2.Message ?? "Unknown";
+        return (errorData == null ? void 0 : errorData.message) ?? (errorData == null ? void 0 : errorData.Message) ?? data2.message ?? data2.Message ?? "Unknown";
       }
       getDefaultContentType() {
         return "application/x-www-form-urlencoded";
@@ -16338,10 +16401,11 @@ var init_parseXmlBody = __esm({
       return value;
     };
     loadRestXmlErrorCode = (output, data2) => {
-      if (data2?.Error?.Code !== void 0) {
+      var _a2;
+      if (((_a2 = data2 == null ? void 0 : data2.Error) == null ? void 0 : _a2.Code) !== void 0) {
         return data2.Error.Code;
       }
-      if (data2?.Code !== void 0) {
+      if ((data2 == null ? void 0 : data2.Code) !== void 0) {
         return data2.Code;
       }
       if (output.statusCode == 404) {
@@ -16372,11 +16436,12 @@ var init_XmlShapeSerializer = __esm({
         this.settings = settings;
       }
       write(schema, value) {
+        var _a2;
         const ns = NormalizedSchema.of(schema);
         if (ns.isStringSchema() && typeof value === "string") {
           this.stringBuffer = value;
         } else if (ns.isBlobSchema()) {
-          this.byteBuffer = "byteLength" in value ? value : (this.serdeContext?.base64Decoder ?? import_util_base647.fromBase64)(value);
+          this.byteBuffer = "byteLength" in value ? value : (((_a2 = this.serdeContext) == null ? void 0 : _a2.base64Decoder) ?? import_util_base647.fromBase64)(value);
         } else {
           this.buffer = this.writeStruct(ns, value, void 0);
           const traits = ns.getMergedTraits();
@@ -16386,6 +16451,7 @@ var init_XmlShapeSerializer = __esm({
         }
       }
       flush() {
+        var _a2;
         if (this.byteBuffer !== void 0) {
           const bytes = this.byteBuffer;
           delete this.byteBuffer;
@@ -16398,7 +16464,7 @@ var init_XmlShapeSerializer = __esm({
         }
         const buffer = this.buffer;
         if (this.settings.xmlNamespace) {
-          if (!buffer?.attributes?.["xmlns"]) {
+          if (!((_a2 = buffer == null ? void 0 : buffer.attributes) == null ? void 0 : _a2["xmlns"])) {
             buffer.addAttribute("xmlns", this.settings.xmlNamespace);
           }
         }
@@ -16541,6 +16607,7 @@ var init_XmlShapeSerializer = __esm({
         }
       }
       writeSimple(_schema, value) {
+        var _a2;
         if (null === value) {
           throw new Error("@aws-sdk/core/protocols - (XML serializer) cannot write null value.");
         }
@@ -16548,7 +16615,7 @@ var init_XmlShapeSerializer = __esm({
         let nodeContents = null;
         if (value && typeof value === "object") {
           if (ns.isBlobSchema()) {
-            nodeContents = (this.serdeContext?.base64Encoder ?? import_util_base647.toBase64)(value);
+            nodeContents = (((_a2 = this.serdeContext) == null ? void 0 : _a2.base64Encoder) ?? import_util_base647.toBase64)(value);
           } else if (ns.isTimestampSchema() && value instanceof Date) {
             const format2 = determineTimestampFormat(ns, this.settings);
             switch (format2) {
@@ -16696,17 +16763,18 @@ var init_AwsRestXmlProtocol = __esm({
         return super.deserializeResponse(operationSchema, context, response);
       }
       async handleError(operationSchema, context, response, dataObject, metadata) {
+        var _a2, _b, _c;
         const errorIdentifier = loadRestXmlErrorCode(response, dataObject) ?? "Unknown";
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, dataObject, metadata);
         const ns = NormalizedSchema.of(errorSchema);
-        const message = dataObject.Error?.message ?? dataObject.Error?.Message ?? dataObject.message ?? dataObject.Message ?? "Unknown";
+        const message = ((_a2 = dataObject.Error) == null ? void 0 : _a2.message) ?? ((_b = dataObject.Error) == null ? void 0 : _b.Message) ?? dataObject.message ?? dataObject.Message ?? "Unknown";
         const ErrorCtor = TypeRegistry.for(errorSchema.namespace).getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         await this.deserializeHttpMessage(errorSchema, context, response, dataObject);
         const output = {};
         for (const [name, member2] of ns.structIterator()) {
           const target = member2.getMergedTraits().xmlName ?? name;
-          const value = dataObject.Error?.[target] ?? dataObject[target];
+          const value = ((_c = dataObject.Error) == null ? void 0 : _c[target]) ?? dataObject[target];
           output[name] = this.codec.createDeserializer().readSchema(member2, value);
         }
         throw Object.assign(exception, errorMetadata, {
@@ -16817,13 +16885,14 @@ var require_dist_cjs30 = __commonJS({
       return Object.assign(input, {
         customUserAgent: typeof customUserAgent === "string" ? [[customUserAgent]] : customUserAgent,
         userAgentAppId: async () => {
+          var _a2, _b;
           const appId = await normalizedAppIdProvider();
           if (!isValidUserAgentAppId(appId)) {
-            const logger2 = input.logger?.constructor?.name === "NoOpLogger" || !input.logger ? console : input.logger;
+            const logger2 = ((_b = (_a2 = input.logger) == null ? void 0 : _a2.constructor) == null ? void 0 : _b.name) === "NoOpLogger" || !input.logger ? console : input.logger;
             if (typeof appId !== "string") {
-              logger2?.warn("userAgentAppId must be a string or undefined.");
+              logger2 == null ? void 0 : logger2.warn("userAgentAppId must be a string or undefined.");
             } else if (appId.length > 50) {
-              logger2?.warn("The provided userAgentAppId exceeds the maximum length of 50 characters.");
+              logger2 == null ? void 0 : logger2.warn("The provided userAgentAppId exceeds the maximum length of 50 characters.");
             }
           }
           return appId;
@@ -16832,14 +16901,15 @@ var require_dist_cjs30 = __commonJS({
     }
     var ACCOUNT_ID_ENDPOINT_REGEX = /\d{12}\.ddb/;
     async function checkFeatures(context, config, args) {
+      var _a2, _b, _c, _d, _e, _f, _g;
       const request = args.request;
-      if (request?.headers?.["smithy-protocol"] === "rpc-v2-cbor") {
+      if (((_a2 = request == null ? void 0 : request.headers) == null ? void 0 : _a2["smithy-protocol"]) === "rpc-v2-cbor") {
         core$1.setFeature(context, "PROTOCOL_RPC_V2_CBOR", "M");
       }
       if (typeof config.retryStrategy === "function") {
         const retryStrategy = await config.retryStrategy();
         if (typeof retryStrategy.acquireInitialRetryToken === "function") {
-          if (retryStrategy.constructor?.name?.includes("Adaptive")) {
+          if ((_c = (_b = retryStrategy.constructor) == null ? void 0 : _b.name) == null ? void 0 : _c.includes("Adaptive")) {
             core$1.setFeature(context, "RETRY_MODE_ADAPTIVE", "F");
           } else {
             core$1.setFeature(context, "RETRY_MODE_STANDARD", "E");
@@ -16850,10 +16920,10 @@ var require_dist_cjs30 = __commonJS({
       }
       if (typeof config.accountIdEndpointMode === "function") {
         const endpointV2 = context.endpointV2;
-        if (String(endpointV2?.url?.hostname).match(ACCOUNT_ID_ENDPOINT_REGEX)) {
+        if (String((_d = endpointV2 == null ? void 0 : endpointV2.url) == null ? void 0 : _d.hostname).match(ACCOUNT_ID_ENDPOINT_REGEX)) {
           core$1.setFeature(context, "ACCOUNT_ID_ENDPOINT", "O");
         }
-        switch (await config.accountIdEndpointMode?.()) {
+        switch (await ((_e = config.accountIdEndpointMode) == null ? void 0 : _e.call(config))) {
           case "disabled":
             core$1.setFeature(context, "ACCOUNT_ID_MODE_DISABLED", "Q");
             break;
@@ -16865,8 +16935,8 @@ var require_dist_cjs30 = __commonJS({
             break;
         }
       }
-      const identity = context.__smithy_context?.selectedHttpAuthScheme?.identity;
-      if (identity?.$source) {
+      const identity = (_g = (_f = context.__smithy_context) == null ? void 0 : _f.selectedHttpAuthScheme) == null ? void 0 : _g.identity;
+      if (identity == null ? void 0 : identity.$source) {
         const credentials = identity;
         if (credentials.accountId) {
           core$1.setFeature(context, "RESOLVED_ACCOUNT_ID", "T");
@@ -16901,17 +16971,18 @@ var require_dist_cjs30 = __commonJS({
       return buffer;
     }
     var userAgentMiddleware = (options) => (next, context) => async (args) => {
+      var _a2, _b, _c, _d;
       const { request } = args;
       if (!protocolHttp.HttpRequest.isInstance(request)) {
         return next(args);
       }
       const { headers } = request;
-      const userAgent = context?.userAgent?.map(escapeUserAgent) || [];
+      const userAgent = ((_a2 = context == null ? void 0 : context.userAgent) == null ? void 0 : _a2.map(escapeUserAgent)) || [];
       const defaultUserAgent = (await options.defaultUserAgentProvider()).map(escapeUserAgent);
       await checkFeatures(context, options, args);
       const awsContext = context;
-      defaultUserAgent.push(`m/${encodeFeatures(Object.assign({}, context.__smithy_context?.features, awsContext.__aws_sdk_context?.features))}`);
-      const customUserAgent = options?.customUserAgent?.map(escapeUserAgent) || [];
+      defaultUserAgent.push(`m/${encodeFeatures(Object.assign({}, (_b = context.__smithy_context) == null ? void 0 : _b.features, (_c = awsContext.__aws_sdk_context) == null ? void 0 : _c.features))}`);
+      const customUserAgent = ((_d = options == null ? void 0 : options.customUserAgent) == null ? void 0 : _d.map(escapeUserAgent)) || [];
       const appId = await options.userAgentAppId();
       if (appId) {
         defaultUserAgent.push(escapeUserAgent([`app/${appId}`]));
@@ -16936,8 +17007,9 @@ var require_dist_cjs30 = __commonJS({
       });
     };
     var escapeUserAgent = (userAgentPair) => {
+      var _a2;
       const name = userAgentPair[0].split(UA_NAME_SEPARATOR).map((part) => part.replace(UA_NAME_ESCAPE_REGEX, UA_ESCAPE_CHAR)).join(UA_NAME_SEPARATOR);
-      const version = userAgentPair[1]?.replace(UA_VALUE_ESCAPE_REGEX, UA_ESCAPE_CHAR);
+      const version = (_a2 = userAgentPair[1]) == null ? void 0 : _a2.replace(UA_VALUE_ESCAPE_REGEX, UA_ESCAPE_CHAR);
       const prefixSeparatorIndex = name.indexOf(UA_NAME_SEPARATOR);
       const prefix = name.substring(0, prefixSeparatorIndex);
       let uaName = name.substring(prefixSeparatorIndex + 1);
@@ -17099,7 +17171,10 @@ var require_dist_cjs32 = __commonJS({
         }
       });
     };
-    var getHostnameFromVariants = (variants = [], { useFipsEndpoint, useDualstackEndpoint }) => variants.find(({ tags }) => useFipsEndpoint === tags.includes("fips") && useDualstackEndpoint === tags.includes("dualstack"))?.hostname;
+    var getHostnameFromVariants = (variants = [], { useFipsEndpoint, useDualstackEndpoint }) => {
+      var _a2;
+      return (_a2 = variants.find(({ tags }) => useFipsEndpoint === tags.includes("fips") && useDualstackEndpoint === tags.includes("dualstack"))) == null ? void 0 : _a2.hostname;
+    };
     var getResolvedHostname = (resolvedRegion, { regionHostname, partitionHostname }) => regionHostname ? regionHostname : partitionHostname ? partitionHostname.replace("{region}", resolvedRegion) : void 0;
     var getResolvedPartition = (region, { partitionHash }) => Object.keys(partitionHash || {}).find((key) => partitionHash[key].regions.includes(region)) ?? "aws";
     var getResolvedSigningRegion = (hostname, { signingRegion, regionRegex, useFipsEndpoint }) => {
@@ -17114,17 +17189,18 @@ var require_dist_cjs32 = __commonJS({
       }
     };
     var getRegionInfo = (region, { useFipsEndpoint = false, useDualstackEndpoint = false, signingService, regionHash, partitionHash }) => {
+      var _a2, _b, _c, _d, _e;
       const partition = getResolvedPartition(region, { partitionHash });
-      const resolvedRegion = region in regionHash ? region : partitionHash[partition]?.endpoint ?? region;
+      const resolvedRegion = region in regionHash ? region : ((_a2 = partitionHash[partition]) == null ? void 0 : _a2.endpoint) ?? region;
       const hostnameOptions = { useFipsEndpoint, useDualstackEndpoint };
-      const regionHostname = getHostnameFromVariants(regionHash[resolvedRegion]?.variants, hostnameOptions);
-      const partitionHostname = getHostnameFromVariants(partitionHash[partition]?.variants, hostnameOptions);
+      const regionHostname = getHostnameFromVariants((_b = regionHash[resolvedRegion]) == null ? void 0 : _b.variants, hostnameOptions);
+      const partitionHostname = getHostnameFromVariants((_c = partitionHash[partition]) == null ? void 0 : _c.variants, hostnameOptions);
       const hostname = getResolvedHostname(resolvedRegion, { regionHostname, partitionHostname });
       if (hostname === void 0) {
         throw new Error(`Endpoint resolution failed for: ${{ resolvedRegion, useFipsEndpoint, useDualstackEndpoint }}`);
       }
       const signingRegion = getResolvedSigningRegion(hostname, {
-        signingRegion: regionHash[resolvedRegion]?.signingRegion,
+        signingRegion: (_d = regionHash[resolvedRegion]) == null ? void 0 : _d.signingRegion,
         regionRegex: partitionHash[partition].regionRegex,
         useFipsEndpoint
       });
@@ -17133,7 +17209,7 @@ var require_dist_cjs32 = __commonJS({
         signingService,
         hostname,
         ...signingRegion && { signingRegion },
-        ...regionHash[resolvedRegion]?.signingService && {
+        ...((_e = regionHash[resolvedRegion]) == null ? void 0 : _e.signingService) && {
           signingService: regionHash[resolvedRegion].signingService
         }
       };
@@ -17288,7 +17364,7 @@ var require_slurpFile = __commonJS({
       if (exports2.fileIntercept[path] !== void 0) {
         return exports2.fileIntercept[path];
       }
-      if (!exports2.filePromisesHash[path] || options?.ignoreCache) {
+      if (!exports2.filePromisesHash[path] || (options == null ? void 0 : options.ignoreCache)) {
         exports2.filePromisesHash[path] = readFile(path, "utf8");
       }
       return exports2.filePromisesHash[path];
@@ -17496,7 +17572,7 @@ var require_dist_cjs35 = __commonJS({
         }
         return config;
       } catch (e3) {
-        throw new propertyProvider.CredentialsProviderError(e3.message || `Not found in ENV: ${getSelectorName(envVarSelector.toString())}`, { logger: options?.logger });
+        throw new propertyProvider.CredentialsProviderError(e3.message || `Not found in ENV: ${getSelectorName(envVarSelector.toString())}`, { logger: options == null ? void 0 : options.logger });
       }
     };
     var fromSharedConfigFiles = (configSelector, { preferredFile = "config", ...init } = {}) => async () => {
@@ -17591,7 +17667,7 @@ var require_dist_cjs36 = __commonJS({
     var utilMiddleware = require_dist_cjs2();
     var middlewareSerde = require_dist_cjs9();
     var resolveParamsForS3 = async (endpointParams) => {
-      const bucket = endpointParams?.Bucket || "";
+      const bucket = (endpointParams == null ? void 0 : endpointParams.Bucket) || "";
       if (typeof endpointParams.Bucket === "string") {
         endpointParams.Bucket = bucket.replace(/#/g, encodeURIComponent("#")).replace(/\?/g, encodeURIComponent("?"));
       }
@@ -17632,14 +17708,14 @@ var require_dist_cjs36 = __commonJS({
       if (configKey === "credentialScope" || canonicalEndpointParamKey === "CredentialScope") {
         return async () => {
           const credentials = typeof config.credentials === "function" ? await config.credentials() : config.credentials;
-          const configValue = credentials?.credentialScope ?? credentials?.CredentialScope;
+          const configValue = (credentials == null ? void 0 : credentials.credentialScope) ?? (credentials == null ? void 0 : credentials.CredentialScope);
           return configValue;
         };
       }
       if (configKey === "accountId" || canonicalEndpointParamKey === "AccountId") {
         return async () => {
           const credentials = typeof config.credentials === "function" ? await config.credentials() : config.credentials;
-          const configValue = credentials?.accountId ?? credentials?.AccountId;
+          const configValue = (credentials == null ? void 0 : credentials.accountId) ?? (credentials == null ? void 0 : credentials.AccountId);
           return configValue;
         };
       }
@@ -17693,8 +17769,9 @@ var require_dist_cjs36 = __commonJS({
       return endpoint;
     };
     var resolveParams = async (commandInput, instructionsSupplier, clientConfig) => {
+      var _a2;
       const endpointParams = {};
-      const instructions = instructionsSupplier?.getEndpointParameterInstructions?.() || {};
+      const instructions = ((_a2 = instructionsSupplier == null ? void 0 : instructionsSupplier.getEndpointParameterInstructions) == null ? void 0 : _a2.call(instructionsSupplier)) || {};
       for (const [name, instruction] of Object.entries(instructions)) {
         switch (instruction.type) {
           case "staticContextParams":
@@ -17724,6 +17801,7 @@ var require_dist_cjs36 = __commonJS({
     };
     var endpointMiddleware = ({ config, instructions }) => {
       return (next, context) => async (args) => {
+        var _a2, _b, _c;
         if (config.isCustomEndpoint) {
           core.setFeature(context, "ENDPOINT_OVERRIDE", "N");
         }
@@ -17733,13 +17811,13 @@ var require_dist_cjs36 = __commonJS({
           }
         }, { ...config }, context);
         context.endpointV2 = endpoint;
-        context.authSchemes = endpoint.properties?.authSchemes;
-        const authScheme = context.authSchemes?.[0];
+        context.authSchemes = (_a2 = endpoint.properties) == null ? void 0 : _a2.authSchemes;
+        const authScheme = (_b = context.authSchemes) == null ? void 0 : _b[0];
         if (authScheme) {
           context["signing_region"] = authScheme.signingRegion;
           context["signing_service"] = authScheme.signingName;
           const smithyContext = utilMiddleware.getSmithyContext(context);
-          const httpAuthOption = smithyContext?.selectedHttpAuthScheme?.httpAuthOption;
+          const httpAuthOption = (_c = smithyContext == null ? void 0 : smithyContext.selectedHttpAuthScheme) == null ? void 0 : _c.httpAuthOption;
           if (httpAuthOption) {
             httpAuthOption.signingProperties = Object.assign(httpAuthOption.signingProperties || {}, {
               signing_region: authScheme.signingRegion,
@@ -17844,9 +17922,12 @@ var require_dist_cjs37 = __commonJS({
     var TRANSIENT_ERROR_STATUS_CODES = [500, 502, 503, 504];
     var NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "ECONNREFUSED", "EPIPE", "ETIMEDOUT"];
     var NODEJS_NETWORK_ERROR_CODES = ["EHOSTUNREACH", "ENETUNREACH", "ENOTFOUND"];
-    var isRetryableByTrait = (error2) => error2?.$retryable !== void 0;
+    var isRetryableByTrait = (error2) => (error2 == null ? void 0 : error2.$retryable) !== void 0;
     var isClockSkewError = (error2) => CLOCK_SKEW_ERROR_CODES.includes(error2.name);
-    var isClockSkewCorrectedError = (error2) => error2.$metadata?.clockSkewCorrected;
+    var isClockSkewCorrectedError = (error2) => {
+      var _a2;
+      return (_a2 = error2.$metadata) == null ? void 0 : _a2.clockSkewCorrected;
+    };
     var isBrowserNetworkError = (error2) => {
       const errorMessages = /* @__PURE__ */ new Set([
         "Failed to fetch",
@@ -17861,10 +17942,17 @@ var require_dist_cjs37 = __commonJS({
       }
       return errorMessages.has(error2.message);
     };
-    var isThrottlingError = (error2) => error2.$metadata?.httpStatusCode === 429 || THROTTLING_ERROR_CODES.includes(error2.name) || error2.$retryable?.throttling == true;
-    var isTransientError = (error2, depth = 0) => isRetryableByTrait(error2) || isClockSkewCorrectedError(error2) || TRANSIENT_ERROR_CODES.includes(error2.name) || NODEJS_TIMEOUT_ERROR_CODES.includes(error2?.code || "") || NODEJS_NETWORK_ERROR_CODES.includes(error2?.code || "") || TRANSIENT_ERROR_STATUS_CODES.includes(error2.$metadata?.httpStatusCode || 0) || isBrowserNetworkError(error2) || error2.cause !== void 0 && depth <= 10 && isTransientError(error2.cause, depth + 1);
+    var isThrottlingError = (error2) => {
+      var _a2, _b;
+      return ((_a2 = error2.$metadata) == null ? void 0 : _a2.httpStatusCode) === 429 || THROTTLING_ERROR_CODES.includes(error2.name) || ((_b = error2.$retryable) == null ? void 0 : _b.throttling) == true;
+    };
+    var isTransientError = (error2, depth = 0) => {
+      var _a2;
+      return isRetryableByTrait(error2) || isClockSkewCorrectedError(error2) || TRANSIENT_ERROR_CODES.includes(error2.name) || NODEJS_TIMEOUT_ERROR_CODES.includes((error2 == null ? void 0 : error2.code) || "") || NODEJS_NETWORK_ERROR_CODES.includes((error2 == null ? void 0 : error2.code) || "") || TRANSIENT_ERROR_STATUS_CODES.includes(((_a2 = error2.$metadata) == null ? void 0 : _a2.httpStatusCode) || 0) || isBrowserNetworkError(error2) || error2.cause !== void 0 && depth <= 10 && isTransientError(error2.cause, depth + 1);
+    };
     var isServerError = (error2) => {
-      if (error2.$metadata?.httpStatusCode !== void 0) {
+      var _a2;
+      if (((_a2 = error2.$metadata) == null ? void 0 : _a2.httpStatusCode) !== void 0) {
         const statusCode = error2.$metadata.httpStatusCode;
         if (500 <= statusCode && statusCode <= 599 && !isTransientError(error2)) {
           return true;
@@ -17914,11 +18002,11 @@ var require_dist_cjs38 = __commonJS({
       maxCapacity;
       timeWindow = 0;
       constructor(options) {
-        this.beta = options?.beta ?? 0.7;
-        this.minCapacity = options?.minCapacity ?? 1;
-        this.minFillRate = options?.minFillRate ?? 0.5;
-        this.scaleConstant = options?.scaleConstant ?? 0.4;
-        this.smooth = options?.smooth ?? 0.8;
+        this.beta = (options == null ? void 0 : options.beta) ?? 0.7;
+        this.minCapacity = (options == null ? void 0 : options.minCapacity) ?? 1;
+        this.minFillRate = (options == null ? void 0 : options.minFillRate) ?? 0.5;
+        this.scaleConstant = (options == null ? void 0 : options.scaleConstant) ?? 0.4;
+        this.smooth = (options == null ? void 0 : options.smooth) ?? 0.8;
         const currentTimeInSeconds = this.getCurrentTimeInSeconds();
         this.lastThrottleTime = currentTimeInSeconds;
         this.lastTxRateBucket = Math.floor(this.getCurrentTimeInSeconds());
@@ -18157,7 +18245,7 @@ var require_isStreamingPayload = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.isStreamingPayload = void 0;
     var stream_1 = require("stream");
-    var isStreamingPayload = (request) => request?.body instanceof stream_1.Readable || typeof ReadableStream !== "undefined" && request?.body instanceof ReadableStream;
+    var isStreamingPayload = (request) => (request == null ? void 0 : request.body) instanceof stream_1.Readable || typeof ReadableStream !== "undefined" && (request == null ? void 0 : request.body) instanceof ReadableStream;
     exports2.isStreamingPayload = isStreamingPayload;
   }
 });
@@ -18223,9 +18311,9 @@ var require_dist_cjs39 = __commonJS({
       mode = utilRetry.RETRY_MODES.STANDARD;
       constructor(maxAttemptsProvider, options) {
         this.maxAttemptsProvider = maxAttemptsProvider;
-        this.retryDecider = options?.retryDecider ?? defaultRetryDecider;
-        this.delayDecider = options?.delayDecider ?? defaultDelayDecider;
-        this.retryQuota = options?.retryQuota ?? getDefaultRetryQuota(utilRetry.INITIAL_RETRY_TOKENS);
+        this.retryDecider = (options == null ? void 0 : options.retryDecider) ?? defaultRetryDecider;
+        this.delayDecider = (options == null ? void 0 : options.delayDecider) ?? defaultDelayDecider;
+        this.retryQuota = (options == null ? void 0 : options.retryQuota) ?? getDefaultRetryQuota(utilRetry.INITIAL_RETRY_TOKENS);
       }
       shouldRetry(error2, attempts, maxAttempts) {
         return attempts < maxAttempts && this.retryDecider(error2) && this.retryQuota.hasRetryTokens(error2);
@@ -18253,11 +18341,11 @@ var require_dist_cjs39 = __commonJS({
             if (protocolHttp.HttpRequest.isInstance(request)) {
               request.headers[utilRetry.REQUEST_HEADER] = `attempt=${attempts + 1}; max=${maxAttempts}`;
             }
-            if (options?.beforeRequest) {
+            if (options == null ? void 0 : options.beforeRequest) {
               await options.beforeRequest();
             }
             const { response, output } = await next(args);
-            if (options?.afterRequest) {
+            if (options == null ? void 0 : options.afterRequest) {
               options.afterRequest(response);
             }
             this.retryQuota.releaseRetryTokens(retryTokenAmount);
@@ -18388,6 +18476,7 @@ var require_dist_cjs39 = __commonJS({
       }
     });
     var retryMiddleware = (options) => (next, context) => async (args) => {
+      var _a2;
       let retryStrategy = await options.retryStrategy();
       const maxAttempts = await options.maxAttempts();
       if (isRetryStrategyV2(retryStrategy)) {
@@ -18415,7 +18504,7 @@ var require_dist_cjs39 = __commonJS({
             const retryErrorInfo = getRetryErrorInfo(e3);
             lastError = asSdkError(e3);
             if (isRequest && isStreamingPayload.isStreamingPayload(request)) {
-              (context.logger instanceof smithyClient.NoOpLogger ? console : context.logger)?.warn("An error was encountered in a non-retryable streaming request.");
+              (_a2 = context.logger instanceof smithyClient.NoOpLogger ? console : context.logger) == null ? void 0 : _a2.warn("An error was encountered in a non-retryable streaming request.");
               throw lastError;
             }
             try {
@@ -18436,7 +18525,7 @@ var require_dist_cjs39 = __commonJS({
         }
       } else {
         retryStrategy = retryStrategy;
-        if (retryStrategy?.mode)
+        if (retryStrategy == null ? void 0 : retryStrategy.mode)
           context.userAgent = [...context.userAgent || [], ["cfg/retry-mode", retryStrategy.mode]];
         return retryStrategy.retry(next, args);
       }
@@ -18566,7 +18655,7 @@ var require_package = __commonJS({
     module2.exports = {
       name: "@aws-sdk/client-dynamodb",
       description: "AWS SDK for JavaScript Dynamodb Client for Node.js, Browser and React Native",
-      version: "3.906.0",
+      version: "3.907.0",
       scripts: {
         build: "concurrently 'yarn:build:cjs' 'yarn:build:es' 'yarn:build:types'",
         "build:cjs": "node ../../scripts/compilation/inline client-dynamodb",
@@ -18585,18 +18674,18 @@ var require_package = __commonJS({
       dependencies: {
         "@aws-crypto/sha256-browser": "5.2.0",
         "@aws-crypto/sha256-js": "5.2.0",
-        "@aws-sdk/core": "3.906.0",
-        "@aws-sdk/credential-provider-node": "3.906.0",
+        "@aws-sdk/core": "3.907.0",
+        "@aws-sdk/credential-provider-node": "3.907.0",
         "@aws-sdk/middleware-endpoint-discovery": "3.901.0",
         "@aws-sdk/middleware-host-header": "3.901.0",
         "@aws-sdk/middleware-logger": "3.901.0",
         "@aws-sdk/middleware-recursion-detection": "3.901.0",
-        "@aws-sdk/middleware-user-agent": "3.906.0",
+        "@aws-sdk/middleware-user-agent": "3.907.0",
         "@aws-sdk/region-config-resolver": "3.901.0",
         "@aws-sdk/types": "3.901.0",
         "@aws-sdk/util-endpoints": "3.901.0",
-        "@aws-sdk/util-user-agent-browser": "3.901.0",
-        "@aws-sdk/util-user-agent-node": "3.906.0",
+        "@aws-sdk/util-user-agent-browser": "3.907.0",
+        "@aws-sdk/util-user-agent-node": "3.907.0",
         "@smithy/config-resolver": "^4.3.0",
         "@smithy/core": "^3.14.0",
         "@smithy/fetch-http-handler": "^5.3.0",
@@ -18681,7 +18770,8 @@ var require_dist_cjs40 = __commonJS({
     var ENV_CREDENTIAL_SCOPE = "AWS_CREDENTIAL_SCOPE";
     var ENV_ACCOUNT_ID = "AWS_ACCOUNT_ID";
     var fromEnv = (init) => async () => {
-      init?.logger?.debug("@aws-sdk/credential-provider-env - fromEnv");
+      var _a2;
+      (_a2 = init == null ? void 0 : init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-env - fromEnv");
       const accessKeyId = process.env[ENV_KEY];
       const secretAccessKey = process.env[ENV_SECRET];
       const sessionToken = process.env[ENV_SESSION];
@@ -18700,7 +18790,7 @@ var require_dist_cjs40 = __commonJS({
         client2.setCredentialFeature(credentials, "CREDENTIALS_ENV_VARS", "g");
         return credentials;
       }
-      throw new propertyProvider.CredentialsProviderError("Unable to find environment variable credentials.", { logger: init?.logger });
+      throw new propertyProvider.CredentialsProviderError("Unable to find environment variable credentials.", { logger: init == null ? void 0 : init.logger });
     };
     exports2.ENV_ACCOUNT_ID = ENV_ACCOUNT_ID;
     exports2.ENV_CREDENTIAL_SCOPE = ENV_CREDENTIAL_SCOPE;
@@ -18724,10 +18814,11 @@ var require_dist_cjs41 = __commonJS({
     var urlParser = require_dist_cjs23();
     function httpRequest(options) {
       return new Promise((resolve, reject) => {
+        var _a2;
         const req = http.request({
           method: "GET",
           ...options,
-          hostname: options.hostname?.replace(/^\[(.+)\]$/, "$1")
+          hostname: (_a2 = options.hostname) == null ? void 0 : _a2.replace(/^\[(.+)\]$/, "$1")
         });
         req.on("error", (err2) => {
           reject(Object.assign(new propertyProvider.ProviderError("Unable to connect to instance metadata service"), err2));
@@ -18904,7 +18995,7 @@ For more information, please visit: ` + STATIC_STABILITY_DOC_URL);
       };
     };
     var staticStabilityProvider = (provider, options = {}) => {
-      const logger2 = options?.logger || console;
+      const logger2 = (options == null ? void 0 : options.logger) || console;
       let pastCredentials;
       return async () => {
         let credentials;
@@ -18936,7 +19027,8 @@ For more information, please visit: ` + STATIC_STABILITY_DOC_URL);
       const { logger: logger2, profile } = init;
       const { timeout, maxRetries } = providerConfigFromInit(init);
       const getCredentials = async (maxRetries2, options) => {
-        const isImdsV1Fallback = disableFetchToken || options.headers?.[X_AWS_EC2_METADATA_TOKEN] == null;
+        var _a2;
+        const isImdsV1Fallback = disableFetchToken || ((_a2 = options.headers) == null ? void 0 : _a2[X_AWS_EC2_METADATA_TOKEN]) == null;
         if (isImdsV1Fallback) {
           let fallbackBlockedFromProfile = false;
           let fallbackBlockedFromProcessEnv = false;
@@ -18997,21 +19089,21 @@ For more information, please visit: ` + STATIC_STABILITY_DOC_URL);
       return async () => {
         const endpoint = await getInstanceMetadataEndpoint();
         if (disableFetchToken) {
-          logger2?.debug("AWS SDK Instance Metadata", "using v1 fallback (no token fetch)");
+          logger2 == null ? void 0 : logger2.debug("AWS SDK Instance Metadata", "using v1 fallback (no token fetch)");
           return getCredentials(maxRetries, { ...endpoint, timeout });
         } else {
           let token;
           try {
             token = (await getMetadataToken({ ...endpoint, timeout })).toString();
           } catch (error2) {
-            if (error2?.statusCode === 400) {
+            if ((error2 == null ? void 0 : error2.statusCode) === 400) {
               throw Object.assign(error2, {
                 message: "EC2 Metadata token request returned error"
               });
             } else if (error2.message === "TimeoutError" || [403, 404, 405].includes(error2.statusCode)) {
               disableFetchToken = true;
             }
-            logger2?.debug("AWS SDK Instance Metadata", "using v1 fallback (initial)");
+            logger2 == null ? void 0 : logger2.debug("AWS SDK Instance Metadata", "using v1 fallback (initial)");
             return getCredentials(maxRetries, { ...endpoint, timeout });
           }
           return getCredentials(maxRetries, {
@@ -19198,13 +19290,14 @@ var require_fromHttp = __commonJS({
     var AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE = "AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE";
     var AWS_CONTAINER_AUTHORIZATION_TOKEN = "AWS_CONTAINER_AUTHORIZATION_TOKEN";
     var fromHttp = (options = {}) => {
-      options.logger?.debug("@aws-sdk/credential-provider-http - fromHttp");
+      var _a2, _b, _c, _d;
+      (_a2 = options.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-http - fromHttp");
       let host;
       const relative = options.awsContainerCredentialsRelativeUri ?? process.env[AWS_CONTAINER_CREDENTIALS_RELATIVE_URI];
       const full = options.awsContainerCredentialsFullUri ?? process.env[AWS_CONTAINER_CREDENTIALS_FULL_URI];
       const token = options.awsContainerAuthorizationToken ?? process.env[AWS_CONTAINER_AUTHORIZATION_TOKEN];
       const tokenFile = options.awsContainerAuthorizationTokenFile ?? process.env[AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE];
-      const warn = options.logger?.constructor?.name === "NoOpLogger" || !options.logger?.warn ? console.warn : options.logger.warn.bind(options.logger);
+      const warn = ((_c = (_b = options.logger) == null ? void 0 : _b.constructor) == null ? void 0 : _c.name) === "NoOpLogger" || !((_d = options.logger) == null ? void 0 : _d.warn) ? console.warn : options.logger.warn.bind(options.logger);
       if (relative && full) {
         warn("@aws-sdk/credential-provider-http: you have set both awsContainerCredentialsRelativeUri and awsContainerCredentialsFullUri.");
         warn("awsContainerCredentialsFullUri will take precedence.");
@@ -19341,7 +19434,7 @@ var init_package = __esm({
   "node_modules/@aws-sdk/nested-clients/package.json"() {
     package_default = {
       name: "@aws-sdk/nested-clients",
-      version: "3.906.0",
+      version: "3.907.0",
       description: "Nested clients for AWS SDK packages.",
       main: "./dist-cjs/index.js",
       module: "./dist-es/index.js",
@@ -19370,16 +19463,16 @@ var init_package = __esm({
       dependencies: {
         "@aws-crypto/sha256-browser": "5.2.0",
         "@aws-crypto/sha256-js": "5.2.0",
-        "@aws-sdk/core": "3.906.0",
+        "@aws-sdk/core": "3.907.0",
         "@aws-sdk/middleware-host-header": "3.901.0",
         "@aws-sdk/middleware-logger": "3.901.0",
         "@aws-sdk/middleware-recursion-detection": "3.901.0",
-        "@aws-sdk/middleware-user-agent": "3.906.0",
+        "@aws-sdk/middleware-user-agent": "3.907.0",
         "@aws-sdk/region-config-resolver": "3.901.0",
         "@aws-sdk/types": "3.901.0",
         "@aws-sdk/util-endpoints": "3.901.0",
-        "@aws-sdk/util-user-agent-browser": "3.901.0",
-        "@aws-sdk/util-user-agent-node": "3.906.0",
+        "@aws-sdk/util-user-agent-browser": "3.907.0",
+        "@aws-sdk/util-user-agent-node": "3.907.0",
         "@smithy/config-resolver": "^4.3.0",
         "@smithy/core": "^3.14.0",
         "@smithy/fetch-http-handler": "^5.3.0",
@@ -19476,6 +19569,7 @@ var require_dist_cjs43 = __commonJS({
     };
     var createDefaultUserAgentProvider3 = ({ serviceId, clientVersion }) => {
       return async (config) => {
+        var _a2;
         const sections = [
           ["aws-sdk-js", clientVersion],
           ["ua", "2.1"],
@@ -19493,7 +19587,7 @@ var require_dist_cjs43 = __commonJS({
         if (process2.env.AWS_EXECUTION_ENV) {
           sections.push([`exec-env/${process2.env.AWS_EXECUTION_ENV}`]);
         }
-        const appId = await config?.userAgentAppId?.();
+        const appId = await ((_a2 = config == null ? void 0 : config.userAgentAppId) == null ? void 0 : _a2.call(config));
         const resolvedUserAgent = appId ? [...sections, [`app/${appId}`]] : [...sections];
         return resolvedUserAgent;
       };
@@ -19563,7 +19657,7 @@ var require_dist_cjs44 = __commonJS({
 var require_dist_cjs45 = __commonJS({
   "node_modules/@smithy/util-body-length-node/dist-cjs/index.js"(exports2) {
     "use strict";
-    var node_fs = require("node:fs");
+    var node_fs = require("fs");
     var calculateBodyLength3 = (body) => {
       if (!body) {
         return 0;
@@ -19658,13 +19752,13 @@ var init_runtimeConfig_shared = __esm({
     getRuntimeConfig = (config) => {
       return {
         apiVersion: "2019-06-10",
-        base64Decoder: config?.base64Decoder ?? import_util_base648.fromBase64,
-        base64Encoder: config?.base64Encoder ?? import_util_base648.toBase64,
-        disableHostPrefix: config?.disableHostPrefix ?? false,
-        endpointProvider: config?.endpointProvider ?? defaultEndpointResolver,
-        extensions: config?.extensions ?? [],
-        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? defaultSSOOIDCHttpAuthSchemeProvider,
-        httpAuthSchemes: config?.httpAuthSchemes ?? [
+        base64Decoder: (config == null ? void 0 : config.base64Decoder) ?? import_util_base648.fromBase64,
+        base64Encoder: (config == null ? void 0 : config.base64Encoder) ?? import_util_base648.toBase64,
+        disableHostPrefix: (config == null ? void 0 : config.disableHostPrefix) ?? false,
+        endpointProvider: (config == null ? void 0 : config.endpointProvider) ?? defaultEndpointResolver,
+        extensions: (config == null ? void 0 : config.extensions) ?? [],
+        httpAuthSchemeProvider: (config == null ? void 0 : config.httpAuthSchemeProvider) ?? defaultSSOOIDCHttpAuthSchemeProvider,
+        httpAuthSchemes: (config == null ? void 0 : config.httpAuthSchemes) ?? [
           {
             schemeId: "aws.auth#sigv4",
             identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4"),
@@ -19676,11 +19770,11 @@ var init_runtimeConfig_shared = __esm({
             signer: new NoAuthSigner()
           }
         ],
-        logger: config?.logger ?? new import_smithy_client7.NoOpLogger(),
-        serviceId: config?.serviceId ?? "SSO OIDC",
-        urlParser: config?.urlParser ?? import_url_parser.parseUrl,
-        utf8Decoder: config?.utf8Decoder ?? import_util_utf88.fromUtf8,
-        utf8Encoder: config?.utf8Encoder ?? import_util_utf88.toUtf8
+        logger: (config == null ? void 0 : config.logger) ?? new import_smithy_client7.NoOpLogger(),
+        serviceId: (config == null ? void 0 : config.serviceId) ?? "SSO OIDC",
+        urlParser: (config == null ? void 0 : config.urlParser) ?? import_url_parser.parseUrl,
+        utf8Decoder: (config == null ? void 0 : config.utf8Decoder) ?? import_util_utf88.fromUtf8,
+        utf8Encoder: (config == null ? void 0 : config.utf8Encoder) ?? import_util_utf88.toUtf8
       };
     };
   }
@@ -19712,7 +19806,7 @@ var require_dist_cjs46 = __commonJS({
     };
     var resolveDefaultsModeConfig3 = ({ region = nodeConfigProvider.loadConfig(configResolver.NODE_REGION_CONFIG_OPTIONS), defaultsMode = nodeConfigProvider.loadConfig(NODE_DEFAULTS_MODE_CONFIG_OPTIONS) } = {}) => propertyProvider.memoize(async () => {
       const mode = typeof defaultsMode === "function" ? await defaultsMode() : defaultsMode;
-      switch (mode?.toLowerCase()) {
+      switch (mode == null ? void 0 : mode.toLowerCase()) {
         case "auto":
           return resolveNodeDefaultsModeAuto(region);
         case "in-region":
@@ -19720,7 +19814,7 @@ var require_dist_cjs46 = __commonJS({
         case "mobile":
         case "standard":
         case "legacy":
-          return Promise.resolve(mode?.toLocaleLowerCase());
+          return Promise.resolve(mode == null ? void 0 : mode.toLocaleLowerCase());
         case void 0:
           return Promise.resolve("legacy");
         default:
@@ -19784,7 +19878,7 @@ var init_runtimeConfig = __esm({
       const clientSharedValues = getRuntimeConfig(config);
       emitWarningIfUnsupportedVersion(process.version);
       const loaderConfig = {
-        profile: config?.profile,
+        profile: config == null ? void 0 : config.profile,
         logger: clientSharedValues.logger
       };
       return {
@@ -19792,21 +19886,21 @@ var init_runtimeConfig = __esm({
         ...config,
         runtime: "node",
         defaultsMode,
-        authSchemePreference: config?.authSchemePreference ?? (0, import_node_config_provider.loadConfig)(NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
-        bodyLengthChecker: config?.bodyLengthChecker ?? import_util_body_length_node.calculateBodyLength,
-        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? (0, import_util_user_agent_node.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_default.version }),
-        maxAttempts: config?.maxAttempts ?? (0, import_node_config_provider.loadConfig)(import_middleware_retry.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
-        region: config?.region ?? (0, import_node_config_provider.loadConfig)(import_config_resolver.NODE_REGION_CONFIG_OPTIONS, { ...import_config_resolver.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
-        requestHandler: import_node_http_handler.NodeHttpHandler.create(config?.requestHandler ?? defaultConfigProvider),
-        retryMode: config?.retryMode ?? (0, import_node_config_provider.loadConfig)({
+        authSchemePreference: (config == null ? void 0 : config.authSchemePreference) ?? (0, import_node_config_provider.loadConfig)(NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
+        bodyLengthChecker: (config == null ? void 0 : config.bodyLengthChecker) ?? import_util_body_length_node.calculateBodyLength,
+        defaultUserAgentProvider: (config == null ? void 0 : config.defaultUserAgentProvider) ?? (0, import_util_user_agent_node.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_default.version }),
+        maxAttempts: (config == null ? void 0 : config.maxAttempts) ?? (0, import_node_config_provider.loadConfig)(import_middleware_retry.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
+        region: (config == null ? void 0 : config.region) ?? (0, import_node_config_provider.loadConfig)(import_config_resolver.NODE_REGION_CONFIG_OPTIONS, { ...import_config_resolver.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        requestHandler: import_node_http_handler.NodeHttpHandler.create((config == null ? void 0 : config.requestHandler) ?? defaultConfigProvider),
+        retryMode: (config == null ? void 0 : config.retryMode) ?? (0, import_node_config_provider.loadConfig)({
           ...import_middleware_retry.NODE_RETRY_MODE_CONFIG_OPTIONS,
           default: async () => (await defaultConfigProvider()).retryMode || import_util_retry.DEFAULT_RETRY_MODE
         }, config),
-        sha256: config?.sha256 ?? import_hash_node.Hash.bind(null, "sha256"),
-        streamCollector: config?.streamCollector ?? import_node_http_handler.streamCollector,
-        useDualstackEndpoint: config?.useDualstackEndpoint ?? (0, import_node_config_provider.loadConfig)(import_config_resolver.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        useFipsEndpoint: config?.useFipsEndpoint ?? (0, import_node_config_provider.loadConfig)(import_config_resolver.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        userAgentAppId: config?.userAgentAppId ?? (0, import_node_config_provider.loadConfig)(import_util_user_agent_node.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig)
+        sha256: (config == null ? void 0 : config.sha256) ?? import_hash_node.Hash.bind(null, "sha256"),
+        streamCollector: (config == null ? void 0 : config.streamCollector) ?? import_node_http_handler.streamCollector,
+        useDualstackEndpoint: (config == null ? void 0 : config.useDualstackEndpoint) ?? (0, import_node_config_provider.loadConfig)(import_config_resolver.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        useFipsEndpoint: (config == null ? void 0 : config.useFipsEndpoint) ?? (0, import_node_config_provider.loadConfig)(import_config_resolver.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        userAgentAppId: (config == null ? void 0 : config.userAgentAppId) ?? (0, import_node_config_provider.loadConfig)(import_util_user_agent_node.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig)
       };
     };
   }
@@ -19990,7 +20084,7 @@ var init_SSOOIDCClient = __esm({
         const _config_5 = (0, import_middleware_host_header.resolveHostHeaderConfig)(_config_4);
         const _config_6 = (0, import_middleware_endpoint.resolveEndpointConfig)(_config_5);
         const _config_7 = resolveHttpAuthSchemeConfig(_config_6);
-        const _config_8 = resolveRuntimeExtensions(_config_7, configuration?.extensions || []);
+        const _config_8 = resolveRuntimeExtensions(_config_7, (configuration == null ? void 0 : configuration.extensions) || []);
         this.config = _config_8;
         this.middlewareStack.use((0, import_middleware_user_agent.getUserAgentPlugin)(this.config));
         this.middlewareStack.use((0, import_middleware_retry2.getRetryPlugin)(this.config));
@@ -20595,7 +20689,8 @@ var require_dist_cjs48 = __commonJS({
     var sharedIniFileLoader = require_dist_cjs34();
     var fs = require("fs");
     var fromEnvSigningName = ({ logger: logger2, signingName } = {}) => async () => {
-      logger2?.debug?.("@aws-sdk/token-providers - fromEnvSigningName");
+      var _a2;
+      (_a2 = logger2 == null ? void 0 : logger2.debug) == null ? void 0 : _a2.call(logger2, "@aws-sdk/token-providers - fromEnvSigningName");
       if (!signingName) {
         throw new propertyProvider.TokenProviderError("Please pass 'signingName' to compute environment variable key", { logger: logger2 });
       }
@@ -20610,10 +20705,11 @@ var require_dist_cjs48 = __commonJS({
     var EXPIRE_WINDOW_MS = 5 * 60 * 1e3;
     var REFRESH_MESSAGE = `To refresh this SSO session run 'aws sso login' with the corresponding profile.`;
     var getSsoOidcClient = async (ssoRegion, init = {}) => {
+      var _a2, _b, _c;
       const { SSOOIDCClient: SSOOIDCClient2 } = await Promise.resolve().then(() => (init_sso_oidc(), sso_oidc_exports));
       const ssoOidcClient = new SSOOIDCClient2(Object.assign({}, init.clientConfig ?? {}, {
-        region: ssoRegion ?? init.clientConfig?.region,
-        logger: init.clientConfig?.logger ?? init.parentClientConfig?.logger
+        region: ssoRegion ?? ((_a2 = init.clientConfig) == null ? void 0 : _a2.region),
+        logger: ((_b = init.clientConfig) == null ? void 0 : _b.logger) ?? ((_c = init.parentClientConfig) == null ? void 0 : _c.logger)
       }));
       return ssoOidcClient;
     };
@@ -20645,6 +20741,7 @@ var require_dist_cjs48 = __commonJS({
     };
     var lastRefreshAttemptTime = /* @__PURE__ */ new Date(0);
     var fromSso = (_init = {}) => async ({ callerClientConfig } = {}) => {
+      var _a2;
       const init = {
         ..._init,
         parentClientConfig: {
@@ -20652,10 +20749,10 @@ var require_dist_cjs48 = __commonJS({
           ..._init.parentClientConfig
         }
       };
-      init.logger?.debug("@aws-sdk/token-providers - fromSso");
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/token-providers - fromSso");
       const profiles = await sharedIniFileLoader.parseKnownFiles(init);
       const profileName = sharedIniFileLoader.getProfileName({
-        profile: init.profile ?? callerClientConfig?.profile
+        profile: init.profile ?? (callerClientConfig == null ? void 0 : callerClientConfig.profile)
       });
       const profile = profiles[profileName];
       if (!profile) {
@@ -20721,7 +20818,7 @@ var require_dist_cjs48 = __commonJS({
       }
     };
     var fromStatic = ({ token, logger: logger2 }) => async () => {
-      logger2?.debug("@aws-sdk/token-providers - fromStatic");
+      logger2 == null ? void 0 : logger2.debug("@aws-sdk/token-providers - fromStatic");
       if (!token || !token.token) {
         throw new propertyProvider.TokenProviderError(`Please pass a valid token to fromStatic`, false);
       }
@@ -20816,7 +20913,7 @@ var require_package2 = __commonJS({
     module2.exports = {
       name: "@aws-sdk/client-sso",
       description: "AWS SDK for JavaScript Sso Client for Node.js, Browser and React Native",
-      version: "3.906.0",
+      version: "3.907.0",
       scripts: {
         build: "concurrently 'yarn:build:cjs' 'yarn:build:es' 'yarn:build:types'",
         "build:cjs": "node ../../scripts/compilation/inline client-sso",
@@ -20835,16 +20932,16 @@ var require_package2 = __commonJS({
       dependencies: {
         "@aws-crypto/sha256-browser": "5.2.0",
         "@aws-crypto/sha256-js": "5.2.0",
-        "@aws-sdk/core": "3.906.0",
+        "@aws-sdk/core": "3.907.0",
         "@aws-sdk/middleware-host-header": "3.901.0",
         "@aws-sdk/middleware-logger": "3.901.0",
         "@aws-sdk/middleware-recursion-detection": "3.901.0",
-        "@aws-sdk/middleware-user-agent": "3.906.0",
+        "@aws-sdk/middleware-user-agent": "3.907.0",
         "@aws-sdk/region-config-resolver": "3.901.0",
         "@aws-sdk/types": "3.901.0",
         "@aws-sdk/util-endpoints": "3.901.0",
-        "@aws-sdk/util-user-agent-browser": "3.901.0",
-        "@aws-sdk/util-user-agent-node": "3.906.0",
+        "@aws-sdk/util-user-agent-browser": "3.907.0",
+        "@aws-sdk/util-user-agent-node": "3.907.0",
         "@smithy/config-resolver": "^4.3.0",
         "@smithy/core": "^3.14.0",
         "@smithy/fetch-http-handler": "^5.3.0",
@@ -20990,13 +21087,13 @@ var require_runtimeConfig_shared = __commonJS({
     var getRuntimeConfig5 = (config) => {
       return {
         apiVersion: "2019-06-10",
-        base64Decoder: config?.base64Decoder ?? util_base64_1.fromBase64,
-        base64Encoder: config?.base64Encoder ?? util_base64_1.toBase64,
-        disableHostPrefix: config?.disableHostPrefix ?? false,
-        endpointProvider: config?.endpointProvider ?? endpointResolver_1.defaultEndpointResolver,
-        extensions: config?.extensions ?? [],
-        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? httpAuthSchemeProvider_1.defaultSSOHttpAuthSchemeProvider,
-        httpAuthSchemes: config?.httpAuthSchemes ?? [
+        base64Decoder: (config == null ? void 0 : config.base64Decoder) ?? util_base64_1.fromBase64,
+        base64Encoder: (config == null ? void 0 : config.base64Encoder) ?? util_base64_1.toBase64,
+        disableHostPrefix: (config == null ? void 0 : config.disableHostPrefix) ?? false,
+        endpointProvider: (config == null ? void 0 : config.endpointProvider) ?? endpointResolver_1.defaultEndpointResolver,
+        extensions: (config == null ? void 0 : config.extensions) ?? [],
+        httpAuthSchemeProvider: (config == null ? void 0 : config.httpAuthSchemeProvider) ?? httpAuthSchemeProvider_1.defaultSSOHttpAuthSchemeProvider,
+        httpAuthSchemes: (config == null ? void 0 : config.httpAuthSchemes) ?? [
           {
             schemeId: "aws.auth#sigv4",
             identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4"),
@@ -21008,11 +21105,11 @@ var require_runtimeConfig_shared = __commonJS({
             signer: new core_2.NoAuthSigner()
           }
         ],
-        logger: config?.logger ?? new smithy_client_1.NoOpLogger(),
-        serviceId: config?.serviceId ?? "SSO",
-        urlParser: config?.urlParser ?? url_parser_1.parseUrl,
-        utf8Decoder: config?.utf8Decoder ?? util_utf8_1.fromUtf8,
-        utf8Encoder: config?.utf8Encoder ?? util_utf8_1.toUtf8
+        logger: (config == null ? void 0 : config.logger) ?? new smithy_client_1.NoOpLogger(),
+        serviceId: (config == null ? void 0 : config.serviceId) ?? "SSO",
+        urlParser: (config == null ? void 0 : config.urlParser) ?? url_parser_1.parseUrl,
+        utf8Decoder: (config == null ? void 0 : config.utf8Decoder) ?? util_utf8_1.fromUtf8,
+        utf8Encoder: (config == null ? void 0 : config.utf8Encoder) ?? util_utf8_1.toUtf8
       };
     };
     exports2.getRuntimeConfig = getRuntimeConfig5;
@@ -21047,7 +21144,7 @@ var require_runtimeConfig = __commonJS({
       const clientSharedValues = (0, runtimeConfig_shared_1.getRuntimeConfig)(config);
       (0, core_1.emitWarningIfUnsupportedVersion)(process.version);
       const loaderConfig = {
-        profile: config?.profile,
+        profile: config == null ? void 0 : config.profile,
         logger: clientSharedValues.logger
       };
       return {
@@ -21055,21 +21152,21 @@ var require_runtimeConfig = __commonJS({
         ...config,
         runtime: "node",
         defaultsMode,
-        authSchemePreference: config?.authSchemePreference ?? (0, node_config_provider_1.loadConfig)(core_1.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
-        bodyLengthChecker: config?.bodyLengthChecker ?? util_body_length_node_1.calculateBodyLength,
-        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? (0, util_user_agent_node_1.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_json_1.default.version }),
-        maxAttempts: config?.maxAttempts ?? (0, node_config_provider_1.loadConfig)(middleware_retry_1.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
-        region: config?.region ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_REGION_CONFIG_OPTIONS, { ...config_resolver_1.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
-        requestHandler: node_http_handler_1.NodeHttpHandler.create(config?.requestHandler ?? defaultConfigProvider),
-        retryMode: config?.retryMode ?? (0, node_config_provider_1.loadConfig)({
+        authSchemePreference: (config == null ? void 0 : config.authSchemePreference) ?? (0, node_config_provider_1.loadConfig)(core_1.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
+        bodyLengthChecker: (config == null ? void 0 : config.bodyLengthChecker) ?? util_body_length_node_1.calculateBodyLength,
+        defaultUserAgentProvider: (config == null ? void 0 : config.defaultUserAgentProvider) ?? (0, util_user_agent_node_1.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_json_1.default.version }),
+        maxAttempts: (config == null ? void 0 : config.maxAttempts) ?? (0, node_config_provider_1.loadConfig)(middleware_retry_1.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
+        region: (config == null ? void 0 : config.region) ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_REGION_CONFIG_OPTIONS, { ...config_resolver_1.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        requestHandler: node_http_handler_1.NodeHttpHandler.create((config == null ? void 0 : config.requestHandler) ?? defaultConfigProvider),
+        retryMode: (config == null ? void 0 : config.retryMode) ?? (0, node_config_provider_1.loadConfig)({
           ...middleware_retry_1.NODE_RETRY_MODE_CONFIG_OPTIONS,
           default: async () => (await defaultConfigProvider()).retryMode || util_retry_1.DEFAULT_RETRY_MODE
         }, config),
-        sha256: config?.sha256 ?? hash_node_1.Hash.bind(null, "sha256"),
-        streamCollector: config?.streamCollector ?? node_http_handler_1.streamCollector,
-        useDualstackEndpoint: config?.useDualstackEndpoint ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        useFipsEndpoint: config?.useFipsEndpoint ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        userAgentAppId: config?.userAgentAppId ?? (0, node_config_provider_1.loadConfig)(util_user_agent_node_1.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig)
+        sha256: (config == null ? void 0 : config.sha256) ?? hash_node_1.Hash.bind(null, "sha256"),
+        streamCollector: (config == null ? void 0 : config.streamCollector) ?? node_http_handler_1.streamCollector,
+        useDualstackEndpoint: (config == null ? void 0 : config.useDualstackEndpoint) ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        useFipsEndpoint: (config == null ? void 0 : config.useFipsEndpoint) ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        userAgentAppId: (config == null ? void 0 : config.userAgentAppId) ?? (0, node_config_provider_1.loadConfig)(util_user_agent_node_1.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig)
       };
     };
     exports2.getRuntimeConfig = getRuntimeConfig5;
@@ -21164,7 +21261,7 @@ var require_dist_cjs49 = __commonJS({
         const _config_5 = middlewareHostHeader.resolveHostHeaderConfig(_config_4);
         const _config_6 = middlewareEndpoint.resolveEndpointConfig(_config_5);
         const _config_7 = httpAuthSchemeProvider.resolveHttpAuthSchemeConfig(_config_6);
-        const _config_8 = resolveRuntimeExtensions3(_config_7, configuration?.extensions || []);
+        const _config_8 = resolveRuntimeExtensions3(_config_7, (configuration == null ? void 0 : configuration.extensions) || []);
         this.config = _config_8;
         this.middlewareStack.use(middlewareUserAgent.getUserAgentPlugin(this.config));
         this.middlewareStack.use(middlewareRetry.getRetryPlugin(this.config));
@@ -21612,8 +21709,8 @@ var require_dist_cjs50 = __commonJS({
         return require_loadSso_CVy8iqsZ();
       });
       const sso = ssoClient || new SSOClient(Object.assign({}, clientConfig ?? {}, {
-        logger: clientConfig?.logger ?? parentClientConfig?.logger,
-        region: clientConfig?.region ?? ssoRegion
+        logger: (clientConfig == null ? void 0 : clientConfig.logger) ?? (parentClientConfig == null ? void 0 : parentClientConfig.logger),
+        region: (clientConfig == null ? void 0 : clientConfig.region) ?? ssoRegion
       }));
       let ssoResp;
       try {
@@ -21659,11 +21756,12 @@ Reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.ht
       return profile;
     };
     var fromSSO = (init = {}) => async ({ callerClientConfig } = {}) => {
-      init.logger?.debug("@aws-sdk/credential-provider-sso - fromSSO");
+      var _a2;
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-sso - fromSSO");
       const { ssoStartUrl, ssoAccountId, ssoRegion, ssoRoleName, ssoSession } = init;
       const { ssoClient } = init;
       const profileName = sharedIniFileLoader.getProfileName({
-        profile: init.profile ?? callerClientConfig?.profile
+        profile: init.profile ?? (callerClientConfig == null ? void 0 : callerClientConfig.profile)
       });
       if (!ssoStartUrl && !ssoAccountId && !ssoRegion && !ssoRoleName && !ssoSession) {
         const profiles = await sharedIniFileLoader.parseKnownFiles(init);
@@ -21676,7 +21774,7 @@ Reference: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.ht
             logger: init.logger
           });
         }
-        if (profile?.sso_session) {
+        if (profile == null ? void 0 : profile.sso_session) {
           const ssoSessions = await sharedIniFileLoader.loadSsoSessionData(init);
           const session = ssoSessions[profile.sso_session];
           const conflictMsg = ` configurations in profile ${profileName} and sso-session ${profile.sso_session}`;
@@ -21901,13 +21999,13 @@ var init_runtimeConfig_shared2 = __esm({
     getRuntimeConfig3 = (config) => {
       return {
         apiVersion: "2011-06-15",
-        base64Decoder: config?.base64Decoder ?? import_util_base649.fromBase64,
-        base64Encoder: config?.base64Encoder ?? import_util_base649.toBase64,
-        disableHostPrefix: config?.disableHostPrefix ?? false,
-        endpointProvider: config?.endpointProvider ?? defaultEndpointResolver2,
-        extensions: config?.extensions ?? [],
-        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? defaultSTSHttpAuthSchemeProvider,
-        httpAuthSchemes: config?.httpAuthSchemes ?? [
+        base64Decoder: (config == null ? void 0 : config.base64Decoder) ?? import_util_base649.fromBase64,
+        base64Encoder: (config == null ? void 0 : config.base64Encoder) ?? import_util_base649.toBase64,
+        disableHostPrefix: (config == null ? void 0 : config.disableHostPrefix) ?? false,
+        endpointProvider: (config == null ? void 0 : config.endpointProvider) ?? defaultEndpointResolver2,
+        extensions: (config == null ? void 0 : config.extensions) ?? [],
+        httpAuthSchemeProvider: (config == null ? void 0 : config.httpAuthSchemeProvider) ?? defaultSTSHttpAuthSchemeProvider,
+        httpAuthSchemes: (config == null ? void 0 : config.httpAuthSchemes) ?? [
           {
             schemeId: "aws.auth#sigv4",
             identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4"),
@@ -21919,11 +22017,11 @@ var init_runtimeConfig_shared2 = __esm({
             signer: new NoAuthSigner()
           }
         ],
-        logger: config?.logger ?? new import_smithy_client17.NoOpLogger(),
-        serviceId: config?.serviceId ?? "STS",
-        urlParser: config?.urlParser ?? import_url_parser2.parseUrl,
-        utf8Decoder: config?.utf8Decoder ?? import_util_utf89.fromUtf8,
-        utf8Encoder: config?.utf8Encoder ?? import_util_utf89.toUtf8
+        logger: (config == null ? void 0 : config.logger) ?? new import_smithy_client17.NoOpLogger(),
+        serviceId: (config == null ? void 0 : config.serviceId) ?? "STS",
+        urlParser: (config == null ? void 0 : config.urlParser) ?? import_url_parser2.parseUrl,
+        utf8Decoder: (config == null ? void 0 : config.utf8Decoder) ?? import_util_utf89.fromUtf8,
+        utf8Encoder: (config == null ? void 0 : config.utf8Encoder) ?? import_util_utf89.toUtf8
       };
     };
   }
@@ -21955,7 +22053,7 @@ var init_runtimeConfig2 = __esm({
       const clientSharedValues = getRuntimeConfig3(config);
       emitWarningIfUnsupportedVersion(process.version);
       const loaderConfig = {
-        profile: config?.profile,
+        profile: config == null ? void 0 : config.profile,
         logger: clientSharedValues.logger
       };
       return {
@@ -21963,13 +22061,13 @@ var init_runtimeConfig2 = __esm({
         ...config,
         runtime: "node",
         defaultsMode,
-        authSchemePreference: config?.authSchemePreference ?? (0, import_node_config_provider2.loadConfig)(NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
-        bodyLengthChecker: config?.bodyLengthChecker ?? import_util_body_length_node2.calculateBodyLength,
-        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? (0, import_util_user_agent_node2.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_default.version }),
-        httpAuthSchemes: config?.httpAuthSchemes ?? [
+        authSchemePreference: (config == null ? void 0 : config.authSchemePreference) ?? (0, import_node_config_provider2.loadConfig)(NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
+        bodyLengthChecker: (config == null ? void 0 : config.bodyLengthChecker) ?? import_util_body_length_node2.calculateBodyLength,
+        defaultUserAgentProvider: (config == null ? void 0 : config.defaultUserAgentProvider) ?? (0, import_util_user_agent_node2.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_default.version }),
+        httpAuthSchemes: (config == null ? void 0 : config.httpAuthSchemes) ?? [
           {
             schemeId: "aws.auth#sigv4",
-            identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4") || (async (idProps) => await config.credentialDefaultProvider(idProps?.__config || {})()),
+            identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4") || (async (idProps) => await config.credentialDefaultProvider((idProps == null ? void 0 : idProps.__config) || {})()),
             signer: new AwsSdkSigV4Signer()
           },
           {
@@ -21978,18 +22076,18 @@ var init_runtimeConfig2 = __esm({
             signer: new NoAuthSigner()
           }
         ],
-        maxAttempts: config?.maxAttempts ?? (0, import_node_config_provider2.loadConfig)(import_middleware_retry3.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
-        region: config?.region ?? (0, import_node_config_provider2.loadConfig)(import_config_resolver3.NODE_REGION_CONFIG_OPTIONS, { ...import_config_resolver3.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
-        requestHandler: import_node_http_handler2.NodeHttpHandler.create(config?.requestHandler ?? defaultConfigProvider),
-        retryMode: config?.retryMode ?? (0, import_node_config_provider2.loadConfig)({
+        maxAttempts: (config == null ? void 0 : config.maxAttempts) ?? (0, import_node_config_provider2.loadConfig)(import_middleware_retry3.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
+        region: (config == null ? void 0 : config.region) ?? (0, import_node_config_provider2.loadConfig)(import_config_resolver3.NODE_REGION_CONFIG_OPTIONS, { ...import_config_resolver3.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        requestHandler: import_node_http_handler2.NodeHttpHandler.create((config == null ? void 0 : config.requestHandler) ?? defaultConfigProvider),
+        retryMode: (config == null ? void 0 : config.retryMode) ?? (0, import_node_config_provider2.loadConfig)({
           ...import_middleware_retry3.NODE_RETRY_MODE_CONFIG_OPTIONS,
           default: async () => (await defaultConfigProvider()).retryMode || import_util_retry2.DEFAULT_RETRY_MODE
         }, config),
-        sha256: config?.sha256 ?? import_hash_node2.Hash.bind(null, "sha256"),
-        streamCollector: config?.streamCollector ?? import_node_http_handler2.streamCollector,
-        useDualstackEndpoint: config?.useDualstackEndpoint ?? (0, import_node_config_provider2.loadConfig)(import_config_resolver3.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        useFipsEndpoint: config?.useFipsEndpoint ?? (0, import_node_config_provider2.loadConfig)(import_config_resolver3.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        userAgentAppId: config?.userAgentAppId ?? (0, import_node_config_provider2.loadConfig)(import_util_user_agent_node2.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig)
+        sha256: (config == null ? void 0 : config.sha256) ?? import_hash_node2.Hash.bind(null, "sha256"),
+        streamCollector: (config == null ? void 0 : config.streamCollector) ?? import_node_http_handler2.streamCollector,
+        useDualstackEndpoint: (config == null ? void 0 : config.useDualstackEndpoint) ?? (0, import_node_config_provider2.loadConfig)(import_config_resolver3.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        useFipsEndpoint: (config == null ? void 0 : config.useFipsEndpoint) ?? (0, import_node_config_provider2.loadConfig)(import_config_resolver3.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        userAgentAppId: (config == null ? void 0 : config.userAgentAppId) ?? (0, import_node_config_provider2.loadConfig)(import_util_user_agent_node2.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig)
       };
     };
   }
@@ -22086,7 +22184,7 @@ var init_STSClient = __esm({
         const _config_5 = (0, import_middleware_host_header2.resolveHostHeaderConfig)(_config_4);
         const _config_6 = (0, import_middleware_endpoint3.resolveEndpointConfig)(_config_5);
         const _config_7 = resolveHttpAuthSchemeConfig2(_config_6);
-        const _config_8 = resolveRuntimeExtensions2(_config_7, configuration?.extensions || []);
+        const _config_8 = resolveRuntimeExtensions2(_config_7, (configuration == null ? void 0 : configuration.extensions) || []);
         this.config = _config_8;
         this.middlewareStack.use((0, import_middleware_user_agent2.getUserAgentPlugin)(this.config));
         this.middlewareStack.use((0, import_middleware_retry4.getRetryPlugin)(this.config));
@@ -22388,6 +22486,7 @@ var init_Aws_query = __esm({
       return (0, import_smithy_client24.decorateServiceException)(exception, body);
     };
     se_AssumeRoleRequest = (input, context) => {
+      var _a2, _b, _c, _d;
       const entries = {};
       if (input[_RA] != null) {
         entries[_RA] = input[_RA];
@@ -22397,7 +22496,7 @@ var init_Aws_query = __esm({
       }
       if (input[_PA] != null) {
         const memberEntries = se_policyDescriptorListType(input[_PA], context);
-        if (input[_PA]?.length === 0) {
+        if (((_a2 = input[_PA]) == null ? void 0 : _a2.length) === 0) {
           entries.PolicyArns = [];
         }
         Object.entries(memberEntries).forEach(([key, value]) => {
@@ -22413,7 +22512,7 @@ var init_Aws_query = __esm({
       }
       if (input[_T] != null) {
         const memberEntries = se_tagListType(input[_T], context);
-        if (input[_T]?.length === 0) {
+        if (((_b = input[_T]) == null ? void 0 : _b.length) === 0) {
           entries.Tags = [];
         }
         Object.entries(memberEntries).forEach(([key, value]) => {
@@ -22423,7 +22522,7 @@ var init_Aws_query = __esm({
       }
       if (input[_TTK] != null) {
         const memberEntries = se_tagKeyListType(input[_TTK], context);
-        if (input[_TTK]?.length === 0) {
+        if (((_c = input[_TTK]) == null ? void 0 : _c.length) === 0) {
           entries.TransitiveTagKeys = [];
         }
         Object.entries(memberEntries).forEach(([key, value]) => {
@@ -22445,7 +22544,7 @@ var init_Aws_query = __esm({
       }
       if (input[_PC] != null) {
         const memberEntries = se_ProvidedContextsListType(input[_PC], context);
-        if (input[_PC]?.length === 0) {
+        if (((_d = input[_PC]) == null ? void 0 : _d.length) === 0) {
           entries.ProvidedContexts = [];
         }
         Object.entries(memberEntries).forEach(([key, value]) => {
@@ -22456,6 +22555,7 @@ var init_Aws_query = __esm({
       return entries;
     };
     se_AssumeRoleWithWebIdentityRequest = (input, context) => {
+      var _a2;
       const entries = {};
       if (input[_RA] != null) {
         entries[_RA] = input[_RA];
@@ -22471,7 +22571,7 @@ var init_Aws_query = __esm({
       }
       if (input[_PA] != null) {
         const memberEntries = se_policyDescriptorListType(input[_PA], context);
-        if (input[_PA]?.length === 0) {
+        if (((_a2 = input[_PA]) == null ? void 0 : _a2.length) === 0) {
           entries.PolicyArns = [];
         }
         Object.entries(memberEntries).forEach(([key, value]) => {
@@ -22754,7 +22854,8 @@ var init_Aws_query = __esm({
     _m = "message";
     buildFormUrlencodedString = (formEntries) => Object.entries(formEntries).map(([key, value]) => (0, import_smithy_client24.extendedEncodeURIComponent)(key) + "=" + (0, import_smithy_client24.extendedEncodeURIComponent)(value)).join("&");
     loadQueryErrorCode = (output, data2) => {
-      if (data2.Error?.Code !== void 0) {
+      var _a2;
+      if (((_a2 = data2.Error) == null ? void 0 : _a2.Code) !== void 0) {
         return data2.Error.Code;
       }
       if (output.statusCode == 404) {
@@ -22846,7 +22947,7 @@ var init_defaultStsRoleAssumers = __esm({
     init_AssumeRoleWithWebIdentityCommand();
     ASSUME_ROLE_DEFAULT_REGION = "us-east-1";
     getAccountIdFromAssumedRoleUser = (assumedRoleUser) => {
-      if (typeof assumedRoleUser?.Arn === "string") {
+      if (typeof (assumedRoleUser == null ? void 0 : assumedRoleUser.Arn) === "string") {
         const arnComponents = assumedRoleUser.Arn.split(":");
         if (arnComponents.length > 4 && arnComponents[4] !== "") {
           return arnComponents[4];
@@ -22855,22 +22956,24 @@ var init_defaultStsRoleAssumers = __esm({
       return void 0;
     };
     resolveRegion = async (_region, _parentRegion, credentialProviderLogger) => {
+      var _a2;
       const region = typeof _region === "function" ? await _region() : _region;
       const parentRegion = typeof _parentRegion === "function" ? await _parentRegion() : _parentRegion;
-      credentialProviderLogger?.debug?.("@aws-sdk/client-sts::resolveRegion", "accepting first of:", `${region} (provider)`, `${parentRegion} (parent client)`, `${ASSUME_ROLE_DEFAULT_REGION} (STS default)`);
+      (_a2 = credentialProviderLogger == null ? void 0 : credentialProviderLogger.debug) == null ? void 0 : _a2.call(credentialProviderLogger, "@aws-sdk/client-sts::resolveRegion", "accepting first of:", `${region} (provider)`, `${parentRegion} (parent client)`, `${ASSUME_ROLE_DEFAULT_REGION} (STS default)`);
       return region ?? parentRegion ?? ASSUME_ROLE_DEFAULT_REGION;
     };
     getDefaultRoleAssumer = (stsOptions, STSClient2) => {
       let stsClient;
       let closureSourceCreds;
       return async (sourceCreds, params) => {
+        var _a2, _b, _c, _d;
         closureSourceCreds = sourceCreds;
         if (!stsClient) {
-          const { logger: logger2 = stsOptions?.parentClientConfig?.logger, region, requestHandler = stsOptions?.parentClientConfig?.requestHandler, credentialProviderLogger } = stsOptions;
-          const resolvedRegion = await resolveRegion(region, stsOptions?.parentClientConfig?.region, credentialProviderLogger);
+          const { logger: logger2 = (_a2 = stsOptions == null ? void 0 : stsOptions.parentClientConfig) == null ? void 0 : _a2.logger, region, requestHandler = (_b = stsOptions == null ? void 0 : stsOptions.parentClientConfig) == null ? void 0 : _b.requestHandler, credentialProviderLogger } = stsOptions;
+          const resolvedRegion = await resolveRegion(region, (_c = stsOptions == null ? void 0 : stsOptions.parentClientConfig) == null ? void 0 : _c.region, credentialProviderLogger);
           const isCompatibleRequestHandler = !isH2(requestHandler);
           stsClient = new STSClient2({
-            profile: stsOptions?.parentClientConfig?.profile,
+            profile: (_d = stsOptions == null ? void 0 : stsOptions.parentClientConfig) == null ? void 0 : _d.profile,
             credentialDefaultProvider: () => async () => closureSourceCreds,
             region: resolvedRegion,
             requestHandler: isCompatibleRequestHandler ? requestHandler : void 0,
@@ -22897,12 +23000,13 @@ var init_defaultStsRoleAssumers = __esm({
     getDefaultRoleAssumerWithWebIdentity = (stsOptions, STSClient2) => {
       let stsClient;
       return async (params) => {
+        var _a2, _b, _c, _d;
         if (!stsClient) {
-          const { logger: logger2 = stsOptions?.parentClientConfig?.logger, region, requestHandler = stsOptions?.parentClientConfig?.requestHandler, credentialProviderLogger } = stsOptions;
-          const resolvedRegion = await resolveRegion(region, stsOptions?.parentClientConfig?.region, credentialProviderLogger);
+          const { logger: logger2 = (_a2 = stsOptions == null ? void 0 : stsOptions.parentClientConfig) == null ? void 0 : _a2.logger, region, requestHandler = (_b = stsOptions == null ? void 0 : stsOptions.parentClientConfig) == null ? void 0 : _b.requestHandler, credentialProviderLogger } = stsOptions;
+          const resolvedRegion = await resolveRegion(region, (_c = stsOptions == null ? void 0 : stsOptions.parentClientConfig) == null ? void 0 : _c.region, credentialProviderLogger);
           const isCompatibleRequestHandler = !isH2(requestHandler);
           stsClient = new STSClient2({
-            profile: stsOptions?.parentClientConfig?.profile,
+            profile: (_d = stsOptions == null ? void 0 : stsOptions.parentClientConfig) == null ? void 0 : _d.profile,
             region: resolvedRegion,
             requestHandler: isCompatibleRequestHandler ? requestHandler : void 0,
             logger: logger2
@@ -22929,7 +23033,8 @@ var init_defaultStsRoleAssumers = __esm({
       };
     };
     isH2 = (requestHandler) => {
-      return requestHandler?.metadata?.handlerProtocol === "h2";
+      var _a2;
+      return ((_a2 = requestHandler == null ? void 0 : requestHandler.metadata) == null ? void 0 : _a2.handlerProtocol) === "h2";
     };
   }
 });
@@ -23008,6 +23113,7 @@ var require_dist_cjs51 = __commonJS({
     var util = require("util");
     var client2 = (init_client(), __toCommonJS(client_exports));
     var getValidatedProcessCredentials = (profileName, data2, profiles) => {
+      var _a2;
       if (data2.Version !== 1) {
         throw Error(`Profile ${profileName} credential_process did not return Version 1.`);
       }
@@ -23022,7 +23128,7 @@ var require_dist_cjs51 = __commonJS({
         }
       }
       let accountId = data2.AccountId;
-      if (!accountId && profiles?.[profileName]?.aws_account_id) {
+      if (!accountId && ((_a2 = profiles == null ? void 0 : profiles[profileName]) == null ? void 0 : _a2.aws_account_id)) {
         accountId = profiles[profileName].aws_account_id;
       }
       const credentials = {
@@ -23037,11 +23143,12 @@ var require_dist_cjs51 = __commonJS({
       return credentials;
     };
     var resolveProcessCredentials = async (profileName, profiles, logger2) => {
+      var _a2, _b;
       const profile = profiles[profileName];
       if (profiles[profileName]) {
         const credentialProcess = profile["credential_process"];
         if (credentialProcess !== void 0) {
-          const execPromise = util.promisify(sharedIniFileLoader.externalDataInterceptor?.getTokenRecord?.().exec ?? child_process.exec);
+          const execPromise = util.promisify(((_b = (_a2 = sharedIniFileLoader.externalDataInterceptor) == null ? void 0 : _a2.getTokenRecord) == null ? void 0 : _b.call(_a2).exec) ?? child_process.exec);
           try {
             const { stdout } = await execPromise(credentialProcess);
             let data2;
@@ -23064,10 +23171,11 @@ var require_dist_cjs51 = __commonJS({
       }
     };
     var fromProcess = (init = {}) => async ({ callerClientConfig } = {}) => {
-      init.logger?.debug("@aws-sdk/credential-provider-process - fromProcess");
+      var _a2;
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-process - fromProcess");
       const profiles = await sharedIniFileLoader.parseKnownFiles(init);
       return resolveProcessCredentials(sharedIniFileLoader.getProfileName({
-        profile: init.profile ?? callerClientConfig?.profile
+        profile: init.profile ?? (callerClientConfig == null ? void 0 : callerClientConfig.profile)
       }), profiles, init.logger);
     };
     exports2.fromProcess = fromProcess;
@@ -23125,7 +23233,8 @@ var require_fromWebToken = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.fromWebToken = void 0;
     var fromWebToken = (init) => async (awsIdentityProperties) => {
-      init.logger?.debug("@aws-sdk/credential-provider-web-identity - fromWebToken");
+      var _a2;
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-web-identity - fromWebToken");
       const { roleArn, roleSessionName, webIdentityToken, providerId, policyArns, policy, durationSeconds } = init;
       let { roleAssumerWithWebIdentity } = init;
       if (!roleAssumerWithWebIdentity) {
@@ -23134,7 +23243,7 @@ var require_fromWebToken = __commonJS({
           ...init.clientConfig,
           credentialProviderLogger: init.logger,
           parentClientConfig: {
-            ...awsIdentityProperties?.callerClientConfig,
+            ...awsIdentityProperties == null ? void 0 : awsIdentityProperties.callerClientConfig,
             ...init.parentClientConfig
           }
         }, init.clientPlugins);
@@ -23168,10 +23277,11 @@ var require_fromTokenFile = __commonJS({
     var ENV_ROLE_ARN = "AWS_ROLE_ARN";
     var ENV_ROLE_SESSION_NAME = "AWS_ROLE_SESSION_NAME";
     var fromTokenFile = (init = {}) => async () => {
-      init.logger?.debug("@aws-sdk/credential-provider-web-identity - fromTokenFile");
-      const webIdentityTokenFile = init?.webIdentityTokenFile ?? process.env[ENV_TOKEN_FILE];
-      const roleArn = init?.roleArn ?? process.env[ENV_ROLE_ARN];
-      const roleSessionName = init?.roleSessionName ?? process.env[ENV_ROLE_SESSION_NAME];
+      var _a2, _b, _c;
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-web-identity - fromTokenFile");
+      const webIdentityTokenFile = (init == null ? void 0 : init.webIdentityTokenFile) ?? process.env[ENV_TOKEN_FILE];
+      const roleArn = (init == null ? void 0 : init.roleArn) ?? process.env[ENV_ROLE_ARN];
+      const roleSessionName = (init == null ? void 0 : init.roleSessionName) ?? process.env[ENV_ROLE_SESSION_NAME];
       if (!webIdentityTokenFile || !roleArn) {
         throw new property_provider_1.CredentialsProviderError("Web identity configuration not specified", {
           logger: init.logger
@@ -23179,7 +23289,7 @@ var require_fromTokenFile = __commonJS({
       }
       const credentials = await (0, fromWebToken_1.fromWebToken)({
         ...init,
-        webIdentityToken: shared_ini_file_loader_1.externalDataInterceptor?.getTokenRecord?.()[webIdentityTokenFile] ?? (0, fs_1.readFileSync)(webIdentityTokenFile, { encoding: "ascii" }),
+        webIdentityToken: ((_c = (_b = shared_ini_file_loader_1.externalDataInterceptor) == null ? void 0 : _b.getTokenRecord) == null ? void 0 : _c.call(_b)[webIdentityTokenFile]) ?? (0, fs_1.readFileSync)(webIdentityTokenFile, { encoding: "ascii" }),
         roleArn,
         roleSessionName
       })();
@@ -23231,16 +23341,16 @@ var require_dist_cjs53 = __commonJS({
         EcsContainer: async (options) => {
           const { fromHttp } = await Promise.resolve().then(() => __toESM(require_dist_cjs42()));
           const { fromContainerMetadata } = await Promise.resolve().then(() => __toESM(require_dist_cjs41()));
-          logger2?.debug("@aws-sdk/credential-provider-ini - credential_source is EcsContainer");
+          logger2 == null ? void 0 : logger2.debug("@aws-sdk/credential-provider-ini - credential_source is EcsContainer");
           return async () => propertyProvider.chain(fromHttp(options ?? {}), fromContainerMetadata(options))().then(setNamedProvider);
         },
         Ec2InstanceMetadata: async (options) => {
-          logger2?.debug("@aws-sdk/credential-provider-ini - credential_source is Ec2InstanceMetadata");
+          logger2 == null ? void 0 : logger2.debug("@aws-sdk/credential-provider-ini - credential_source is Ec2InstanceMetadata");
           const { fromInstanceMetadata } = await Promise.resolve().then(() => __toESM(require_dist_cjs41()));
           return async () => fromInstanceMetadata(options)().then(setNamedProvider);
         },
         Environment: async (options) => {
-          logger2?.debug("@aws-sdk/credential-provider-ini - credential_source is Environment");
+          logger2 == null ? void 0 : logger2.debug("@aws-sdk/credential-provider-ini - credential_source is Environment");
           const { fromEnv } = await Promise.resolve().then(() => __toESM(require_dist_cjs40()));
           return async () => fromEnv(options)().then(setNamedProvider);
         }
@@ -23256,21 +23366,24 @@ var require_dist_cjs53 = __commonJS({
       return Boolean(arg) && typeof arg === "object" && typeof arg.role_arn === "string" && ["undefined", "string"].indexOf(typeof arg.role_session_name) > -1 && ["undefined", "string"].indexOf(typeof arg.external_id) > -1 && ["undefined", "string"].indexOf(typeof arg.mfa_serial) > -1 && (isAssumeRoleWithSourceProfile(arg, { profile, logger: logger2 }) || isCredentialSourceProfile(arg, { profile, logger: logger2 }));
     };
     var isAssumeRoleWithSourceProfile = (arg, { profile, logger: logger2 }) => {
+      var _a2;
       const withSourceProfile = typeof arg.source_profile === "string" && typeof arg.credential_source === "undefined";
       if (withSourceProfile) {
-        logger2?.debug?.(`    ${profile} isAssumeRoleWithSourceProfile source_profile=${arg.source_profile}`);
+        (_a2 = logger2 == null ? void 0 : logger2.debug) == null ? void 0 : _a2.call(logger2, `    ${profile} isAssumeRoleWithSourceProfile source_profile=${arg.source_profile}`);
       }
       return withSourceProfile;
     };
     var isCredentialSourceProfile = (arg, { profile, logger: logger2 }) => {
+      var _a2;
       const withProviderProfile = typeof arg.credential_source === "string" && typeof arg.source_profile === "undefined";
       if (withProviderProfile) {
-        logger2?.debug?.(`    ${profile} isCredentialSourceProfile credential_source=${arg.credential_source}`);
+        (_a2 = logger2 == null ? void 0 : logger2.debug) == null ? void 0 : _a2.call(logger2, `    ${profile} isCredentialSourceProfile credential_source=${arg.credential_source}`);
       }
       return withProviderProfile;
     };
     var resolveAssumeRoleCredentials = async (profileName, profiles, options, visitedProfiles = {}) => {
-      options.logger?.debug("@aws-sdk/credential-provider-ini - resolveAssumeRoleCredentials (STS)");
+      var _a2, _b, _c;
+      (_a2 = options.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-ini - resolveAssumeRoleCredentials (STS)");
       const profileData = profiles[profileName];
       const { source_profile, region } = profileData;
       if (!options.roleAssumer) {
@@ -23279,15 +23392,15 @@ var require_dist_cjs53 = __commonJS({
           ...options.clientConfig,
           credentialProviderLogger: options.logger,
           parentClientConfig: {
-            ...options?.parentClientConfig,
-            region: region ?? options?.parentClientConfig?.region
+            ...options == null ? void 0 : options.parentClientConfig,
+            region: region ?? ((_b = options == null ? void 0 : options.parentClientConfig) == null ? void 0 : _b.region)
           }
         }, options.clientPlugins);
       }
       if (source_profile && source_profile in visitedProfiles) {
         throw new propertyProvider.CredentialsProviderError(`Detected a cycle attempting to resolve credentials for profile ${sharedIniFileLoader.getProfileName(options)}. Profiles visited: ` + Object.keys(visitedProfiles).join(", "), { logger: options.logger });
       }
-      options.logger?.debug(`@aws-sdk/credential-provider-ini - finding credential resolver using ${source_profile ? `source_profile=[${source_profile}]` : `profile=[${profileName}]`}`);
+      (_c = options.logger) == null ? void 0 : _c.debug(`@aws-sdk/credential-provider-ini - finding credential resolver using ${source_profile ? `source_profile=[${source_profile}]` : `profile=[${profileName}]`}`);
       const sourceCredsProvider = source_profile ? resolveProfileData(source_profile, profiles, options, {
         ...visitedProfiles,
         [source_profile]: true
@@ -23339,7 +23452,8 @@ var require_dist_cjs53 = __commonJS({
     var isSsoProfile = (arg) => arg && (typeof arg.sso_start_url === "string" || typeof arg.sso_account_id === "string" || typeof arg.sso_session === "string" || typeof arg.sso_region === "string" || typeof arg.sso_role_name === "string");
     var isStaticCredsProfile = (arg) => Boolean(arg) && typeof arg === "object" && typeof arg.aws_access_key_id === "string" && typeof arg.aws_secret_access_key === "string" && ["undefined", "string"].indexOf(typeof arg.aws_session_token) > -1 && ["undefined", "string"].indexOf(typeof arg.aws_account_id) > -1;
     var resolveStaticCredentials = async (profile, options) => {
-      options?.logger?.debug("@aws-sdk/credential-provider-ini - resolveStaticCredentials");
+      var _a2;
+      (_a2 = options == null ? void 0 : options.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-ini - resolveStaticCredentials");
       const credentials = {
         accessKeyId: profile.aws_access_key_id,
         secretAccessKey: profile.aws_secret_access_key,
@@ -23381,6 +23495,7 @@ var require_dist_cjs53 = __commonJS({
       throw new propertyProvider.CredentialsProviderError(`Could not resolve credentials using profile: [${profileName}] in configuration/credentials file(s).`, { logger: options.logger });
     };
     var fromIni = (_init = {}) => async ({ callerClientConfig } = {}) => {
+      var _a2;
       const init = {
         ..._init,
         parentClientConfig: {
@@ -23388,10 +23503,10 @@ var require_dist_cjs53 = __commonJS({
           ..._init.parentClientConfig
         }
       };
-      init.logger?.debug("@aws-sdk/credential-provider-ini - fromIni");
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-ini - fromIni");
       const profiles = await sharedIniFileLoader.parseKnownFiles(init);
       return resolveProfileData(sharedIniFileLoader.getProfileName({
-        profile: _init.profile ?? callerClientConfig?.profile
+        profile: _init.profile ?? (callerClientConfig == null ? void 0 : callerClientConfig.profile)
       }), profiles, init);
     };
     exports2.fromIni = fromIni;
@@ -23407,9 +23522,10 @@ var require_dist_cjs54 = __commonJS({
     var sharedIniFileLoader = require_dist_cjs34();
     var ENV_IMDS_DISABLED = "AWS_EC2_METADATA_DISABLED";
     var remoteProvider = async (init) => {
+      var _a2, _b;
       const { ENV_CMDS_FULL_URI, ENV_CMDS_RELATIVE_URI, fromContainerMetadata, fromInstanceMetadata } = await Promise.resolve().then(() => __toESM(require_dist_cjs41()));
       if (process.env[ENV_CMDS_RELATIVE_URI] || process.env[ENV_CMDS_FULL_URI]) {
-        init.logger?.debug("@aws-sdk/credential-provider-node - remoteProvider::fromHttp/fromContainerMetadata");
+        (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-node - remoteProvider::fromHttp/fromContainerMetadata");
         const { fromHttp } = await Promise.resolve().then(() => __toESM(require_dist_cjs42()));
         return propertyProvider.chain(fromHttp(init), fromContainerMetadata(init));
       }
@@ -23418,17 +23534,18 @@ var require_dist_cjs54 = __commonJS({
           throw new propertyProvider.CredentialsProviderError("EC2 Instance Metadata Service access disabled", { logger: init.logger });
         };
       }
-      init.logger?.debug("@aws-sdk/credential-provider-node - remoteProvider::fromInstanceMetadata");
+      (_b = init.logger) == null ? void 0 : _b.debug("@aws-sdk/credential-provider-node - remoteProvider::fromInstanceMetadata");
       return fromInstanceMetadata(init);
     };
     var multipleCredentialSourceWarningEmitted = false;
     var defaultProvider = (init = {}) => propertyProvider.memoize(propertyProvider.chain(async () => {
+      var _a2, _b, _c, _d;
       const profile = init.profile ?? process.env[sharedIniFileLoader.ENV_PROFILE];
       if (profile) {
         const envStaticCredentialsAreSet = process.env[credentialProviderEnv.ENV_KEY] && process.env[credentialProviderEnv.ENV_SECRET];
         if (envStaticCredentialsAreSet) {
           if (!multipleCredentialSourceWarningEmitted) {
-            const warnFn = init.logger?.warn && init.logger?.constructor?.name !== "NoOpLogger" ? init.logger.warn.bind(init.logger) : console.warn;
+            const warnFn = ((_a2 = init.logger) == null ? void 0 : _a2.warn) && ((_c = (_b = init.logger) == null ? void 0 : _b.constructor) == null ? void 0 : _c.name) !== "NoOpLogger" ? init.logger.warn.bind(init.logger) : console.warn;
             warnFn(`@aws-sdk/credential-provider-node - defaultProvider::fromEnv WARNING:
     Multiple credential sources detected: 
     Both AWS_PROFILE and the pair AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY static credentials are set.
@@ -23446,10 +23563,11 @@ var require_dist_cjs54 = __commonJS({
           tryNextLink: true
         });
       }
-      init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromEnv");
+      (_d = init.logger) == null ? void 0 : _d.debug("@aws-sdk/credential-provider-node - defaultProvider::fromEnv");
       return credentialProviderEnv.fromEnv(init)();
     }, async () => {
-      init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromSSO");
+      var _a2;
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-node - defaultProvider::fromSSO");
       const { ssoStartUrl, ssoAccountId, ssoRegion, ssoRoleName, ssoSession } = init;
       if (!ssoStartUrl && !ssoAccountId && !ssoRegion && !ssoRoleName && !ssoSession) {
         throw new propertyProvider.CredentialsProviderError("Skipping SSO provider in default chain (inputs do not include SSO fields).", { logger: init.logger });
@@ -23457,19 +23575,23 @@ var require_dist_cjs54 = __commonJS({
       const { fromSSO } = await Promise.resolve().then(() => __toESM(require_dist_cjs50()));
       return fromSSO(init)();
     }, async () => {
-      init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromIni");
+      var _a2;
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-node - defaultProvider::fromIni");
       const { fromIni } = await Promise.resolve().then(() => __toESM(require_dist_cjs53()));
       return fromIni(init)();
     }, async () => {
-      init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromProcess");
+      var _a2;
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-node - defaultProvider::fromProcess");
       const { fromProcess } = await Promise.resolve().then(() => __toESM(require_dist_cjs51()));
       return fromProcess(init)();
     }, async () => {
-      init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromTokenFile");
+      var _a2;
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-node - defaultProvider::fromTokenFile");
       const { fromTokenFile } = await Promise.resolve().then(() => __toESM(require_dist_cjs52()));
       return fromTokenFile(init)();
     }, async () => {
-      init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::remoteProvider");
+      var _a2;
+      (_a2 = init.logger) == null ? void 0 : _a2.debug("@aws-sdk/credential-provider-node - defaultProvider::remoteProvider");
       return (await remoteProvider(init))();
     }, async () => {
       throw new propertyProvider.CredentialsProviderError("Could not load credentials from any providers", {
@@ -23477,8 +23599,8 @@ var require_dist_cjs54 = __commonJS({
         logger: init.logger
       });
     }), credentialsTreatedAsExpired, credentialsWillNeedRefresh);
-    var credentialsWillNeedRefresh = (credentials) => credentials?.expiration !== void 0;
-    var credentialsTreatedAsExpired = (credentials) => credentials?.expiration !== void 0 && credentials.expiration.getTime() - Date.now() < 3e5;
+    var credentialsWillNeedRefresh = (credentials) => (credentials == null ? void 0 : credentials.expiration) !== void 0;
+    var credentialsTreatedAsExpired = (credentials) => (credentials == null ? void 0 : credentials.expiration) !== void 0 && credentials.expiration.getTime() - Date.now() < 3e5;
     exports2.credentialsTreatedAsExpired = credentialsTreatedAsExpired;
     exports2.credentialsWillNeedRefresh = credentialsWillNeedRefresh;
     exports2.defaultProvider = defaultProvider;
@@ -23591,24 +23713,24 @@ var require_runtimeConfig_shared2 = __commonJS({
     var getRuntimeConfig5 = (config) => {
       return {
         apiVersion: "2012-08-10",
-        base64Decoder: config?.base64Decoder ?? util_base64_1.fromBase64,
-        base64Encoder: config?.base64Encoder ?? util_base64_1.toBase64,
-        disableHostPrefix: config?.disableHostPrefix ?? false,
-        endpointProvider: config?.endpointProvider ?? endpointResolver_1.defaultEndpointResolver,
-        extensions: config?.extensions ?? [],
-        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? httpAuthSchemeProvider_1.defaultDynamoDBHttpAuthSchemeProvider,
-        httpAuthSchemes: config?.httpAuthSchemes ?? [
+        base64Decoder: (config == null ? void 0 : config.base64Decoder) ?? util_base64_1.fromBase64,
+        base64Encoder: (config == null ? void 0 : config.base64Encoder) ?? util_base64_1.toBase64,
+        disableHostPrefix: (config == null ? void 0 : config.disableHostPrefix) ?? false,
+        endpointProvider: (config == null ? void 0 : config.endpointProvider) ?? endpointResolver_1.defaultEndpointResolver,
+        extensions: (config == null ? void 0 : config.extensions) ?? [],
+        httpAuthSchemeProvider: (config == null ? void 0 : config.httpAuthSchemeProvider) ?? httpAuthSchemeProvider_1.defaultDynamoDBHttpAuthSchemeProvider,
+        httpAuthSchemes: (config == null ? void 0 : config.httpAuthSchemes) ?? [
           {
             schemeId: "aws.auth#sigv4",
             identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4"),
             signer: new core_1.AwsSdkSigV4Signer()
           }
         ],
-        logger: config?.logger ?? new smithy_client_1.NoOpLogger(),
-        serviceId: config?.serviceId ?? "DynamoDB",
-        urlParser: config?.urlParser ?? url_parser_1.parseUrl,
-        utf8Decoder: config?.utf8Decoder ?? util_utf8_1.fromUtf8,
-        utf8Encoder: config?.utf8Encoder ?? util_utf8_1.toUtf8
+        logger: (config == null ? void 0 : config.logger) ?? new smithy_client_1.NoOpLogger(),
+        serviceId: (config == null ? void 0 : config.serviceId) ?? "DynamoDB",
+        urlParser: (config == null ? void 0 : config.urlParser) ?? url_parser_1.parseUrl,
+        utf8Decoder: (config == null ? void 0 : config.utf8Decoder) ?? util_utf8_1.fromUtf8,
+        utf8Encoder: (config == null ? void 0 : config.utf8Encoder) ?? util_utf8_1.toUtf8
       };
     };
     exports2.getRuntimeConfig = getRuntimeConfig5;
@@ -23646,7 +23768,7 @@ var require_runtimeConfig2 = __commonJS({
       const clientSharedValues = (0, runtimeConfig_shared_1.getRuntimeConfig)(config);
       (0, core_1.emitWarningIfUnsupportedVersion)(process.version);
       const loaderConfig = {
-        profile: config?.profile,
+        profile: config == null ? void 0 : config.profile,
         logger: clientSharedValues.logger
       };
       return {
@@ -23654,24 +23776,24 @@ var require_runtimeConfig2 = __commonJS({
         ...config,
         runtime: "node",
         defaultsMode,
-        accountIdEndpointMode: config?.accountIdEndpointMode ?? (0, node_config_provider_1.loadConfig)(account_id_endpoint_1.NODE_ACCOUNT_ID_ENDPOINT_MODE_CONFIG_OPTIONS, loaderConfig),
-        authSchemePreference: config?.authSchemePreference ?? (0, node_config_provider_1.loadConfig)(core_1.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
-        bodyLengthChecker: config?.bodyLengthChecker ?? util_body_length_node_1.calculateBodyLength,
-        credentialDefaultProvider: config?.credentialDefaultProvider ?? credential_provider_node_1.defaultProvider,
-        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? (0, util_user_agent_node_1.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_json_1.default.version }),
-        endpointDiscoveryEnabledProvider: config?.endpointDiscoveryEnabledProvider ?? (0, node_config_provider_1.loadConfig)(middleware_endpoint_discovery_1.NODE_ENDPOINT_DISCOVERY_CONFIG_OPTIONS, loaderConfig),
-        maxAttempts: config?.maxAttempts ?? (0, node_config_provider_1.loadConfig)(middleware_retry_1.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
-        region: config?.region ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_REGION_CONFIG_OPTIONS, { ...config_resolver_1.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
-        requestHandler: node_http_handler_1.NodeHttpHandler.create(config?.requestHandler ?? defaultConfigProvider),
-        retryMode: config?.retryMode ?? (0, node_config_provider_1.loadConfig)({
+        accountIdEndpointMode: (config == null ? void 0 : config.accountIdEndpointMode) ?? (0, node_config_provider_1.loadConfig)(account_id_endpoint_1.NODE_ACCOUNT_ID_ENDPOINT_MODE_CONFIG_OPTIONS, loaderConfig),
+        authSchemePreference: (config == null ? void 0 : config.authSchemePreference) ?? (0, node_config_provider_1.loadConfig)(core_1.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
+        bodyLengthChecker: (config == null ? void 0 : config.bodyLengthChecker) ?? util_body_length_node_1.calculateBodyLength,
+        credentialDefaultProvider: (config == null ? void 0 : config.credentialDefaultProvider) ?? credential_provider_node_1.defaultProvider,
+        defaultUserAgentProvider: (config == null ? void 0 : config.defaultUserAgentProvider) ?? (0, util_user_agent_node_1.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_json_1.default.version }),
+        endpointDiscoveryEnabledProvider: (config == null ? void 0 : config.endpointDiscoveryEnabledProvider) ?? (0, node_config_provider_1.loadConfig)(middleware_endpoint_discovery_1.NODE_ENDPOINT_DISCOVERY_CONFIG_OPTIONS, loaderConfig),
+        maxAttempts: (config == null ? void 0 : config.maxAttempts) ?? (0, node_config_provider_1.loadConfig)(middleware_retry_1.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
+        region: (config == null ? void 0 : config.region) ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_REGION_CONFIG_OPTIONS, { ...config_resolver_1.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        requestHandler: node_http_handler_1.NodeHttpHandler.create((config == null ? void 0 : config.requestHandler) ?? defaultConfigProvider),
+        retryMode: (config == null ? void 0 : config.retryMode) ?? (0, node_config_provider_1.loadConfig)({
           ...middleware_retry_1.NODE_RETRY_MODE_CONFIG_OPTIONS,
           default: async () => (await defaultConfigProvider()).retryMode || util_retry_1.DEFAULT_RETRY_MODE
         }, config),
-        sha256: config?.sha256 ?? hash_node_1.Hash.bind(null, "sha256"),
-        streamCollector: config?.streamCollector ?? node_http_handler_1.streamCollector,
-        useDualstackEndpoint: config?.useDualstackEndpoint ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        useFipsEndpoint: config?.useFipsEndpoint ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        userAgentAppId: config?.userAgentAppId ?? (0, node_config_provider_1.loadConfig)(util_user_agent_node_1.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig)
+        sha256: (config == null ? void 0 : config.sha256) ?? hash_node_1.Hash.bind(null, "sha256"),
+        streamCollector: (config == null ? void 0 : config.streamCollector) ?? node_http_handler_1.streamCollector,
+        useDualstackEndpoint: (config == null ? void 0 : config.useDualstackEndpoint) ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        useFipsEndpoint: (config == null ? void 0 : config.useFipsEndpoint) ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        userAgentAppId: (config == null ? void 0 : config.userAgentAppId) ?? (0, node_config_provider_1.loadConfig)(util_user_agent_node_1.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig)
       };
     };
     exports2.getRuntimeConfig = getRuntimeConfig5;
@@ -23725,6 +23847,7 @@ var require_dist_cjs55 = __commonJS({
     };
     var randomInRange = (min, max) => min + Math.random() * (max - min);
     var runPolling = async ({ minDelay, maxDelay, maxWaitTime, abortController, client: client2, abortSignal }, input, acceptorChecks) => {
+      var _a2;
       const observedResponses = {};
       const { state: state2, reason } = await acceptorChecks(client2, input);
       if (reason) {
@@ -23739,7 +23862,7 @@ var require_dist_cjs55 = __commonJS({
       const waitUntil = Date.now() + maxWaitTime * 1e3;
       const attemptCeiling = Math.log(maxDelay / minDelay) / Math.log(2) + 1;
       while (true) {
-        if (abortController?.signal?.aborted || abortSignal?.aborted) {
+        if (((_a2 = abortController == null ? void 0 : abortController.signal) == null ? void 0 : _a2.aborted) || (abortSignal == null ? void 0 : abortSignal.aborted)) {
           const message = "AbortController signal aborted.";
           observedResponses[message] |= 0;
           observedResponses[message] += 1;
@@ -23763,16 +23886,17 @@ var require_dist_cjs55 = __commonJS({
       }
     };
     var createMessageFromResponse = (reason) => {
-      if (reason?.$responseBodyText) {
+      var _a2;
+      if (reason == null ? void 0 : reason.$responseBodyText) {
         return `Deserialization error for body: ${reason.$responseBodyText}`;
       }
-      if (reason?.$metadata?.httpStatusCode) {
+      if ((_a2 = reason == null ? void 0 : reason.$metadata) == null ? void 0 : _a2.httpStatusCode) {
         if (reason.$response || reason.message) {
           return `${reason.$response.statusCode ?? reason.$metadata.httpStatusCode ?? "Unknown"}: ${reason.message}`;
         }
         return `${reason.$metadata.httpStatusCode}: OK`;
       }
-      return String(reason?.message ?? JSON.stringify(reason) ?? "Unknown");
+      return String((reason == null ? void 0 : reason.message) ?? JSON.stringify(reason) ?? "Unknown");
     };
     var validateWaiterOptions = (options) => {
       if (options.maxWaitTime <= 0) {
@@ -23807,6 +23931,7 @@ var require_dist_cjs55 = __commonJS({
       };
     };
     var createWaiter = async (options, input, acceptorChecks) => {
+      var _a2;
       const params = {
         ...waiterServiceDefaults,
         ...options
@@ -23819,7 +23944,7 @@ var require_dist_cjs55 = __commonJS({
         finalize.push(clearListener);
         exitConditions.push(aborted);
       }
-      if (options.abortController?.signal) {
+      if ((_a2 = options.abortController) == null ? void 0 : _a2.signal) {
         const { aborted, clearListener } = abortTimeout(options.abortController.signal);
         finalize.push(clearListener);
         exitConditions.push(aborted);
@@ -27679,7 +27804,7 @@ var require_dist_cjs56 = __commonJS({
         const _config_9 = middlewareEndpointDiscovery.resolveEndpointDiscoveryConfig(_config_8, {
           endpointDiscoveryCommandCtor: DescribeEndpointsCommand
         });
-        const _config_10 = resolveRuntimeExtensions3(_config_9, configuration?.extensions || []);
+        const _config_10 = resolveRuntimeExtensions3(_config_9, (configuration == null ? void 0 : configuration.extensions) || []);
         this.config = _config_10;
         this.middlewareStack.use(middlewareUserAgent.getUserAgentPlugin(this.config));
         this.middlewareStack.use(middlewareRetry.getRetryPlugin(this.config));
@@ -27708,7 +27833,7 @@ var require_dist_cjs56 = __commonJS({
     };
     var BatchGetItemCommand = class extends smithyClient.Command.classBuilder().ep({
       ...commonParams3,
-      ResourceArnList: { type: "operationContextParams", get: (input) => Object.keys(input?.RequestItems ?? {}) }
+      ResourceArnList: { type: "operationContextParams", get: (input) => Object.keys((input == null ? void 0 : input.RequestItems) ?? {}) }
     }).m(function(Command, cs, config, o3) {
       return [
         middlewareSerde.getSerdePlugin(config, this.serialize, this.deserialize),
@@ -27718,7 +27843,7 @@ var require_dist_cjs56 = __commonJS({
     };
     var BatchWriteItemCommand = class extends smithyClient.Command.classBuilder().ep({
       ...commonParams3,
-      ResourceArnList: { type: "operationContextParams", get: (input) => Object.keys(input?.RequestItems ?? {}) }
+      ResourceArnList: { type: "operationContextParams", get: (input) => Object.keys((input == null ? void 0 : input.RequestItems) ?? {}) }
     }).m(function(Command, cs, config, o3) {
       return [
         middlewareSerde.getSerdePlugin(config, this.serialize, this.deserialize),
@@ -27979,7 +28104,10 @@ var require_dist_cjs56 = __commonJS({
     };
     var ImportTableCommand = class extends smithyClient.Command.classBuilder().ep({
       ...commonParams3,
-      ResourceArn: { type: "operationContextParams", get: (input) => input?.TableCreationParameters?.TableName }
+      ResourceArn: { type: "operationContextParams", get: (input) => {
+        var _a2;
+        return (_a2 = input == null ? void 0 : input.TableCreationParameters) == null ? void 0 : _a2.TableName;
+      } }
     }).m(function(Command, cs, config, o3) {
       return [
         middlewareSerde.getSerdePlugin(config, this.serialize, this.deserialize),
@@ -28101,7 +28229,7 @@ var require_dist_cjs56 = __commonJS({
       ];
     }).s("DynamoDB_20120810", "RestoreTableToPointInTime", {}).n("DynamoDBClient", "RestoreTableToPointInTimeCommand").f(void 0, void 0).ser(se_RestoreTableToPointInTimeCommand).de(de_RestoreTableToPointInTimeCommand).build() {
     };
-    var ScanCommand2 = class extends smithyClient.Command.classBuilder().ep({
+    var ScanCommand3 = class extends smithyClient.Command.classBuilder().ep({
       ...commonParams3,
       ResourceArn: { type: "contextParams", name: "TableName" }
     }).m(function(Command, cs, config, o3) {
@@ -28125,7 +28253,13 @@ var require_dist_cjs56 = __commonJS({
       ...commonParams3,
       ResourceArnList: {
         type: "operationContextParams",
-        get: (input) => input?.TransactItems?.map((obj) => obj?.Get?.TableName)
+        get: (input) => {
+          var _a2;
+          return (_a2 = input == null ? void 0 : input.TransactItems) == null ? void 0 : _a2.map((obj) => {
+            var _a3;
+            return (_a3 = obj == null ? void 0 : obj.Get) == null ? void 0 : _a3.TableName;
+          });
+        }
       }
     }).m(function(Command, cs, config, o3) {
       return [
@@ -28138,7 +28272,13 @@ var require_dist_cjs56 = __commonJS({
       ...commonParams3,
       ResourceArnList: {
         type: "operationContextParams",
-        get: (input) => input?.TransactItems?.map((obj) => [obj?.ConditionCheck?.TableName, obj?.Put?.TableName, obj?.Delete?.TableName, obj?.Update?.TableName].filter((i3) => i3)).flat()
+        get: (input) => {
+          var _a2;
+          return (_a2 = input == null ? void 0 : input.TransactItems) == null ? void 0 : _a2.map((obj) => {
+            var _a3, _b, _c, _d;
+            return [(_a3 = obj == null ? void 0 : obj.ConditionCheck) == null ? void 0 : _a3.TableName, (_b = obj == null ? void 0 : obj.Put) == null ? void 0 : _b.TableName, (_c = obj == null ? void 0 : obj.Delete) == null ? void 0 : _c.TableName, (_d = obj == null ? void 0 : obj.Update) == null ? void 0 : _d.TableName].filter((i3) => i3);
+          }).flat();
+        }
       }
     }).m(function(Command, cs, config, o3) {
       return [
@@ -28291,7 +28431,7 @@ var require_dist_cjs56 = __commonJS({
       QueryCommand: QueryCommand2,
       RestoreTableFromBackupCommand,
       RestoreTableToPointInTimeCommand,
-      ScanCommand: ScanCommand2,
+      ScanCommand: ScanCommand3,
       TagResourceCommand,
       TransactGetItemsCommand,
       TransactWriteItemsCommand,
@@ -28314,7 +28454,7 @@ var require_dist_cjs56 = __commonJS({
     var paginateListImports = core$1.createPaginator(DynamoDBClient2, ListImportsCommand, "NextToken", "NextToken", "PageSize");
     var paginateListTables = core$1.createPaginator(DynamoDBClient2, ListTablesCommand, "ExclusiveStartTableName", "LastEvaluatedTableName", "Limit");
     var paginateQuery = core$1.createPaginator(DynamoDBClient2, QueryCommand2, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
-    var paginateScan = core$1.createPaginator(DynamoDBClient2, ScanCommand2, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
+    var paginateScan = core$1.createPaginator(DynamoDBClient2, ScanCommand3, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
     var checkState$1 = async (client2, input) => {
       let reason;
       try {
@@ -28490,7 +28630,7 @@ var require_dist_cjs56 = __commonJS({
     exports2.SSEStatus = SSEStatus;
     exports2.SSEType = SSEType;
     exports2.ScalarAttributeType = ScalarAttributeType;
-    exports2.ScanCommand = ScanCommand2;
+    exports2.ScanCommand = ScanCommand3;
     exports2.Select = Select;
     exports2.StreamViewType = StreamViewType;
     exports2.TableAlreadyExistsException = TableAlreadyExistsException;
@@ -28568,51 +28708,52 @@ var require_dist_cjs57 = __commonJS({
       }
     };
     var convertToAttr = (data2, options) => {
+      var _a2, _b, _c, _d, _e, _f;
       if (data2 === void 0) {
         throw new Error(`Pass options.removeUndefinedValues=true to remove undefined values from map/array/set.`);
       } else if (data2 === null && typeof data2 === "object") {
         return convertToNullAttr();
       } else if (Array.isArray(data2)) {
         return convertToListAttr(data2, options);
-      } else if (data2?.constructor?.name === "Set") {
+      } else if (((_a2 = data2 == null ? void 0 : data2.constructor) == null ? void 0 : _a2.name) === "Set") {
         return convertToSetAttr(data2, options);
-      } else if (data2?.constructor?.name === "Map") {
+      } else if (((_b = data2 == null ? void 0 : data2.constructor) == null ? void 0 : _b.name) === "Map") {
         return convertToMapAttrFromIterable(data2, options);
-      } else if (data2?.constructor?.name === "Object" || !data2.constructor && typeof data2 === "object") {
+      } else if (((_c = data2 == null ? void 0 : data2.constructor) == null ? void 0 : _c.name) === "Object" || !data2.constructor && typeof data2 === "object") {
         return convertToMapAttrFromEnumerableProps(data2, options);
       } else if (isBinary(data2)) {
-        if (data2.length === 0 && options?.convertEmptyValues) {
+        if (data2.length === 0 && (options == null ? void 0 : options.convertEmptyValues)) {
           return convertToNullAttr();
         }
         return convertToBinaryAttr(data2);
-      } else if (typeof data2 === "boolean" || data2?.constructor?.name === "Boolean") {
+      } else if (typeof data2 === "boolean" || ((_d = data2 == null ? void 0 : data2.constructor) == null ? void 0 : _d.name) === "Boolean") {
         return { BOOL: data2.valueOf() };
-      } else if (typeof data2 === "number" || data2?.constructor?.name === "Number") {
+      } else if (typeof data2 === "number" || ((_e = data2 == null ? void 0 : data2.constructor) == null ? void 0 : _e.name) === "Number") {
         return convertToNumberAttr(data2, options);
       } else if (data2 instanceof NumberValue) {
         return data2.toAttributeValue();
       } else if (typeof data2 === "bigint") {
         return convertToBigIntAttr(data2);
-      } else if (typeof data2 === "string" || data2?.constructor?.name === "String") {
-        if (data2.length === 0 && options?.convertEmptyValues) {
+      } else if (typeof data2 === "string" || ((_f = data2 == null ? void 0 : data2.constructor) == null ? void 0 : _f.name) === "String") {
+        if (data2.length === 0 && (options == null ? void 0 : options.convertEmptyValues)) {
           return convertToNullAttr();
         }
         return convertToStringAttr(data2);
-      } else if (options?.convertClassInstanceToMap && typeof data2 === "object") {
+      } else if ((options == null ? void 0 : options.convertClassInstanceToMap) && typeof data2 === "object") {
         return convertToMapAttrFromEnumerableProps(data2, options);
       }
       throw new Error(`Unsupported type passed: ${data2}. Pass options.convertClassInstanceToMap=true to marshall typeof object as map attribute.`);
     };
     var convertToListAttr = (data2, options) => ({
-      L: data2.filter((item) => typeof item !== "function" && (!options?.removeUndefinedValues || options?.removeUndefinedValues && item !== void 0)).map((item) => convertToAttr(item, options))
+      L: data2.filter((item) => typeof item !== "function" && (!(options == null ? void 0 : options.removeUndefinedValues) || (options == null ? void 0 : options.removeUndefinedValues) && item !== void 0)).map((item) => convertToAttr(item, options))
     });
     var convertToSetAttr = (set, options) => {
-      const setToOperate = options?.removeUndefinedValues ? new Set([...set].filter((value) => value !== void 0)) : set;
-      if (!options?.removeUndefinedValues && setToOperate.has(void 0)) {
+      const setToOperate = (options == null ? void 0 : options.removeUndefinedValues) ? new Set([...set].filter((value) => value !== void 0)) : set;
+      if (!(options == null ? void 0 : options.removeUndefinedValues) && setToOperate.has(void 0)) {
         throw new Error(`Pass options.removeUndefinedValues=true to remove undefined values from map/array/set.`);
       }
       if (setToOperate.size === 0) {
-        if (options?.convertEmptyValues) {
+        if (options == null ? void 0 : options.convertEmptyValues) {
           return convertToNullAttr();
         }
         throw new Error(`Pass a non-empty set, or options.convertEmptyValues=true.`);
@@ -28646,7 +28787,7 @@ var require_dist_cjs57 = __commonJS({
       M: ((data3) => {
         const map3 = {};
         for (const [key, value] of data3) {
-          if (typeof value !== "function" && (value !== void 0 || !options?.removeUndefinedValues)) {
+          if (typeof value !== "function" && (value !== void 0 || !(options == null ? void 0 : options.removeUndefinedValues))) {
             map3[key] = convertToAttr(value, options);
           }
         }
@@ -28658,7 +28799,7 @@ var require_dist_cjs57 = __commonJS({
         const map3 = {};
         for (const key in data3) {
           const value = data3[key];
-          if (typeof value !== "function" && (value !== void 0 || !options?.removeUndefinedValues)) {
+          if (typeof value !== "function" && (value !== void 0 || !(options == null ? void 0 : options.removeUndefinedValues))) {
             map3[key] = convertToAttr(value, options);
           }
         }
@@ -28675,7 +28816,7 @@ var require_dist_cjs57 = __commonJS({
     var convertToNumberAttr = (num, options) => {
       if ([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY].map((val) => val.toString()).includes(num.toString())) {
         throw new Error(`Special numeric value ${num.toString()} is not allowed`);
-      } else if (!options?.allowImpreciseNumbers) {
+      } else if (!(options == null ? void 0 : options.allowImpreciseNumbers)) {
         if (Number(num) > Number.MAX_SAFE_INTEGER) {
           validateBigIntAndThrow(`Number ${num.toString()} is greater than Number.MAX_SAFE_INTEGER.`);
         } else if (Number(num) < Number.MIN_SAFE_INTEGER) {
@@ -28703,7 +28844,7 @@ var require_dist_cjs57 = __commonJS({
         "BigInt64Array",
         "BigUint64Array"
       ];
-      if (data2?.constructor) {
+      if (data2 == null ? void 0 : data2.constructor) {
         return binaryTypes.includes(data2.constructor.name);
       }
       return false;
@@ -28740,10 +28881,10 @@ var require_dist_cjs57 = __commonJS({
       throw new Error(`No value defined: ${JSON.stringify(data2)}`);
     };
     var convertNumber = (numString, options) => {
-      if (typeof options?.wrapNumbers === "function") {
-        return options?.wrapNumbers(numString);
+      if (typeof (options == null ? void 0 : options.wrapNumbers) === "function") {
+        return options == null ? void 0 : options.wrapNumbers(numString);
       }
-      if (options?.wrapNumbers) {
+      if (options == null ? void 0 : options.wrapNumbers) {
         return NumberValue.from(numString);
       }
       const num = Number(numString);
@@ -28772,7 +28913,7 @@ var require_dist_cjs57 = __commonJS({
       switch (key) {
         case "M":
         case "L":
-          return options?.convertTopLevelContainer ? attributeValue : value;
+          return (options == null ? void 0 : options.convertTopLevelContainer) ? attributeValue : value;
         case "SS":
         case "NS":
         case "BS":
@@ -28787,7 +28928,7 @@ var require_dist_cjs57 = __commonJS({
       }
     }
     var unmarshall = (data2, options) => {
-      if (options?.convertWithoutMapWrapper) {
+      if (options == null ? void 0 : options.convertWithoutMapWrapper) {
         return convertToNative(data2, options);
       }
       return convertToNative({ M: data2 }, options);
@@ -29039,7 +29180,7 @@ var require_dist_cjs58 = __commonJS({
         return async () => handler(this.clientCommand);
       }
     };
-    var DeleteCommand2 = class extends DynamoDBDocumentClientCommand {
+    var DeleteCommand3 = class extends DynamoDBDocumentClientCommand {
       input;
       inputKeyNodes = {
         Key: ALL_VALUES,
@@ -29129,7 +29270,7 @@ var require_dist_cjs58 = __commonJS({
         return async () => handler(this.clientCommand);
       }
     };
-    var GetCommand2 = class extends DynamoDBDocumentClientCommand {
+    var GetCommand3 = class extends DynamoDBDocumentClientCommand {
       input;
       inputKeyNodes = {
         Key: ALL_VALUES
@@ -29152,7 +29293,7 @@ var require_dist_cjs58 = __commonJS({
         return async () => handler(this.clientCommand);
       }
     };
-    var PutCommand2 = class extends DynamoDBDocumentClientCommand {
+    var PutCommand3 = class extends DynamoDBDocumentClientCommand {
       input;
       inputKeyNodes = {
         Item: ALL_VALUES,
@@ -29222,7 +29363,7 @@ var require_dist_cjs58 = __commonJS({
         return async () => handler(this.clientCommand);
       }
     };
-    var ScanCommand2 = class extends DynamoDBDocumentClientCommand {
+    var ScanCommand3 = class extends DynamoDBDocumentClientCommand {
       input;
       inputKeyNodes = {
         ScanFilter: {
@@ -29335,7 +29476,7 @@ var require_dist_cjs58 = __commonJS({
         return async () => handler(this.clientCommand);
       }
     };
-    var UpdateCommand2 = class extends DynamoDBDocumentClientCommand {
+    var UpdateCommand3 = class extends DynamoDBDocumentClientCommand {
       input;
       inputKeyNodes = {
         Key: ALL_VALUES,
@@ -29376,11 +29517,12 @@ var require_dist_cjs58 = __commonJS({
     var DynamoDBDocumentClient3 = class _DynamoDBDocumentClient extends smithyClient.Client {
       config;
       constructor(client2, translateConfig) {
+        var _a2;
         super(client2.config);
         this.config = client2.config;
         this.config.translateConfig = translateConfig;
         this.middlewareStack = client2.middlewareStack;
-        if (this.config?.cacheMiddleware) {
+        if ((_a2 = this.config) == null ? void 0 : _a2.cacheMiddleware) {
           throw new Error("@aws-sdk/lib-dynamodb - cacheMiddleware=true is not compatible with the DynamoDBDocumentClient. This option must be set to false.");
         }
       }
@@ -29434,7 +29576,7 @@ var require_dist_cjs58 = __commonJS({
         }
       }
       delete(args, optionsOrCb, cb) {
-        const command = new DeleteCommand2(args);
+        const command = new DeleteCommand3(args);
         if (typeof optionsOrCb === "function") {
           this.send(command, optionsOrCb);
         } else if (typeof cb === "function") {
@@ -29473,7 +29615,7 @@ var require_dist_cjs58 = __commonJS({
         }
       }
       get(args, optionsOrCb, cb) {
-        const command = new GetCommand2(args);
+        const command = new GetCommand3(args);
         if (typeof optionsOrCb === "function") {
           this.send(command, optionsOrCb);
         } else if (typeof cb === "function") {
@@ -29486,7 +29628,7 @@ var require_dist_cjs58 = __commonJS({
         }
       }
       put(args, optionsOrCb, cb) {
-        const command = new PutCommand2(args);
+        const command = new PutCommand3(args);
         if (typeof optionsOrCb === "function") {
           this.send(command, optionsOrCb);
         } else if (typeof cb === "function") {
@@ -29512,7 +29654,7 @@ var require_dist_cjs58 = __commonJS({
         }
       }
       scan(args, optionsOrCb, cb) {
-        const command = new ScanCommand2(args);
+        const command = new ScanCommand3(args);
         if (typeof optionsOrCb === "function") {
           this.send(command, optionsOrCb);
         } else if (typeof cb === "function") {
@@ -29551,7 +29693,7 @@ var require_dist_cjs58 = __commonJS({
         }
       }
       update(args, optionsOrCb, cb) {
-        const command = new UpdateCommand2(args);
+        const command = new UpdateCommand3(args);
         if (typeof optionsOrCb === "function") {
           this.send(command, optionsOrCb);
         } else if (typeof cb === "function") {
@@ -29565,7 +29707,7 @@ var require_dist_cjs58 = __commonJS({
       }
     };
     var paginateQuery = core$1.createPaginator(DynamoDBDocumentClient3, QueryCommand2, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
-    var paginateScan = core$1.createPaginator(DynamoDBDocumentClient3, ScanCommand2, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
+    var paginateScan = core$1.createPaginator(DynamoDBDocumentClient3, ScanCommand3, "ExclusiveStartKey", "LastEvaluatedKey", "Limit");
     Object.defineProperty(exports2, "$Command", {
       enumerable: true,
       get: function() {
@@ -29587,19 +29729,19 @@ var require_dist_cjs58 = __commonJS({
     exports2.BatchExecuteStatementCommand = BatchExecuteStatementCommand;
     exports2.BatchGetCommand = BatchGetCommand;
     exports2.BatchWriteCommand = BatchWriteCommand;
-    exports2.DeleteCommand = DeleteCommand2;
+    exports2.DeleteCommand = DeleteCommand3;
     exports2.DynamoDBDocument = DynamoDBDocument;
     exports2.DynamoDBDocumentClient = DynamoDBDocumentClient3;
     exports2.DynamoDBDocumentClientCommand = DynamoDBDocumentClientCommand;
     exports2.ExecuteStatementCommand = ExecuteStatementCommand;
     exports2.ExecuteTransactionCommand = ExecuteTransactionCommand;
-    exports2.GetCommand = GetCommand2;
-    exports2.PutCommand = PutCommand2;
+    exports2.GetCommand = GetCommand3;
+    exports2.PutCommand = PutCommand3;
     exports2.QueryCommand = QueryCommand2;
-    exports2.ScanCommand = ScanCommand2;
+    exports2.ScanCommand = ScanCommand3;
     exports2.TransactGetCommand = TransactGetCommand;
     exports2.TransactWriteCommand = TransactWriteCommand;
-    exports2.UpdateCommand = UpdateCommand2;
+    exports2.UpdateCommand = UpdateCommand3;
     exports2.paginateQuery = paginateQuery;
     exports2.paginateScan = paginateScan;
   }
@@ -29609,11 +29751,7 @@ var require_dist_cjs58 = __commonJS({
 var handlers_exports = {};
 __export(handlers_exports, {
   contact: () => contact,
-  createArticle: () => createArticle,
-  createCategory: () => createCategory,
   createUser: () => createUser2,
-  deleteArticle: () => deleteArticle,
-  deleteCategory: () => deleteCategory,
   deleteUser: () => deleteUser,
   getAllTags: () => getAllTags,
   getArticleById: () => getArticleById,
@@ -29621,18 +29759,14 @@ __export(handlers_exports, {
   getArticles: () => getArticles,
   getCategories: () => getCategories,
   getNotificationsForUser: () => getNotificationsForUser,
-  getPendingComments: () => getPendingComments,
   getSubscribers: () => getSubscribers,
   getUser: () => getUser,
   getUsers: () => getUsers,
   login: () => login,
-  postComment: () => postComment,
   register: () => register,
   subscribe: () => subscribe,
   updateArticle: () => updateArticle,
   updateArticleStatus: () => updateArticleStatus,
-  updateCategory: () => updateCategory,
-  updateCommentStatus: () => updateCommentStatus,
   updateFeaturedStatus: () => updateFeaturedStatus,
   updateUser: () => updateUser
 });
@@ -29685,372 +29819,6 @@ function v4(options, buf, offset) {
 }
 var v4_default = v4;
 
-// src/mockData.ts
-var users = [
-  {
-    id: "u1",
-    name: "\u0BA8\u0BBF\u0BB0\u0BCD\u0BB5\u0BBE\u0B95 \u0BAA\u0BAF\u0BA9\u0BB0\u0BCD",
-    email: "admin@vadali.com",
-    password: "$2b$10$P3D8gs2qo5yk9S3nh9y73O6tmDi2yCp6ZjozGIsJTKN0H7Ezao4bC",
-    role: "ADMIN" /* ADMIN */,
-    avatarUrl: "https://picsum.photos/seed/u1/100/100",
-    bio: "Responsible for site administration and content oversight."
-  },
-  { id: "u2", name: "\u0B86\u0B9A\u0BBF\u0BB0\u0BBF\u0BAF\u0BB0\u0BCD \u0B8E\u0BB0\u0BBF\u0B95\u0BCD\u0B95\u0BBE", email: "editor@news.com", role: "EDITOR" /* EDITOR */, avatarUrl: "https://picsum.photos/seed/u2/100/100", bio: "Experienced editor with a keen eye for detail and a passion for quality journalism." },
-  { id: "u3", name: "\u0B86\u0B9A\u0BBF\u0BB0\u0BBF\u0BAF\u0BB0\u0BCD \u0B85\u0BB0\u0BC1\u0BA3\u0BCD", email: "author@news.com", role: "AUTHOR" /* AUTHOR */, avatarUrl: "https://picsum.photos/seed/u3/100/100", bio: "Technology correspondent covering AI, machine learning, and innovation." },
-  { id: "u4", name: "\u0B9A\u0BC6\u0BAF\u0BCD\u0BA4\u0BBF\u0BAF\u0BBE\u0BB3\u0BB0\u0BCD \u0BB0\u0BC0\u0B9F\u0BCD\u0B9F\u0BBE", email: "reporter@news.com", role: "AUTHOR" /* AUTHOR */, avatarUrl: "https://picsum.photos/seed/u4/100/100", bio: "Financial reporter specializing in global markets and economic policy." },
-  { id: "u5", name: "\u0B86\u0B9A\u0BBF\u0BB0\u0BBF\u0BAF\u0BB0\u0BCD \u0BAA\u0BBF\u0BB0\u0BBF\u0BAF\u0BBE", email: "editor2@news.com", role: "EDITOR" /* EDITOR */, avatarUrl: "https://picsum.photos/seed/u5/100/100", bio: "Lead editor for the politics and world news sections." },
-  { id: "u6", name: "\u0B95\u0B9F\u0BCD\u0B9F\u0BC1\u0BB0\u0BC8\u0BAF\u0BBE\u0BB3\u0BB0\u0BCD \u0BB0\u0BB5\u0BBF", email: "author2@news.com", role: "AUTHOR" /* AUTHOR */, avatarUrl: "https://picsum.photos/seed/u6/100/100", bio: "Investigative journalist with a focus on environmental and climate change stories." },
-  { id: "u7", name: "\u0BA8\u0BBF\u0BB0\u0BC1\u0BAA\u0BB0\u0BCD \u0B9A\u0BC1\u0BA9\u0BBF\u0BA4\u0BBE", email: "reporter2@news.com", role: "AUTHOR" /* AUTHOR */, avatarUrl: "https://picsum.photos/seed/u7/100/100", bio: "Entertainment and cinema critic, following the latest trends in the film industry." }
-];
-var categories = [
-  { id: "c1", name: "Technology", slug: "technology" },
-  { id: "c2", name: "Business", slug: "business" },
-  { id: "c3", name: "Politics", slug: "politics" },
-  { id: "c4", name: "Sports", slug: "sports" },
-  { id: "c5", name: "Health", slug: "health" },
-  { id: "c6", name: "World", slug: "world" },
-  { id: "c7", name: "Cinema", slug: "cinema" },
-  { id: "c8", name: "Lifestyle", slug: "lifestyle" },
-  { id: "c9", name: "Science", slug: "science" }
-];
-var articles = [
-  // Published Articles (More for homepage)
-  {
-    id: "a1",
-    title: "\u0B9A\u0BC6\u0BAF\u0BB1\u0BCD\u0B95\u0BC8 \u0BA8\u0BC1\u0BA3\u0BCD\u0BA3\u0BB1\u0BBF\u0BB5\u0BBF\u0BA9\u0BCD \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0B95\u0BBE\u0BB2\u0BAE\u0BCD: 2024 \u0B87\u0BB2\u0BCD \u0B95\u0BB5\u0BA9\u0BBF\u0B95\u0BCD\u0B95 \u0BB5\u0BC7\u0BA3\u0BCD\u0B9F\u0BBF\u0BAF \u0BAA\u0BCB\u0B95\u0BCD\u0B95\u0BC1\u0B95\u0BB3\u0BCD",
-    slug: "future-of-ai-2024",
-    summary: "\u0B9A\u0BC6\u0BAF\u0BB1\u0BCD\u0B95\u0BC8 \u0BA8\u0BC1\u0BA3\u0BCD\u0BA3\u0BB1\u0BBF\u0BB5\u0BC1 \u0BAE\u0BC1\u0BA9\u0BCD\u0BA9\u0BC6\u0BAA\u0BCD\u0BAA\u0BCB\u0BA4\u0BC1\u0BAE\u0BCD \u0B87\u0BB2\u0BCD\u0BB2\u0BBE\u0BA4 \u0BB5\u0BC7\u0B95\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0BB5\u0BB3\u0BB0\u0BCD\u0BA8\u0BCD\u0BA4\u0BC1 \u0BB5\u0BB0\u0BC1\u0B95\u0BBF\u0BB1\u0BA4\u0BC1. \u0B87\u0BA8\u0BCD\u0BA4 \u0B86\u0BA3\u0BCD\u0B9F\u0BC1 \u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BA4\u0BC1\u0BB1\u0BC8\u0BAF\u0BC8 \u0BB5\u0B9F\u0BBF\u0BB5\u0BAE\u0BC8\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0BAE\u0BC1\u0B95\u0BCD\u0B95\u0BBF\u0BAF \u0BAA\u0BCB\u0B95\u0BCD\u0B95\u0BC1\u0B95\u0BB3\u0BCD \u0B87\u0B99\u0BCD\u0B95\u0BC7.",
-    content: "<p>\u0B9A\u0BC6\u0BAF\u0BB1\u0BCD\u0B95\u0BC8 \u0BA8\u0BC1\u0BA3\u0BCD\u0BA3\u0BB1\u0BBF\u0BB5\u0BC1 (AI) \u0B89\u0BB2\u0B95\u0BAE\u0BCD \u0BA8\u0BBF\u0BB2\u0BC8\u0BAF\u0BBE\u0BA9 \u0BAE\u0BBE\u0BB1\u0BCD\u0BB1\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0B89\u0BB3\u0BCD\u0BB3\u0BA4\u0BC1. \u0BA8\u0BBE\u0BAE\u0BCD 2024 \u0B87\u0BB2\u0BCD \u0BAE\u0BC7\u0BB2\u0BC1\u0BAE\u0BCD \u0BAE\u0BC1\u0BA9\u0BCD\u0BA9\u0BC7\u0BB1\u0BC1\u0BAE\u0BCD\u0BAA\u0BCB\u0BA4\u0BC1, \u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0B95\u0BB3\u0BC8\u0BAF\u0BC1\u0BAE\u0BCD \u0BA8\u0BAE\u0BA4\u0BC1 \u0B85\u0BA9\u0BCD\u0BB1\u0BBE\u0B9F \u0BB5\u0BBE\u0BB4\u0BCD\u0B95\u0BCD\u0B95\u0BC8\u0BAF\u0BC8\u0BAF\u0BC1\u0BAE\u0BCD \u0BAE\u0BB1\u0BC1\u0BB5\u0BB0\u0BC8\u0BAF\u0BB1\u0BC8 \u0B9A\u0BC6\u0BAF\u0BCD\u0BB5\u0BA4\u0BBE\u0B95 \u0B89\u0BB1\u0BC1\u0BA4\u0BBF\u0BAF\u0BB3\u0BBF\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0BAA\u0BB2 \u0BAE\u0BC1\u0B95\u0BCD\u0B95\u0BBF\u0BAF \u0BAA\u0BCB\u0B95\u0BCD\u0B95\u0BC1\u0B95\u0BB3\u0BCD \u0BB5\u0BC6\u0BB3\u0BBF\u0BB5\u0BB0\u0BC1\u0B95\u0BBF\u0BA9\u0BCD\u0BB1\u0BA9...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a1/800/400",
-    authorId: "u3",
-    categoryId: "c1",
-    tags: ["AI", "\u0B87\u0BAF\u0BA8\u0BCD\u0BA4\u0BBF\u0BB0 \u0B95\u0BB1\u0BCD\u0BB1\u0BB2\u0BCD", "\u0BAA\u0BC1\u0BA4\u0BCD\u0BA4\u0BBE\u0B95\u0BCD\u0B95\u0BAE\u0BCD"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-22T10:00:00Z",
-    views: 25203,
-    isFeatured: true,
-    comments: [
-      { id: "com1", authorName: "\u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BA8\u0BC1\u0B9F\u0BCD\u0BAA \u0B86\u0BB0\u0BCD\u0BB5\u0BB2\u0BB0\u0BCD", authorAvatarUrl: "https://picsum.photos/seed/com1/50/50", text: "\u0B9A\u0BBF\u0BB1\u0BA8\u0BCD\u0BA4 \u0B95\u0BA3\u0BCD\u0BA3\u0BCB\u0B9F\u0BCD\u0B9F\u0BAE\u0BCD!", date: "2024-07-22T12:30:00Z", status: "APPROVED" }
-    ],
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
-  },
-  {
-    id: "a2",
-    title: "\u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0BAA\u0BCA\u0BB0\u0BC1\u0BB3\u0BBE\u0BA4\u0BBE\u0BB0\u0B95\u0BCD \u0B95\u0BCA\u0BB3\u0BCD\u0B95\u0BC8\u0B95\u0BB3\u0BC1\u0B95\u0BCD\u0B95\u0BC1 \u0B89\u0BB2\u0B95\u0B9A\u0BCD \u0B9A\u0BA8\u0BCD\u0BA4\u0BC8\u0B95\u0BB3\u0BCD \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0BB5\u0BBF\u0BA9\u0BC8",
-    slug: "global-markets-react",
-    summary: "\u0B9A\u0BAE\u0BC0\u0BAA\u0BA4\u0BCD\u0BA4\u0BBF\u0BAF \u0B95\u0BCA\u0BB3\u0BCD\u0B95\u0BC8 \u0BAE\u0BBE\u0BB1\u0BCD\u0BB1\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0BB5\u0BCB\u0BB2\u0BCD \u0BB8\u0BCD\u0B9F\u0BCD\u0BB0\u0BC0\u0B9F\u0BCD \u0BAE\u0BC1\u0BA4\u0BB2\u0BCD \u0B9F\u0BCB\u0B95\u0BCD\u0B95\u0BBF\u0BAF\u0BCB \u0BB5\u0BB0\u0BC8 \u0B89\u0BB2\u0B95\u0BC6\u0B99\u0BCD\u0B95\u0BBF\u0BB2\u0BC1\u0BAE\u0BCD \u0B89\u0BB3\u0BCD\u0BB3 \u0BAA\u0B99\u0BCD\u0B95\u0BC1\u0B9A\u0BCD \u0B9A\u0BA8\u0BCD\u0BA4\u0BC8\u0B95\u0BB3\u0BC8 \u0B8E\u0BB5\u0BCD\u0BB5\u0BBE\u0BB1\u0BC1 \u0BAA\u0BBE\u0BA4\u0BBF\u0B95\u0BCD\u0B95\u0BBF\u0BA9\u0BCD\u0BB1\u0BA9 \u0B8E\u0BA9\u0BCD\u0BAA\u0BA4\u0BC1 \u0B95\u0BC1\u0BB1\u0BBF\u0BA4\u0BCD\u0BA4 \u0B86\u0BB4\u0BAE\u0BBE\u0BA9 \u0BAA\u0BBE\u0BB0\u0BCD\u0BB5\u0BC8.",
-    content: "<p>\u0B95\u0B9F\u0BA8\u0BCD\u0BA4 \u0BB5\u0BBE\u0BB0\u0BAE\u0BCD \u0B85\u0BB1\u0BBF\u0BB5\u0BBF\u0B95\u0BCD\u0B95\u0BAA\u0BCD\u0BAA\u0B9F\u0BCD\u0B9F \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0BB5\u0BB0\u0BCD\u0BA4\u0BCD\u0BA4\u0B95 \u0B92\u0BAA\u0BCD\u0BAA\u0BA8\u0BCD\u0BA4\u0B99\u0BCD\u0B95\u0BB3\u0BBF\u0BA9\u0BCD \u0B9A\u0BBF\u0BB1\u0BCD\u0BB1\u0BB2\u0BC8 \u0BB5\u0BBF\u0BB3\u0BC8\u0BB5\u0BC1\u0B95\u0BB3\u0BC8 \u0B86\u0BAF\u0BCD\u0BB5\u0BBE\u0BB3\u0BB0\u0BCD\u0B95\u0BB3\u0BCD \u0B89\u0BA9\u0BCD\u0BA9\u0BBF\u0BAA\u0BCD\u0BAA\u0BBE\u0B95\u0B95\u0BCD \u0B95\u0BA3\u0BCD\u0B95\u0BBE\u0BA3\u0BBF\u0BA4\u0BCD\u0BA4\u0BC1 \u0BB5\u0BB0\u0BC1\u0B95\u0BBF\u0BA9\u0BCD\u0BB1\u0BA9\u0BB0\u0BCD...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a2/800/400",
-    authorId: "u4",
-    categoryId: "c2",
-    tags: ["\u0BAA\u0BCA\u0BB0\u0BC1\u0BB3\u0BBE\u0BA4\u0BBE\u0BB0\u0BAE\u0BCD", "\u0BAA\u0B99\u0BCD\u0B95\u0BC1\u0B9A\u0BCD \u0B9A\u0BA8\u0BCD\u0BA4\u0BC8", "\u0BA8\u0BBF\u0BA4\u0BBF"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-22T09:30:00Z",
-    views: 18904,
-    comments: [
-      { id: "com2", authorName: "\u0BAA\u0BCA\u0BB0\u0BC1\u0BB3\u0BBE\u0BA4\u0BBE\u0BB0 \u0BA8\u0BBF\u0BAA\u0BC1\u0BA3\u0BB0\u0BCD", authorAvatarUrl: "https://picsum.photos/seed/com2/50/50", text: "This needs further clarification.", date: "2024-07-23T11:00:00Z", status: "PENDING" },
-      { id: "com3", authorName: "\u0BAE\u0BBE\u0BA3\u0BB5\u0BB0\u0BCD", authorAvatarUrl: "https://picsum.photos/seed/com3/50/50", text: "Could you explain the impact on emerging markets?", date: "2024-07-23T11:05:00Z", status: "PENDING" }
-    ]
-  },
-  {
-    id: "a5",
-    title: "\u0BAE\u0BB0\u0BC1\u0BA4\u0BCD\u0BA4\u0BC1\u0BB5\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0BA4\u0BBF\u0BB0\u0BC1\u0BAA\u0BCD\u0BAA\u0BC1\u0BAE\u0BC1\u0BA9\u0BC8: \u0BA8\u0BCB\u0BAF\u0BBE\u0BB3\u0BBF\u0B95\u0BB3\u0BC1\u0B95\u0BCD\u0B95\u0BC1 \u0B92\u0BB0\u0BC1 \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0BA8\u0BAE\u0BCD\u0BAA\u0BBF\u0B95\u0BCD\u0B95\u0BC8",
-    slug: "medical-breakthrough-hope",
-    summary: "\u0B92\u0BB0\u0BC1 \u0BAA\u0BC6\u0BB0\u0BBF\u0BAF \u0BA8\u0BCB\u0BAF\u0BCD\u0B95\u0BCD\u0B95\u0BBE\u0BA9 \u0B9A\u0BBF\u0B95\u0BBF\u0B9A\u0BCD\u0B9A\u0BC8 \u0BA8\u0BBF\u0BB2\u0BAA\u0BCD\u0BAA\u0BB0\u0BAA\u0BCD\u0BAA\u0BC8 \u0BAE\u0BBE\u0BB1\u0BCD\u0BB1\u0B95\u0BCD\u0B95\u0BC2\u0B9F\u0BBF\u0BAF \u0B92\u0BB0\u0BC1 \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BBF\u0B9F\u0BA4\u0BCD\u0BA4\u0B95\u0BCD\u0B95 \u0B95\u0BA3\u0BCD\u0B9F\u0BC1\u0BAA\u0BBF\u0B9F\u0BBF\u0BAA\u0BCD\u0BAA\u0BC8 \u0BB5\u0BBF\u0B9E\u0BCD\u0B9E\u0BBE\u0BA9\u0BBF\u0B95\u0BB3\u0BCD \u0B85\u0BB1\u0BBF\u0BB5\u0BBF\u0BA4\u0BCD\u0BA4\u0BC1\u0BB3\u0BCD\u0BB3\u0BA9\u0BB0\u0BCD.",
-    content: '<p>"\u0B9C\u0BB0\u0BCD\u0BA9\u0BB2\u0BCD \u0B86\u0B83\u0BAA\u0BCD \u0BAE\u0BC6\u0B9F\u0BBF\u0B9A\u0BBF\u0BA9\u0BCD" \u0B87\u0BB2\u0BCD \u0B87\u0BA9\u0BCD\u0BB1\u0BC1 \u0BB5\u0BC6\u0BB3\u0BBF\u0BAF\u0BBF\u0B9F\u0BAA\u0BCD\u0BAA\u0B9F\u0BCD\u0B9F \u0B92\u0BB0\u0BC1 \u0B85\u0BB1\u0BCD\u0BAA\u0BC1\u0BA4\u0BAE\u0BBE\u0BA9 \u0B86\u0BAF\u0BCD\u0BB5\u0BC1, \u0B86\u0BB0\u0BAE\u0BCD\u0BAA\u0B95\u0BBE\u0BB2 \u0B9A\u0BCB\u0BA4\u0BA9\u0BC8\u0B95\u0BB3\u0BBF\u0BB2\u0BCD \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BBF\u0B9F\u0BA4\u0BCD\u0BA4\u0B95\u0BCD\u0B95 \u0BB5\u0BC6\u0BB1\u0BCD\u0BB1\u0BBF\u0BAF\u0BC8\u0B95\u0BCD \u0B95\u0BBE\u0B9F\u0BCD\u0B9F\u0BBF\u0BAF \u0B92\u0BB0\u0BC1 \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0B9A\u0BBF\u0B95\u0BBF\u0B9A\u0BCD\u0B9A\u0BC8 \u0BAE\u0BC1\u0BB1\u0BC8\u0BAF\u0BC8 \u0BB5\u0BBF\u0BB5\u0BB0\u0BBF\u0B95\u0BCD\u0B95\u0BBF\u0BB1\u0BA4\u0BC1...</p>',
-    coverImageUrl: "https://picsum.photos/seed/a5/800/400",
-    authorId: "u3",
-    categoryId: "c5",
-    tags: ["\u0BAE\u0BB0\u0BC1\u0BA4\u0BCD\u0BA4\u0BC1\u0BB5\u0BAE\u0BCD", "\u0B89\u0B9F\u0BB2\u0BCD\u0BA8\u0BB2\u0BAE\u0BCD", "\u0B86\u0BB0\u0BBE\u0BAF\u0BCD\u0B9A\u0BCD\u0B9A\u0BBF"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-22T08:00:00Z",
-    views: 29489,
-    isFeatured: true,
-    comments: []
-  },
-  {
-    id: "a7",
-    title: "\u0B89\u0BB2\u0B95\u0BB3\u0BBE\u0BB5\u0BBF\u0BAF \u0B95\u0BBE\u0BB2\u0BA8\u0BBF\u0BB2\u0BC8 \u0BAE\u0BBE\u0BA8\u0BBE\u0B9F\u0BC1 \u0BAE\u0BC1\u0B95\u0BCD\u0B95\u0BBF\u0BAF \u0BAE\u0BC1\u0B9F\u0BBF\u0BB5\u0BC1\u0B95\u0BB3\u0BC1\u0B9F\u0BA9\u0BCD \u0BA8\u0BBF\u0BB1\u0BC8\u0BB5\u0B9F\u0BC8\u0B95\u0BBF\u0BB1\u0BA4\u0BC1",
-    slug: "global-climate-summit-concludes",
-    summary: "\u0B95\u0BBE\u0BB2\u0BA8\u0BBF\u0BB2\u0BC8 \u0BAE\u0BBE\u0BB1\u0BCD\u0BB1\u0BA4\u0BCD\u0BA4\u0BC8 \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0BAA\u0BCD\u0BAA\u0BA4\u0BB1\u0BCD\u0B95\u0BBE\u0BA9 \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0B92\u0BAA\u0BCD\u0BAA\u0BA8\u0BCD\u0BA4\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BB5\u0BBE\u0B95\u0BCD\u0B95\u0BC1\u0BB1\u0BC1\u0BA4\u0BBF\u0B95\u0BB3\u0BC1\u0B9F\u0BA9\u0BCD \u0B89\u0BB2\u0B95\u0BA4\u0BCD \u0BA4\u0BB2\u0BC8\u0BB5\u0BB0\u0BCD\u0B95\u0BB3\u0BCD \u0BA4\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0BAA\u0BC7\u0B9A\u0BCD\u0B9A\u0BC1\u0BB5\u0BBE\u0BB0\u0BCD\u0BA4\u0BCD\u0BA4\u0BC8\u0B95\u0BB3\u0BC8 \u0BAE\u0BC1\u0B9F\u0BBF\u0B95\u0BCD\u0B95\u0BBF\u0BA9\u0BCD\u0BB1\u0BA9\u0BB0\u0BCD.",
-    content: "<p>\u0BAA\u0BB2 \u0BB5\u0BBE\u0BB0 \u0BA4\u0BC0\u0BB5\u0BBF\u0BB0 \u0BB5\u0BBF\u0BB5\u0BBE\u0BA4\u0B99\u0BCD\u0B95\u0BB3\u0BC1\u0B95\u0BCD\u0B95\u0BC1\u0BAA\u0BCD \u0BAA\u0BBF\u0BB1\u0B95\u0BC1, \u0B89\u0BB2\u0B95\u0BB3\u0BBE\u0BB5\u0BBF\u0BAF \u0B95\u0BBE\u0BB2\u0BA8\u0BBF\u0BB2\u0BC8 \u0BAE\u0BBE\u0BA8\u0BBE\u0B9F\u0BC1 \u0B95\u0BBE\u0BB0\u0BCD\u0BAA\u0BA9\u0BCD \u0B89\u0BAE\u0BBF\u0BB4\u0BCD\u0BB5\u0BC8\u0B95\u0BCD \u0B95\u0BC1\u0BB1\u0BC8\u0BAA\u0BCD\u0BAA\u0BA4\u0BB1\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0BAA\u0B9A\u0BC1\u0BAE\u0BC8 \u0B86\u0BB1\u0BCD\u0BB1\u0BB2\u0BCD \u0BAE\u0BC1\u0BAF\u0BB1\u0BCD\u0B9A\u0BBF\u0B95\u0BB3\u0BC1\u0B95\u0BCD\u0B95\u0BC1 \u0BA8\u0BBF\u0BA4\u0BBF\u0BAF\u0BB3\u0BBF\u0BAA\u0BCD\u0BAA\u0BA4\u0BB1\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0B92\u0BB0\u0BC1\u0BAE\u0BBF\u0BA4\u0BCD\u0BA4 \u0B95\u0BB0\u0BC1\u0BA4\u0BCD\u0BA4\u0BC1\u0B9F\u0BA9\u0BCD \u0BAE\u0BC1\u0B9F\u0BBF\u0BB5\u0BC1\u0B95\u0BCD\u0B95\u0BC1 \u0BB5\u0BA8\u0BCD\u0BA4\u0BA4\u0BC1...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a7/800/400",
-    authorId: "u6",
-    categoryId: "c6",
-    tags: ["\u0B95\u0BBE\u0BB2\u0BA8\u0BBF\u0BB2\u0BC8 \u0BAE\u0BBE\u0BB1\u0BCD\u0BB1\u0BAE\u0BCD", "\u0B89\u0BB2\u0B95\u0BB3\u0BBE\u0BB5\u0BBF\u0BAF \u0BA8\u0BBF\u0B95\u0BB4\u0BCD\u0BB5\u0BC1\u0B95\u0BB3\u0BCD", "\u0B9A\u0BC1\u0BB1\u0BCD\u0BB1\u0BC1\u0B9A\u0BCD\u0B9A\u0BC2\u0BB4\u0BB2\u0BCD"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-21T18:00:00Z",
-    views: 16432,
-    comments: []
-  },
-  {
-    id: "a8",
-    title: "\u0BAA\u0BBF\u0BB3\u0BBE\u0B95\u0BCD\u0BAA\u0BB8\u0BCD\u0B9F\u0BB0\u0BCD \u0BA4\u0BBF\u0BB0\u0BC8\u0BAA\u0BCD\u0BAA\u0B9F\u0BAE\u0BCD \u0BAA\u0BBE\u0B95\u0BCD\u0BB8\u0BCD \u0B86\u0BAA\u0BBF\u0BB8\u0BCD \u0B9A\u0BBE\u0BA4\u0BA9\u0BC8\u0B95\u0BB3\u0BC8 \u0BAE\u0BC1\u0BB1\u0BBF\u0BAF\u0B9F\u0BBF\u0B95\u0BCD\u0B95\u0BBF\u0BB1\u0BA4\u0BC1",
-    slug: "blockbuster-movie-breaks-records",
-    summary: "\u0B9A\u0BAE\u0BC0\u0BAA\u0BA4\u0BCD\u0BA4\u0BBF\u0BAF \u0B9A\u0BC2\u0BAA\u0BCD\u0BAA\u0BB0\u0BCD \u0BB9\u0BC0\u0BB0\u0BCB \u0BA4\u0BBF\u0BB0\u0BC8\u0BAA\u0BCD\u0BAA\u0B9F\u0BAE\u0BCD \u0B85\u0BA4\u0BA9\u0BCD \u0BA4\u0BCA\u0B9F\u0B95\u0BCD\u0B95 \u0BB5\u0BBE\u0BB0 \u0B87\u0BB1\u0BC1\u0BA4\u0BBF\u0BAF\u0BBF\u0BB2\u0BCD \u0B89\u0BB2\u0B95\u0BB3\u0BB5\u0BBF\u0BB2\u0BCD $500 \u0BAE\u0BBF\u0BB2\u0BCD\u0BB2\u0BBF\u0BAF\u0BA9\u0BC8\u0BA4\u0BCD \u0BA4\u0BBE\u0BA3\u0BCD\u0B9F\u0BBF, \u0B8E\u0BB2\u0BCD\u0BB2\u0BBE \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0BAA\u0BBE\u0BB0\u0BCD\u0BAA\u0BCD\u0BAA\u0BC1\u0B95\u0BB3\u0BC8\u0BAF\u0BC1\u0BAE\u0BCD \u0BAE\u0BC0\u0BB1\u0BC1\u0B95\u0BBF\u0BB1\u0BA4\u0BC1.",
-    content: '<p>\u0BA4\u0BBF\u0BB0\u0BC8\u0BAA\u0BCD\u0BAA\u0B9F\u0BA4\u0BCD \u0BA4\u0BC1\u0BB1\u0BC8\u0BAF\u0BBF\u0BB2\u0BCD \u0B92\u0BB0\u0BC1 \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BBF\u0B9F\u0BA4\u0BCD\u0BA4\u0B95\u0BCD\u0B95 \u0B9A\u0BBE\u0BA4\u0BA9\u0BC8\u0BAF\u0BBE\u0B95, "\u0B95\u0BC7\u0BB2\u0B95\u0BCD\u0BB8\u0BBF \u0B95\u0BBE\u0BB0\u0BCD\u0B9F\u0BBF\u0BAF\u0BA9\u0BCD\u0BB8\u0BCD \u0BB0\u0BBF\u0B9F\u0BCD\u0B9F\u0BB0\u0BCD\u0BA9\u0BCD" \u0BA4\u0BBF\u0BB0\u0BC8\u0BAA\u0BCD\u0BAA\u0B9F\u0BAE\u0BCD \u0BB5\u0BB0\u0BB2\u0BBE\u0BB1\u0BC1 \u0BAA\u0B9F\u0BC8\u0BA4\u0BCD\u0BA4\u0BC1\u0BB3\u0BCD\u0BB3\u0BA4\u0BC1. \u0B85\u0BA4\u0BA9\u0BCD \u0B85\u0BB1\u0BCD\u0BAA\u0BC1\u0BA4\u0BAE\u0BBE\u0BA9 \u0B95\u0BBE\u0B9F\u0BCD\u0B9A\u0BBF\u0B95\u0BB3\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BB5\u0B9A\u0BC0\u0B95\u0BB0\u0BBF\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0B95\u0BA4\u0BC8\u0B95\u0BCD\u0B95\u0BB3\u0BA4\u0BCD\u0BA4\u0BC1\u0B9F\u0BA9\u0BCD...</p>',
-    coverImageUrl: "https://picsum.photos/seed/a8/800/400",
-    authorId: "u7",
-    categoryId: "c7",
-    tags: ["\u0B9A\u0BBF\u0BA9\u0BBF\u0BAE\u0BBE", "\u0BA4\u0BBF\u0BB0\u0BC8\u0BAA\u0BCD\u0BAA\u0B9F\u0B99\u0BCD\u0B95\u0BB3\u0BCD", "\u0BAA\u0BCA\u0BB4\u0BC1\u0BA4\u0BC1\u0BAA\u0BCB\u0B95\u0BCD\u0B95\u0BC1"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-21T15:00:00Z",
-    views: 35123,
-    isFeatured: true,
-    comments: []
-  },
-  {
-    id: "a9",
-    title: "\u0BB5\u0BBF\u0BB3\u0BC8\u0BAF\u0BBE\u0B9F\u0BCD\u0B9F\u0BC1\u0BAA\u0BCD \u0BAA\u0BCB\u0B9F\u0BCD\u0B9F\u0BBF\u0BAF\u0BBF\u0BB2\u0BCD \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0BAA\u0BBE\u0BB0\u0BBE\u0BA4 \u0BB5\u0BC6\u0BB1\u0BCD\u0BB1\u0BBF: \u0B87\u0BB1\u0BC1\u0BA4\u0BBF \u0BA8\u0BBF\u0BAE\u0BBF\u0B9F \u0B95\u0BCB\u0BB2\u0BCD \u0B86\u0B9F\u0BCD\u0B9F\u0BA4\u0BCD\u0BA4\u0BC8 \u0BAE\u0BC1\u0B9F\u0BBF\u0BB5\u0BC1 \u0B9A\u0BC6\u0BAF\u0BCD\u0BA4\u0BA4\u0BC1",
-    slug: "championship-final-last-minute-goal",
-    summary: "\u0B92\u0BB0\u0BC1 \u0BAA\u0BB0\u0BAA\u0BB0\u0BAA\u0BCD\u0BAA\u0BBE\u0BA9 \u0B87\u0BB1\u0BC1\u0BA4\u0BBF\u0BAA\u0BCD \u0BAA\u0BCB\u0B9F\u0BCD\u0B9F\u0BBF\u0BAF\u0BBF\u0BB2\u0BCD, \u0B95\u0B9F\u0BC8\u0B9A\u0BBF \u0BA8\u0BBF\u0BAE\u0BBF\u0B9F\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0B85\u0B9F\u0BBF\u0B95\u0BCD\u0B95\u0BAA\u0BCD\u0BAA\u0B9F\u0BCD\u0B9F \u0B95\u0BCB\u0BB2\u0BCD \u0B89\u0BB3\u0BCD\u0BB3\u0BC2\u0BB0\u0BCD \u0B85\u0BA3\u0BBF\u0B95\u0BCD\u0B95\u0BC1 \u0B9A\u0BBE\u0BAE\u0BCD\u0BAA\u0BBF\u0BAF\u0BA9\u0BCD\u0BB7\u0BBF\u0BAA\u0BCD \u0BAA\u0B9F\u0BCD\u0B9F\u0BA4\u0BCD\u0BA4\u0BC8 \u0BB5\u0BC6\u0BA9\u0BCD\u0BB1\u0BC1 \u0BA4\u0BA8\u0BCD\u0BA4\u0BA4\u0BC1.",
-    content: "<p>\u0B86\u0BAF\u0BBF\u0BB0\u0B95\u0BCD\u0B95\u0BA3\u0B95\u0BCD\u0B95\u0BBE\u0BA9 \u0BB0\u0B9A\u0BBF\u0B95\u0BB0\u0BCD\u0B95\u0BB3\u0BCD \u0BAE\u0BC1\u0BA9\u0BCD\u0BA9\u0BBF\u0BB2\u0BC8\u0BAF\u0BBF\u0BB2\u0BCD, \u0B95\u0BBE\u0BB2\u0BCD\u0BAA\u0BA8\u0BCD\u0BA4\u0BC1 \u0B9A\u0BBE\u0BAE\u0BCD\u0BAA\u0BBF\u0BAF\u0BA9\u0BCD\u0BB7\u0BBF\u0BAA\u0BCD \u0B87\u0BB1\u0BC1\u0BA4\u0BBF\u0BAA\u0BCD \u0BAA\u0BCB\u0B9F\u0BCD\u0B9F\u0BBF \u0B92\u0BB0\u0BC1 \u0BAE\u0BB1\u0B95\u0BCD\u0B95 \u0BAE\u0BC1\u0B9F\u0BBF\u0BAF\u0BBE\u0BA4 \u0BA4\u0BB0\u0BC1\u0BA3\u0BA4\u0BCD\u0BA4\u0BC8\u0B95\u0BCD \u0B95\u0BA3\u0BCD\u0B9F\u0BA4\u0BC1. \u0B86\u0B9F\u0BCD\u0B9F\u0BAE\u0BCD \u0B9A\u0BAE\u0BA8\u0BBF\u0BB2\u0BC8\u0BAF\u0BBF\u0BB2\u0BCD \u0B87\u0BB0\u0BC1\u0BA8\u0BCD\u0BA4\u0BAA\u0BCB\u0BA4\u0BC1, \u0B92\u0BB0\u0BC1 \u0B85\u0BB1\u0BCD\u0BAA\u0BC1\u0BA4\u0BAE\u0BBE\u0BA9 \u0B95\u0BCB\u0BB2\u0BCD...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a9/800/400",
-    authorId: "u4",
-    categoryId: "c4",
-    tags: ["\u0B95\u0BBE\u0BB2\u0BCD\u0BAA\u0BA8\u0BCD\u0BA4\u0BC1", "\u0BB5\u0BBF\u0BB3\u0BC8\u0BAF\u0BBE\u0B9F\u0BCD\u0B9F\u0BC1", "\u0B9A\u0BBE\u0BAE\u0BCD\u0BAA\u0BBF\u0BAF\u0BA9\u0BCD\u0BB7\u0BBF\u0BAA\u0BCD"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-21T12:00:00Z",
-    views: 21550,
-    comments: []
-  },
-  {
-    id: "a10",
-    title: "\u0B9A\u0BC6\u0BB5\u0BCD\u0BB5\u0BBE\u0BAF\u0BCD \u0B95\u0BBF\u0BB0\u0B95\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0BA8\u0BC0\u0BB0\u0BCD \u0B87\u0BB0\u0BC1\u0BAA\u0BCD\u0BAA\u0BA4\u0BB1\u0BCD\u0B95\u0BBE\u0BA9 \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0B86\u0BA4\u0BBE\u0BB0\u0B99\u0BCD\u0B95\u0BB3\u0BC8 \u0BA8\u0BBE\u0B9A\u0BBE \u0B95\u0BA3\u0BCD\u0B9F\u0BC1\u0BAA\u0BBF\u0B9F\u0BBF\u0BA4\u0BCD\u0BA4\u0BA4\u0BC1",
-    slug: "nasa-finds-new-evidence-of-water-on-mars",
-    summary: "\u0B9A\u0BC6\u0BB5\u0BCD\u0BB5\u0BBE\u0BAF\u0BCD \u0B95\u0BBF\u0BB0\u0B95\u0BA4\u0BCD\u0BA4\u0BBF\u0BA9\u0BCD \u0BAE\u0BC7\u0BB1\u0BCD\u0BAA\u0BB0\u0BAA\u0BCD\u0BAA\u0BBF\u0BB1\u0BCD\u0B95\u0BC1 \u0B85\u0B9F\u0BBF\u0BAF\u0BBF\u0BB2\u0BCD \u0B89\u0BB1\u0BC8\u0BA8\u0BCD\u0BA4 \u0BA8\u0BC0\u0BB0\u0BCD \u0B8F\u0BB0\u0BBF\u0B95\u0BB3\u0BCD \u0B87\u0BB0\u0BC1\u0BAA\u0BCD\u0BAA\u0BA4\u0BB1\u0BCD\u0B95\u0BBE\u0BA9 \u0BB5\u0BB2\u0BC1\u0BB5\u0BBE\u0BA9 \u0B86\u0BA4\u0BBE\u0BB0\u0B99\u0BCD\u0B95\u0BB3\u0BC8 \u0BA8\u0BBE\u0B9A\u0BBE\u0BB5\u0BBF\u0BA9\u0BCD \u0BB0\u0BCB\u0BB5\u0BB0\u0BCD \u0B85\u0BA9\u0BC1\u0BAA\u0BCD\u0BAA\u0BBF\u0BAF\u0BC1\u0BB3\u0BCD\u0BB3\u0BA4\u0BC1.",
-    content: "<p>\u0BB5\u0BBF\u0BA3\u0BCD\u0BB5\u0BC6\u0BB3\u0BBF \u0B86\u0BB0\u0BBE\u0BAF\u0BCD\u0B9A\u0BCD\u0B9A\u0BBF\u0BAF\u0BBF\u0BB2\u0BCD \u0B92\u0BB0\u0BC1 \u0BAE\u0BC1\u0B95\u0BCD\u0B95\u0BBF\u0BAF \u0BAE\u0BC8\u0BB2\u0BCD\u0B95\u0BB2\u0BCD\u0BB2\u0BBE\u0B95, \u0B9A\u0BC6\u0BB5\u0BCD\u0BB5\u0BBE\u0BAF\u0BCD \u0B95\u0BBF\u0BB0\u0B95\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0B89\u0BAF\u0BBF\u0BB0\u0BCD\u0B95\u0BB3\u0BCD \u0BB5\u0BBE\u0BB4\u0BCD\u0BB5\u0BA4\u0BB1\u0BCD\u0B95\u0BBE\u0BA9 \u0B9A\u0BBE\u0BA4\u0BCD\u0BA4\u0BBF\u0BAF\u0B95\u0BCD\u0B95\u0BC2\u0BB1\u0BC1\u0B95\u0BB3\u0BCD \u0B95\u0BC1\u0BB1\u0BBF\u0BA4\u0BCD\u0BA4 \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0BA8\u0BAE\u0BCD\u0BAA\u0BBF\u0B95\u0BCD\u0B95\u0BC8\u0BAF\u0BC8 \u0BA8\u0BBE\u0B9A\u0BBE\u0BB5\u0BBF\u0BA9\u0BCD \u0B95\u0BA3\u0BCD\u0B9F\u0BC1\u0BAA\u0BBF\u0B9F\u0BBF\u0BAA\u0BCD\u0BAA\u0BC1\u0B95\u0BB3\u0BCD \u0BA4\u0BC2\u0BA3\u0BCD\u0B9F\u0BBF\u0BAF\u0BC1\u0BB3\u0BCD\u0BB3\u0BA9...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a10/800/400",
-    authorId: "u6",
-    categoryId: "c9",
-    tags: ["\u0BB5\u0BBF\u0BA3\u0BCD\u0BB5\u0BC6\u0BB3\u0BBF", "\u0BA8\u0BBE\u0B9A\u0BBE", "\u0B85\u0BB1\u0BBF\u0BB5\u0BBF\u0BAF\u0BB2\u0BCD"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-20T11:00:00Z",
-    views: 19876,
-    comments: []
-  },
-  {
-    id: "a11",
-    title: "\u0B86\u0BB0\u0BCB\u0B95\u0BCD\u0B95\u0BBF\u0BAF\u0BAE\u0BBE\u0BA9 \u0BB5\u0BBE\u0BB4\u0BCD\u0B95\u0BCD\u0B95\u0BC8 \u0BAE\u0BC1\u0BB1\u0BC8\u0B95\u0BCD\u0B95\u0BBE\u0BA9 5 \u0B8E\u0BB3\u0BBF\u0BAF \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BC1\u0B95\u0BB3\u0BCD",
-    slug: "5-tips-for-healthy-lifestyle",
-    summary: "\u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B85\u0BA9\u0BCD\u0BB1\u0BBE\u0B9F \u0BB5\u0BBE\u0BB4\u0BCD\u0B95\u0BCD\u0B95\u0BC8\u0BAF\u0BBF\u0BB2\u0BCD \u0B9A\u0BBF\u0BB1\u0BBF\u0BAF \u0BAE\u0BBE\u0BB1\u0BCD\u0BB1\u0B99\u0BCD\u0B95\u0BB3\u0BC8\u0B9A\u0BCD \u0B9A\u0BC6\u0BAF\u0BCD\u0BB5\u0BA4\u0BA9\u0BCD \u0BAE\u0BC2\u0BB2\u0BAE\u0BCD \u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B92\u0B9F\u0BCD\u0B9F\u0BC1\u0BAE\u0BCA\u0BA4\u0BCD\u0BA4 \u0B86\u0BB0\u0BCB\u0B95\u0BCD\u0B95\u0BBF\u0BAF\u0BA4\u0BCD\u0BA4\u0BC8\u0BAF\u0BC1\u0BAE\u0BCD \u0BA8\u0BB2\u0BCD\u0BB5\u0BBE\u0BB4\u0BCD\u0BB5\u0BC8\u0BAF\u0BC1\u0BAE\u0BCD \u0BAE\u0BC7\u0BAE\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BB2\u0BBE\u0BAE\u0BCD.",
-    content: "<p>\u0B9A\u0BAE\u0B9A\u0BCD\u0B9A\u0BC0\u0BB0\u0BCD \u0B89\u0BA3\u0BB5\u0BC1, \u0BB5\u0BB4\u0B95\u0BCD\u0B95\u0BAE\u0BBE\u0BA9 \u0B89\u0B9F\u0BB1\u0BCD\u0BAA\u0BAF\u0BBF\u0BB1\u0BCD\u0B9A\u0BBF \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BAA\u0BCB\u0BA4\u0BC1\u0BAE\u0BBE\u0BA9 \u0BA4\u0BC2\u0B95\u0BCD\u0B95\u0BAE\u0BCD \u0B86\u0B95\u0BBF\u0BAF\u0BB5\u0BC8 \u0B86\u0BB0\u0BCB\u0B95\u0BCD\u0B95\u0BBF\u0BAF\u0BAE\u0BBE\u0BA9 \u0BB5\u0BBE\u0BB4\u0BCD\u0B95\u0BCD\u0B95\u0BC8\u0B95\u0BCD\u0B95\u0BC1 \u0B85\u0BB5\u0B9A\u0BBF\u0BAF\u0BAE\u0BCD. \u0B87\u0BA8\u0BCD\u0BA4 \u0B95\u0B9F\u0BCD\u0B9F\u0BC1\u0BB0\u0BC8\u0BAF\u0BBF\u0BB2\u0BCD, \u0BA8\u0BC0\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0BAA\u0BBF\u0BA9\u0BCD\u0BAA\u0BB1\u0BCD\u0BB1\u0B95\u0BCD\u0B95\u0BC2\u0B9F\u0BBF\u0BAF \u0B8E\u0BB3\u0BBF\u0BAF \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BAA\u0BAF\u0BA9\u0BC1\u0BB3\u0BCD\u0BB3 \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BC1\u0B95\u0BB3\u0BCD \u0B95\u0BCA\u0B9F\u0BC1\u0B95\u0BCD\u0B95\u0BAA\u0BCD\u0BAA\u0B9F\u0BCD\u0B9F\u0BC1\u0BB3\u0BCD\u0BB3\u0BA9...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a11/800/400",
-    authorId: "u3",
-    categoryId: "c8",
-    tags: ["\u0BB5\u0BBE\u0BB4\u0BCD\u0B95\u0BCD\u0B95\u0BC8 \u0BAE\u0BC1\u0BB1\u0BC8", "\u0B86\u0BB0\u0BCB\u0B95\u0BCD\u0B95\u0BBF\u0BAF\u0BAE\u0BCD", "\u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BC1\u0B95\u0BB3\u0BCD"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-20T09:00:00Z",
-    views: 45001,
-    isFeatured: true,
-    comments: []
-  },
-  {
-    id: "a12",
-    title: "\u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0BB8\u0BCD\u0BAE\u0BBE\u0BB0\u0BCD\u0B9F\u0BCD\u0BAA\u0BCB\u0BA9\u0BCD \u0BB5\u0BC6\u0BB3\u0BBF\u0BAF\u0BC0\u0B9F\u0BC1: \u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BA8\u0BC1\u0B9F\u0BCD\u0BAA \u0B89\u0BB2\u0B95\u0BBF\u0BB2\u0BCD \u0B92\u0BB0\u0BC1 \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0BAA\u0BC1\u0BB0\u0B9F\u0BCD\u0B9A\u0BBF",
-    slug: "new-smartphone-revolution",
-    summary: "\u0BAE\u0BC1\u0BA9\u0BCD\u0BA9\u0BA3\u0BBF \u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BA8\u0BC1\u0B9F\u0BCD\u0BAA \u0BA8\u0BBF\u0BB1\u0BC1\u0BB5\u0BA9\u0BAE\u0BCD \u0BA4\u0BA9\u0BA4\u0BC1 \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0BAE\u0BC1\u0BA4\u0BA9\u0BCD\u0BAE\u0BC8 \u0BB8\u0BCD\u0BAE\u0BBE\u0BB0\u0BCD\u0B9F\u0BCD\u0BAA\u0BCB\u0BA9\u0BC8 \u0BB5\u0BC6\u0BB3\u0BBF\u0BAF\u0BBF\u0B9F\u0BCD\u0B9F\u0BC1\u0BB3\u0BCD\u0BB3\u0BA4\u0BC1, \u0B87\u0BA4\u0BC1 \u0BAE\u0BC7\u0BAE\u0BCD\u0BAA\u0B9F\u0BCD\u0B9F \u0B95\u0BC7\u0BAE\u0BB0\u0BBE \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BA8\u0BC0\u0BA3\u0BCD\u0B9F \u0BAA\u0BC7\u0B9F\u0BCD\u0B9F\u0BB0\u0BBF \u0B86\u0BAF\u0BC1\u0BB3\u0BC8\u0B95\u0BCD \u0B95\u0BCA\u0BA3\u0BCD\u0B9F\u0BC1\u0BB3\u0BCD\u0BB3\u0BA4\u0BC1.",
-    content: '<p>\u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BA8\u0BC1\u0B9F\u0BCD\u0BAA \u0B86\u0BB0\u0BCD\u0BB5\u0BB2\u0BB0\u0BCD\u0B95\u0BB3\u0BCD \u0B86\u0BB5\u0BB2\u0BC1\u0B9F\u0BA9\u0BCD \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0BAA\u0BBE\u0BB0\u0BCD\u0BA4\u0BCD\u0BA4 \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF "\u0B95\u0BC7\u0BB2\u0B95\u0BCD\u0BB8\u0BBF \u0B8E\u0B95\u0BCD\u0BB8\u0BCD" \u0BB8\u0BCD\u0BAE\u0BBE\u0BB0\u0BCD\u0B9F\u0BCD\u0BAA\u0BCB\u0BA9\u0BCD \u0B87\u0BA9\u0BCD\u0BB1\u0BC1 \u0BB5\u0BC6\u0BB3\u0BBF\u0BAF\u0BBF\u0B9F\u0BAA\u0BCD\u0BAA\u0B9F\u0BCD\u0B9F\u0BA4\u0BC1. \u0B87\u0BA4\u0BA9\u0BCD \u0B85\u0BAE\u0BCD\u0B9A\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BB5\u0BBF\u0BB2\u0BC8 \u0BB5\u0BBF\u0BB5\u0BB0\u0B99\u0BCD\u0B95\u0BB3\u0BC8 \u0B87\u0B99\u0BCD\u0B95\u0BC7 \u0B95\u0BBE\u0BA3\u0BB2\u0BBE\u0BAE\u0BCD...</p>',
-    coverImageUrl: "https://picsum.photos/seed/a12/800/400",
-    authorId: "u7",
-    categoryId: "c1",
-    tags: ["\u0BB8\u0BCD\u0BAE\u0BBE\u0BB0\u0BCD\u0B9F\u0BCD\u0BAA\u0BCB\u0BA9\u0BCD", "\u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BA8\u0BC1\u0B9F\u0BCD\u0BAA\u0BAE\u0BCD", "\u0BB5\u0BC6\u0BB3\u0BBF\u0BAF\u0BC0\u0B9F\u0BC1"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-19T16:00:00Z",
-    views: 12345,
-    comments: []
-  },
-  {
-    id: "a13",
-    title: "\u0BA4\u0BC7\u0BB0\u0BCD\u0BA4\u0BB2\u0BCD \u0B95\u0BB3\u0BAE\u0BCD \u0B9A\u0BC2\u0B9F\u0BC1\u0BAA\u0BBF\u0B9F\u0BBF\u0B95\u0BCD\u0B95\u0BBF\u0BB1\u0BA4\u0BC1: \u0BAE\u0BC1\u0B95\u0BCD\u0B95\u0BBF\u0BAF \u0B95\u0B9F\u0BCD\u0B9A\u0BBF\u0B95\u0BB3\u0BCD \u0BAA\u0BBF\u0BB0\u0B9A\u0BCD\u0B9A\u0BBE\u0BB0\u0BA4\u0BCD\u0BA4\u0BC8 \u0BA4\u0BC0\u0BB5\u0BBF\u0BB0\u0BAA\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BC1\u0B95\u0BBF\u0BA9\u0BCD\u0BB1\u0BA9",
-    slug: "election-campaign-intensifies",
-    summary: "\u0BB5\u0BB0\u0BB5\u0BBF\u0BB0\u0BC1\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0BA4\u0BC7\u0BB0\u0BCD\u0BA4\u0BB2\u0BC8 \u0BAE\u0BC1\u0BA9\u0BCD\u0BA9\u0BBF\u0B9F\u0BCD\u0B9F\u0BC1, \u0B85\u0BB0\u0B9A\u0BBF\u0BAF\u0BB2\u0BCD \u0B95\u0B9F\u0BCD\u0B9A\u0BBF\u0B95\u0BB3\u0BCD \u0BA4\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0BA4\u0BC7\u0BB0\u0BCD\u0BA4\u0BB2\u0BCD \u0B85\u0BB1\u0BBF\u0B95\u0BCD\u0B95\u0BC8\u0B95\u0BB3\u0BC8 \u0BB5\u0BC6\u0BB3\u0BBF\u0BAF\u0BBF\u0B9F\u0BCD\u0B9F\u0BC1, \u0BA8\u0BBE\u0B9F\u0BC1 \u0BA4\u0BB4\u0BC1\u0BB5\u0BBF\u0BAF \u0BAA\u0BBF\u0BB0\u0B9A\u0BCD\u0B9A\u0BBE\u0BB0\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0B88\u0B9F\u0BC1\u0BAA\u0B9F\u0BCD\u0B9F\u0BC1\u0BB3\u0BCD\u0BB3\u0BA9.",
-    content: "<p>\u0BB5\u0BBE\u0B95\u0BCD\u0B95\u0BC1\u0BAA\u0BCD\u0BAA\u0BA4\u0BBF\u0BB5\u0BC1 \u0BA8\u0BC6\u0BB0\u0BC1\u0B99\u0BCD\u0B95\u0BBF \u0BB5\u0BB0\u0BC1\u0BB5\u0BA4\u0BBE\u0BB2\u0BCD, \u0B85\u0BB0\u0B9A\u0BBF\u0BAF\u0BB2\u0BCD \u0B95\u0BB3\u0BAE\u0BCD \u0BAA\u0BB0\u0BAA\u0BB0\u0BAA\u0BCD\u0BAA\u0BBE\u0B95 \u0B95\u0BBE\u0BA3\u0BAA\u0BCD\u0BAA\u0B9F\u0BC1\u0B95\u0BBF\u0BB1\u0BA4\u0BC1. \u0BA4\u0BB2\u0BC8\u0BB5\u0BB0\u0BCD\u0B95\u0BB3\u0BCD \u0BAA\u0BCA\u0BA4\u0BC1\u0B95\u0BCD\u0B95\u0BC2\u0B9F\u0BCD\u0B9F\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BAA\u0BC7\u0BB0\u0BA3\u0BBF\u0B95\u0BB3\u0BBF\u0BB2\u0BCD \u0B88\u0B9F\u0BC1\u0BAA\u0B9F\u0BCD\u0B9F\u0BC1 \u0BB5\u0BBE\u0B95\u0BCD\u0B95\u0BBE\u0BB3\u0BB0\u0BCD\u0B95\u0BB3\u0BC8\u0B95\u0BCD \u0B95\u0BB5\u0BB0 \u0BAE\u0BC1\u0BAF\u0BB1\u0BCD\u0B9A\u0BBF\u0B95\u0BCD\u0B95\u0BBF\u0BA9\u0BCD\u0BB1\u0BA9\u0BB0\u0BCD...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a13/800/400",
-    authorId: "u4",
-    categoryId: "c3",
-    tags: ["\u0B85\u0BB0\u0B9A\u0BBF\u0BAF\u0BB2\u0BCD", "\u0BA4\u0BC7\u0BB0\u0BCD\u0BA4\u0BB2\u0BCD", "\u0B9A\u0BC6\u0BAF\u0BCD\u0BA4\u0BBF\u0B95\u0BB3\u0BCD"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-19T11:00:00Z",
-    views: 9876,
-    comments: []
-  },
-  {
-    id: "a14",
-    title: "\u0BB8\u0BCD\u0B9F\u0BBE\u0BB0\u0BCD\u0B9F\u0BCD\u0B85\u0BAA\u0BCD \u0BA8\u0BBF\u0BB1\u0BC1\u0BB5\u0BA9\u0B99\u0BCD\u0B95\u0BB3\u0BC1\u0B95\u0BCD\u0B95\u0BC1 \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0BAE\u0BC1\u0BA4\u0BB2\u0BC0\u0B9F\u0BC1\u0B95\u0BB3\u0BCD: \u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BAE\u0BC1\u0BA9\u0BC8\u0BB5\u0BCB\u0BB0\u0BC1\u0B95\u0BCD\u0B95\u0BC1 \u0B8A\u0B95\u0BCD\u0B95\u0BAE\u0BCD",
-    slug: "startup-funding-boost",
-    summary: "\u0B87\u0BA8\u0BCD\u0BA4\u0BBF\u0BAF \u0BB8\u0BCD\u0B9F\u0BBE\u0BB0\u0BCD\u0B9F\u0BCD\u0B85\u0BAA\u0BCD \u0B9A\u0BC2\u0BB4\u0BB2\u0BCD \u0B92\u0BB0\u0BC1 \u0BAA\u0BC6\u0BB0\u0BBF\u0BAF \u0B8A\u0B95\u0BCD\u0B95\u0BA4\u0BCD\u0BA4\u0BC8\u0BAA\u0BCD \u0BAA\u0BC6\u0BB1\u0BC1\u0B95\u0BBF\u0BB1\u0BA4\u0BC1, \u0B8F\u0BA9\u0BC6\u0BA9\u0BBF\u0BB2\u0BCD \u0BA4\u0BC1\u0BA3\u0BBF\u0B95\u0BB0 \u0BAE\u0BC2\u0BB2\u0BA4\u0BA9 \u0BA8\u0BBF\u0BB1\u0BC1\u0BB5\u0BA9\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0BAA\u0BC1\u0BA4\u0BC1\u0BAE\u0BC8\u0BAF\u0BBE\u0BA9 \u0BAF\u0BCB\u0B9A\u0BA9\u0BC8\u0B95\u0BB3\u0BBF\u0BB2\u0BCD \u0BAE\u0BBF\u0BB2\u0BCD\u0BB2\u0BBF\u0BAF\u0BA9\u0BCD \u0B95\u0BA3\u0B95\u0BCD\u0B95\u0BBE\u0BA9 \u0B9F\u0BBE\u0BB2\u0BB0\u0BCD\u0B95\u0BB3\u0BC8 \u0BAE\u0BC1\u0BA4\u0BB2\u0BC0\u0B9F\u0BC1 \u0B9A\u0BC6\u0BAF\u0BCD\u0B95\u0BBF\u0BA9\u0BCD\u0BB1\u0BA9.",
-    content: "<p>\u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BA8\u0BC1\u0B9F\u0BCD\u0BAA\u0BAE\u0BCD, \u0B9A\u0BC1\u0B95\u0BBE\u0BA4\u0BBE\u0BB0\u0BAE\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BA8\u0BBF\u0BA4\u0BBF\u0B9A\u0BCD \u0B9A\u0BC7\u0BB5\u0BC8\u0BA4\u0BCD \u0BA4\u0BC1\u0BB1\u0BC8\u0B95\u0BB3\u0BBF\u0BB2\u0BCD \u0B89\u0BB3\u0BCD\u0BB3 \u0BAA\u0BB2 \u0B87\u0BB3\u0BAE\u0BCD \u0BA8\u0BBF\u0BB1\u0BC1\u0BB5\u0BA9\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BBF\u0B9F\u0BA4\u0BCD\u0BA4\u0B95\u0BCD\u0B95 \u0BA8\u0BBF\u0BA4\u0BBF\u0BAF\u0BC1\u0BA4\u0BB5\u0BBF\u0BAF\u0BC8\u0BAA\u0BCD \u0BAA\u0BC6\u0BB1\u0BCD\u0BB1\u0BC1\u0BB3\u0BCD\u0BB3\u0BA9. \u0B87\u0BA4\u0BC1 \u0BA8\u0BBE\u0B9F\u0BCD\u0B9F\u0BBF\u0BA9\u0BCD \u0BAA\u0BCA\u0BB0\u0BC1\u0BB3\u0BBE\u0BA4\u0BBE\u0BB0 \u0BB5\u0BB3\u0BB0\u0BCD\u0B9A\u0BCD\u0B9A\u0BBF\u0B95\u0BCD\u0B95\u0BC1 \u0BAA\u0B99\u0BCD\u0B95\u0BB3\u0BBF\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0B8E\u0BA9 \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0BAA\u0BBE\u0BB0\u0BCD\u0B95\u0BCD\u0B95\u0BAA\u0BCD\u0BAA\u0B9F\u0BC1\u0B95\u0BBF\u0BB1\u0BA4\u0BC1...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a14/800/400",
-    authorId: "u6",
-    categoryId: "c2",
-    tags: ["\u0BB8\u0BCD\u0B9F\u0BBE\u0BB0\u0BCD\u0B9F\u0BCD\u0B85\u0BAA\u0BCD", "\u0BB5\u0BA3\u0BBF\u0B95\u0BAE\u0BCD", "\u0BAE\u0BC1\u0BA4\u0BB2\u0BC0\u0B9F\u0BC1"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-18T14:00:00Z",
-    views: 7500,
-    comments: []
-  },
-  // Advertisement Articles
-  {
-    id: "ad1",
-    title: "\u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B95\u0BA9\u0BB5\u0BC1 \u0B87\u0BB2\u0BCD\u0BB2\u0BAE\u0BCD: \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0B85\u0B9F\u0BC1\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BBE\u0B9F\u0BBF \u0B95\u0BC1\u0B9F\u0BBF\u0BAF\u0BBF\u0BB0\u0BC1\u0BAA\u0BCD\u0BAA\u0BC1\u0B95\u0BB3\u0BCD \u0BB5\u0BBF\u0BB1\u0BCD\u0BAA\u0BA9\u0BC8\u0B95\u0BCD\u0B95\u0BC1",
-    slug: "dream-home-apartments-sale",
-    summary: "\u0B9A\u0BC6\u0BA9\u0BCD\u0BA9\u0BC8\u0BAF\u0BBF\u0BA9\u0BCD \u0BAE\u0BC8\u0BAF\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0BA8\u0BB5\u0BC0\u0BA9 \u0BB5\u0B9A\u0BA4\u0BBF\u0B95\u0BB3\u0BC1\u0B9F\u0BA9\u0BCD \u0B95\u0BC2\u0B9F\u0BBF\u0BAF \u0B9A\u0BCA\u0B95\u0BC1\u0B9A\u0BC1 \u0BB5\u0BC0\u0B9F\u0BC1\u0B95\u0BB3\u0BCD. \u0B87\u0BA9\u0BCD\u0BB1\u0BC7 \u0BAE\u0BC1\u0BA9\u0BCD\u0BAA\u0BA4\u0BBF\u0BB5\u0BC1 \u0B9A\u0BC6\u0BAF\u0BCD\u0BAF\u0BC1\u0B99\u0BCD\u0B95\u0BB3\u0BCD!",
-    content: "<p>\u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0BB5\u0BBE\u0BB4\u0BCD\u0B95\u0BCD\u0B95\u0BC8 \u0BAE\u0BC1\u0BB1\u0BC8\u0BAF\u0BC8 \u0BAE\u0BC7\u0BAE\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BC1\u0BAE\u0BCD \u0BB5\u0B95\u0BC8\u0BAF\u0BBF\u0BB2\u0BCD \u0BB5\u0B9F\u0BBF\u0BB5\u0BAE\u0BC8\u0B95\u0BCD\u0B95\u0BAA\u0BCD\u0BAA\u0B9F\u0BCD\u0B9F \u0B8E\u0B99\u0BCD\u0B95\u0BB3\u0BBF\u0BA9\u0BCD \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0BA4\u0BBF\u0B9F\u0BCD\u0B9F\u0BA4\u0BCD\u0BA4\u0BC8 \u0B85\u0BB1\u0BBF\u0BAE\u0BC1\u0B95\u0BAA\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BC1\u0B95\u0BBF\u0BB1\u0BCB\u0BAE\u0BCD. \u0BA8\u0BC0\u0B9A\u0BCD\u0B9A\u0BB2\u0BCD \u0B95\u0BC1\u0BB3\u0BAE\u0BCD, \u0B89\u0B9F\u0BB1\u0BCD\u0BAA\u0BAF\u0BBF\u0BB1\u0BCD\u0B9A\u0BBF \u0B95\u0BC2\u0B9F\u0BAE\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD 24/7 \u0BAA\u0BBE\u0BA4\u0BC1\u0B95\u0BBE\u0BAA\u0BCD\u0BAA\u0BC1 \u0BAA\u0BCB\u0BA9\u0BCD\u0BB1 \u0BB5\u0B9A\u0BA4\u0BBF\u0B95\u0BB3\u0BC1\u0B9F\u0BA9\u0BCD...</p>",
-    coverImageUrl: "https://picsum.photos/seed/ad1/800/400",
-    authorId: "u1",
-    categoryId: "c8",
-    tags: ["\u0BB0\u0BBF\u0BAF\u0BB2\u0BCD \u0B8E\u0BB8\u0BCD\u0B9F\u0BC7\u0B9F\u0BCD", "\u0BAE\u0BC1\u0BA4\u0BB2\u0BC0\u0B9F\u0BC1", "\u0B9A\u0BC6\u0BA9\u0BCD\u0BA9\u0BC8"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-22T11:00:00Z",
-    views: 5e3,
-    comments: [],
-    isAdvertisement: true
-  },
-  {
-    id: "ad2",
-    title: "\u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0B9F\u0BC6\u0B95\u0BCD\u0BA9\u0BCB \u0BAE\u0BCA\u0BAA\u0BC8\u0BB2\u0BCD: \u0B85\u0B9A\u0BA4\u0BCD\u0BA4\u0BB2\u0BBE\u0BA9 \u0B85\u0BAE\u0BCD\u0B9A\u0B99\u0BCD\u0B95\u0BB3\u0BC1\u0B9F\u0BA9\u0BCD \u0B85\u0BB1\u0BBF\u0BAE\u0BC1\u0B95\u0BAE\u0BCD",
-    slug: "new-techno-mobile-launch",
-    summary: "5G \u0BB5\u0BC7\u0B95\u0BAE\u0BCD, 108MP \u0B95\u0BC7\u0BAE\u0BB0\u0BBE \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BA8\u0BC0\u0BA3\u0BCD\u0B9F \u0BA8\u0BC7\u0BB0 \u0BAA\u0BC7\u0B9F\u0BCD\u0B9F\u0BB0\u0BBF \u0B86\u0BAF\u0BC1\u0BB3\u0BCD. \u0BA8\u0BAE\u0BCD\u0BAA\u0BAE\u0BC1\u0B9F\u0BBF\u0BAF\u0BBE\u0BA4 \u0BB5\u0BBF\u0BB2\u0BC8\u0BAF\u0BBF\u0BB2\u0BCD!",
-    content: "<p>\u0B9F\u0BC6\u0B95\u0BCD\u0BA9\u0BCB\u0BB5\u0BBF\u0BA9\u0BCD \u0B9A\u0BAE\u0BC0\u0BAA\u0BA4\u0BCD\u0BA4\u0BBF\u0BAF \u0BB8\u0BCD\u0BAE\u0BBE\u0BB0\u0BCD\u0B9F\u0BCD\u0BAA\u0BCB\u0BA9\u0BCD \u0BAE\u0BC2\u0BB2\u0BAE\u0BCD \u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BA8\u0BC1\u0B9F\u0BCD\u0BAA\u0BA4\u0BCD\u0BA4\u0BBF\u0BA9\u0BCD \u0B85\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4 \u0B95\u0B9F\u0BCD\u0B9F\u0BA4\u0BCD\u0BA4\u0BC8 \u0B85\u0BA9\u0BC1\u0BAA\u0BB5\u0BBF\u0BAF\u0BC1\u0B99\u0BCD\u0B95\u0BB3\u0BCD. \u0B87\u0BA4\u0BC1 \u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0BAA\u0BC1\u0B95\u0BC8\u0BAA\u0BCD\u0BAA\u0B9F\u0BAE\u0BCD \u0B8E\u0B9F\u0BC1\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0B95\u0BC7\u0BAE\u0BBF\u0B99\u0BCD \u0B85\u0BA9\u0BC1\u0BAA\u0BB5\u0BA4\u0BCD\u0BA4\u0BC8 \u0BAE\u0BBE\u0BB1\u0BCD\u0BB1\u0BBF\u0BAF\u0BAE\u0BC8\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD...</p>",
-    coverImageUrl: "https://picsum.photos/seed/ad2/800/400",
-    authorId: "u1",
-    categoryId: "c1",
-    tags: ["\u0BAE\u0BCA\u0BAA\u0BC8\u0BB2\u0BCD", "\u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BA8\u0BC1\u0B9F\u0BCD\u0BAA\u0BAE\u0BCD", "\u0BB5\u0BBF\u0BAE\u0BB0\u0BCD\u0B9A\u0BA9\u0BAE\u0BCD"],
-    status: "Published" /* PUBLISHED */,
-    publishedAt: "2024-07-21T14:00:00Z",
-    views: 8500,
-    comments: [],
-    isAdvertisement: true
-  },
-  // Non-Published Articles
-  {
-    id: "a3",
-    title: "\u0BA4\u0BBF \u0B85\u0BA3\u0BCD\u0B9F\u0BB0\u0BCD\u0B9F\u0BBE\u0B95\u0BCD \u0BB8\u0BCD\u0B9F\u0BCB\u0BB0\u0BBF: \u0B89\u0BB3\u0BCD\u0BB3\u0BC2\u0BB0\u0BCD \u0B85\u0BA3\u0BBF \u0B8E\u0BAA\u0BCD\u0BAA\u0B9F\u0BBF \u0B9A\u0BBE\u0BAE\u0BCD\u0BAA\u0BBF\u0BAF\u0BA9\u0BCD\u0BB7\u0BBF\u0BAA\u0BCD\u0BAA\u0BC8 \u0BB5\u0BC6\u0BA9\u0BCD\u0BB1\u0BA4\u0BC1",
-    slug: "underdog-championship-win",
-    summary: "\u0BB5\u0BBF\u0B9F\u0BBE\u0BAE\u0BC1\u0BAF\u0BB1\u0BCD\u0B9A\u0BBF \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0B95\u0BC1\u0BB4\u0BC1\u0BAA\u0BCD\u0BAA\u0BA3\u0BBF\u0BAF\u0BBF\u0BA9\u0BCD \u0B8E\u0BB4\u0BC1\u0B9A\u0BCD\u0B9A\u0BBF\u0BAF\u0BC2\u0B9F\u0BCD\u0B9F\u0BC1\u0BAE\u0BCD \u0B95\u0BA4\u0BC8.",
-    content: "<p>\u0B85\u0BB5\u0BB0\u0BCD\u0B95\u0BB3\u0BCD \u0BB5\u0BC6\u0BB1\u0BCD\u0BB1\u0BBF \u0BAA\u0BC6\u0BB1\u0BC1\u0BB5\u0BBE\u0BB0\u0BCD\u0B95\u0BB3\u0BCD \u0B8E\u0BA9\u0BCD\u0BB1\u0BC1 \u0BAF\u0BBE\u0BB0\u0BC1\u0BAE\u0BCD \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0BAA\u0BBE\u0BB0\u0BCD\u0B95\u0BCD\u0B95\u0BB5\u0BBF\u0BB2\u0BCD\u0BB2\u0BC8...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a3/800/400",
-    authorId: "u3",
-    categoryId: "c4",
-    tags: ["\u0B95\u0BC2\u0B9F\u0BC8\u0BAA\u0BCD\u0BAA\u0BA8\u0BCD\u0BA4\u0BC1", "\u0B9A\u0BBE\u0BAE\u0BCD\u0BAA\u0BBF\u0BAF\u0BA9\u0BCD\u0BB7\u0BBF\u0BAA\u0BCD", "\u0B89\u0BA4\u0BCD\u0BB5\u0BC7\u0B95\u0BAE\u0BCD"],
-    status: "Pending Review" /* PENDING_REVIEW */,
-    publishedAt: null,
-    views: 0,
-    comments: []
-  },
-  {
-    id: "a4",
-    title: "\u0BB5\u0BB0\u0BC8\u0BB5\u0BC1: \u0BB5\u0BB0\u0BB5\u0BBF\u0BB0\u0BC1\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0BA4\u0BC7\u0BB0\u0BCD\u0BA4\u0BB2\u0BCD \u0B95\u0BC1\u0BB1\u0BBF\u0BA4\u0BCD\u0BA4 \u0B86\u0BB0\u0BAE\u0BCD\u0BAA \u0B8E\u0BA3\u0BCD\u0BA3\u0B99\u0BCD\u0B95\u0BB3\u0BCD",
-    slug: "draft-election-thoughts",
-    summary: "\u0B85\u0BB0\u0B9A\u0BBF\u0BAF\u0BB2\u0BCD \u0BAA\u0BA8\u0BCD\u0BA4\u0BAF\u0BA4\u0BCD\u0BA4\u0BC8 \u0BB5\u0B9F\u0BBF\u0BB5\u0BAE\u0BC8\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0BB5\u0BC7\u0B9F\u0BCD\u0BAA\u0BBE\u0BB3\u0BB0\u0BCD\u0B95\u0BB3\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BAE\u0BC1\u0B95\u0BCD\u0B95\u0BBF\u0BAF \u0BAA\u0BBF\u0BB0\u0B9A\u0BCD\u0B9A\u0BBF\u0BA9\u0BC8\u0B95\u0BB3\u0BCD \u0BAA\u0BB1\u0BCD\u0BB1\u0BBF\u0BAF \u0B92\u0BB0\u0BC1 \u0BAA\u0BC2\u0BB0\u0BCD\u0BB5\u0BBE\u0B99\u0BCD\u0B95 \u0BAA\u0BBE\u0BB0\u0BCD\u0BB5\u0BC8.",
-    content: "<p>\u0B87\u0BA4\u0BC1 \u0B92\u0BB0\u0BC1 \u0BB5\u0BB0\u0BC8\u0BB5\u0BC1 \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BB5\u0BC6\u0BB3\u0BBF\u0BAF\u0BC0\u0B9F\u0BCD\u0B9F\u0BBF\u0BB1\u0BCD\u0B95\u0BC1 \u0BA4\u0BAF\u0BBE\u0BB0\u0BBE\u0B95 \u0B87\u0BB2\u0BCD\u0BB2\u0BC8...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a4/800/400",
-    authorId: "u4",
-    categoryId: "c3",
-    tags: ["\u0B85\u0BB0\u0B9A\u0BBF\u0BAF\u0BB2\u0BCD", "\u0BA4\u0BC7\u0BB0\u0BCD\u0BA4\u0BB2\u0BCD"],
-    status: "Draft" /* DRAFT */,
-    publishedAt: null,
-    views: 0,
-    comments: []
-  },
-  {
-    id: "a6",
-    title: "\u0BA4\u0BCA\u0BB1\u0BCD\u0BB1\u0BC1\u0BA8\u0BCB\u0BAF\u0BCD\u0B95\u0BCD\u0B95\u0BC1\u0BAA\u0BCD \u0BAA\u0BBF\u0BA8\u0BCD\u0BA4\u0BC8\u0BAF \u0BAA\u0BA3\u0BBF\u0BAF\u0BBF\u0B9F\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0BB5\u0BB4\u0BBF\u0B9A\u0BC6\u0BB2\u0BC1\u0BA4\u0BCD\u0BA4\u0BB2\u0BCD",
-    slug: "post-pandemic-workplace",
-    summary: "\u0BA8\u0BBF\u0BB1\u0BC1\u0BB5\u0BA9\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B95\u0BB2\u0BAA\u0BCD\u0BAA\u0BBF\u0BA9 \u0BAE\u0BBE\u0BA4\u0BBF\u0BB0\u0BBF\u0B95\u0BB3\u0BC1\u0B9F\u0BA9\u0BCD \u0BAA\u0BB0\u0BBF\u0B9A\u0BCB\u0BA4\u0BA9\u0BC8 \u0B9A\u0BC6\u0BAF\u0BCD\u0B95\u0BBF\u0BA9\u0BCD\u0BB1\u0BA9.",
-    content: "<p>\u0B92\u0BB0\u0BC1 \u0B95\u0BA9\u0B9A\u0BA4\u0BC1\u0BB0\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0B92\u0BA9\u0BCD\u0BAA\u0BA4\u0BC1 \u0BAE\u0BC1\u0BA4\u0BB2\u0BCD \u0B90\u0BA8\u0BCD\u0BA4\u0BC1 \u0BB5\u0BB0\u0BC8 \u0B8E\u0BA9\u0BCD\u0BAA\u0BA4\u0BC1 \u0BAA\u0BB2\u0BB0\u0BC1\u0B95\u0BCD\u0B95\u0BC1 \u0B92\u0BB0\u0BC1 \u0BA8\u0BBF\u0BA9\u0BC8\u0BB5\u0BC1\u0B9A\u0BCD\u0B9A\u0BBF\u0BA9\u0BCD\u0BA9\u0BAE\u0BCD...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a6/800/400",
-    authorId: "u4",
-    categoryId: "c2",
-    tags: ["\u0BB5\u0BC7\u0BB2\u0BC8", "\u0BB5\u0BA3\u0BBF\u0B95\u0BAE\u0BCD", "\u0BB5\u0BC7\u0BB2\u0BC8\u0BAF\u0BBF\u0BA9\u0BCD \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0B95\u0BBE\u0BB2\u0BAE\u0BCD"],
-    status: "Rejected" /* REJECTED */,
-    publishedAt: null,
-    views: 0,
-    comments: [],
-    rejectionReason: "Needs more specific data and sources to support the claims."
-  },
-  {
-    id: "a15",
-    title: "\u0BA8\u0B95\u0BB0\u0BCD\u0BAA\u0BCD\u0BAA\u0BC1\u0BB1 \u0BA4\u0BCB\u0B9F\u0BCD\u0B9F\u0B95\u0BCD\u0B95\u0BB2\u0BC8: \u0B9A\u0BBF\u0BB1\u0BBF\u0BAF \u0B87\u0B9F\u0B99\u0BCD\u0B95\u0BB3\u0BBF\u0BB2\u0BCD \u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B9A\u0BCA\u0BA8\u0BCD\u0BA4 \u0B89\u0BA3\u0BB5\u0BC8 \u0BB5\u0BB3\u0BB0\u0BCD\u0BAA\u0BCD\u0BAA\u0BA4\u0BC1",
-    slug: "urban-gardening-guide",
-    summary: "\u0BAA\u0BBE\u0BB2\u0BCD\u0B95\u0BA9\u0BBF\u0B95\u0BB3\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0B9C\u0BA9\u0BCD\u0BA9\u0BB2\u0BCD \u0B93\u0BB0\u0B99\u0BCD\u0B95\u0BB3\u0BBF\u0BB2\u0BCD \u0B95\u0BBE\u0BAF\u0BCD\u0B95\u0BB1\u0BBF\u0B95\u0BB3\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BAE\u0BC2\u0BB2\u0BBF\u0B95\u0BC8\u0B95\u0BB3\u0BC8 \u0BB5\u0BB3\u0BB0\u0BCD\u0BAA\u0BCD\u0BAA\u0BA4\u0BB1\u0BCD\u0B95\u0BBE\u0BA9 \u0B92\u0BB0\u0BC1 \u0BA4\u0BCA\u0B9F\u0B95\u0BCD\u0B95 \u0BB5\u0BB4\u0BBF\u0B95\u0BBE\u0B9F\u0BCD\u0B9F\u0BBF.",
-    content: "<p>\u0B87\u0B9F\u0BAA\u0BCD \u0BAA\u0BB1\u0BCD\u0BB1\u0BBE\u0B95\u0BCD\u0B95\u0BC1\u0BB1\u0BC8 \u0B92\u0BB0\u0BC1 \u0BA4\u0B9F\u0BC8\u0BAF\u0BBE\u0B95 \u0B87\u0BB0\u0BC1\u0B95\u0BCD\u0B95 \u0BB5\u0BC7\u0BA3\u0BCD\u0B9F\u0BBF\u0BAF\u0BA4\u0BBF\u0BB2\u0BCD\u0BB2\u0BC8. \u0B87\u0BA8\u0BCD\u0BA4 \u0BB5\u0BB4\u0BBF\u0B95\u0BBE\u0B9F\u0BCD\u0B9F\u0BBF \u0B89\u0B99\u0BCD\u0B95\u0BB3\u0BCD \u0B9A\u0BCA\u0BA8\u0BCD\u0BA4 \u0B9A\u0BAE\u0BC8\u0BAF\u0BB2\u0BB1\u0BC8 \u0BA4\u0BCB\u0B9F\u0BCD\u0B9F\u0BA4\u0BCD\u0BA4\u0BC8 \u0B85\u0BAE\u0BC8\u0B95\u0BCD\u0B95 \u0B89\u0BA4\u0BB5\u0BC1\u0BAE\u0BCD...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a15/800/400",
-    authorId: "u7",
-    categoryId: "c8",
-    tags: ["\u0BA4\u0BCB\u0B9F\u0BCD\u0B9F\u0B95\u0BCD\u0B95\u0BB2\u0BC8", "\u0BB5\u0BBE\u0BB4\u0BCD\u0B95\u0BCD\u0B95\u0BC8 \u0BAE\u0BC1\u0BB1\u0BC8", "DIY"],
-    status: "Pending Review" /* PENDING_REVIEW */,
-    publishedAt: null,
-    views: 0,
-    comments: []
-  },
-  {
-    id: "a16",
-    title: "\u0BB5\u0BB0\u0BC8\u0BB5\u0BC1: \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0B95\u0BC7\u0BAE\u0BBF\u0B99\u0BCD \u0B95\u0BA9\u0BCD\u0B9A\u0BCB\u0BB2\u0BCD \u0BAA\u0BB1\u0BCD\u0BB1\u0BBF\u0BAF \u0BAE\u0BC1\u0BA4\u0BB2\u0BCD \u0BAA\u0BA4\u0BBF\u0BB5\u0BC1\u0B95\u0BB3\u0BCD",
-    slug: "draft-gaming-console-review",
-    summary: '\u0BB5\u0BB0\u0BB5\u0BBF\u0BB0\u0BC1\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD "\u0BAA\u0BBF\u0BB3\u0BC7\u0BB8\u0BCD\u0B9F\u0BC7\u0BB7\u0BA9\u0BCD 6" \u0BAA\u0BB1\u0BCD\u0BB1\u0BBF\u0BAF \u0B86\u0BB0\u0BAE\u0BCD\u0BAA\u0B95\u0B9F\u0BCD\u0B9F \u0B9A\u0BBF\u0BA8\u0BCD\u0BA4\u0BA9\u0BC8\u0B95\u0BB3\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0BB5\u0BA4\u0BA8\u0BCD\u0BA4\u0BBF\u0B95\u0BB3\u0BCD.',
-    content: "<p>\u0B87\u0BA9\u0BCD\u0BA9\u0BC1\u0BAE\u0BCD \u0B89\u0BB1\u0BC1\u0BA4\u0BBF\u0BAA\u0BCD\u0BAA\u0B9F\u0BC1\u0BA4\u0BCD\u0BA4\u0BAA\u0BCD\u0BAA\u0B9F\u0BB5\u0BBF\u0BB2\u0BCD\u0BB2\u0BC8, \u0B86\u0BA9\u0BBE\u0BB2\u0BCD \u0B95\u0B9A\u0BBF\u0BB5\u0BC1\u0B95\u0BB3\u0BCD \u0B92\u0BB0\u0BC1 \u0B9A\u0B95\u0BCD\u0BA4\u0BBF\u0BB5\u0BBE\u0BAF\u0BCD\u0BA8\u0BCD\u0BA4 \u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0B9A\u0BBF\u0BAA\u0BCD \u0BAE\u0BB1\u0BCD\u0BB1\u0BC1\u0BAE\u0BCD \u0B85\u0BA4\u0BBF\u0BB5\u0BC7\u0B95 \u0B95\u0BBF\u0BB0\u0BBE\u0BAA\u0BBF\u0B95\u0BCD\u0BB8\u0BCD \u0B86\u0B95\u0BBF\u0BAF\u0BB5\u0BB1\u0BCD\u0BB1\u0BC8\u0B95\u0BCD \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BBF\u0B9F\u0BC1\u0B95\u0BBF\u0BA9\u0BCD\u0BB1\u0BA9...</p>",
-    coverImageUrl: "https://picsum.photos/seed/a16/800/400",
-    authorId: "u3",
-    categoryId: "c1",
-    tags: ["\u0B95\u0BC7\u0BAE\u0BBF\u0B99\u0BCD", "\u0BA4\u0BCA\u0BB4\u0BBF\u0BB2\u0BCD\u0BA8\u0BC1\u0B9F\u0BCD\u0BAA\u0BAE\u0BCD"],
-    status: "Draft" /* DRAFT */,
-    publishedAt: null,
-    views: 0,
-    comments: []
-  }
-];
-var notifications = [
-  {
-    id: "n1",
-    userId: "u3",
-    // அருண்
-    articleId: "a1",
-    message: 'Congratulations! Your article "\u0B9A\u0BC6\u0BAF\u0BB1\u0BCD\u0B95\u0BC8 \u0BA8\u0BC1\u0BA3\u0BCD\u0BA3\u0BB1\u0BBF\u0BB5\u0BBF\u0BA9\u0BCD \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0B95\u0BBE\u0BB2\u0BAE\u0BCD: 2024 \u0B87\u0BB2\u0BCD \u0B95\u0BB5\u0BA9\u0BBF\u0B95\u0BCD\u0B95 \u0BB5\u0BC7\u0BA3\u0BCD\u0B9F\u0BBF\u0BAF \u0BAA\u0BCB\u0B95\u0BCD\u0B95\u0BC1\u0B95\u0BB3\u0BCD" has been approved and published.',
-    type: "APPROVED" /* APPROVED */,
-    read: false,
-    timestamp: "2024-07-22T10:05:00Z"
-  },
-  {
-    id: "n2",
-    userId: "u4",
-    // ரீட்டா
-    articleId: "a6",
-    message: 'Your article "\u0BA4\u0BCA\u0BB1\u0BCD\u0BB1\u0BC1\u0BA8\u0BCB\u0BAF\u0BCD\u0B95\u0BCD\u0B95\u0BC1\u0BAA\u0BCD \u0BAA\u0BBF\u0BA8\u0BCD\u0BA4\u0BC8\u0BAF \u0BAA\u0BA3\u0BBF\u0BAF\u0BBF\u0B9F\u0BA4\u0BCD\u0BA4\u0BBF\u0BB2\u0BCD \u0BB5\u0BB4\u0BBF\u0B9A\u0BC6\u0BB2\u0BC1\u0BA4\u0BCD\u0BA4\u0BB2\u0BCD" has been rejected. Reason: Needs more specific data and sources.',
-    type: "REJECTED" /* REJECTED */,
-    read: false,
-    timestamp: "2024-07-21T14:00:00Z"
-  },
-  {
-    id: "n3",
-    userId: "u3",
-    // அருண்
-    articleId: "a3",
-    message: 'A new comment was posted on your article "\u0BA4\u0BBF \u0B85\u0BA3\u0BCD\u0B9F\u0BB0\u0BCD\u0B9F\u0BBE\u0B95\u0BCD \u0BB8\u0BCD\u0B9F\u0BCB\u0BB0\u0BBF: \u0B89\u0BB3\u0BCD\u0BB3\u0BC2\u0BB0\u0BCD \u0B85\u0BA3\u0BBF \u0B8E\u0BAA\u0BCD\u0BAA\u0B9F\u0BBF \u0B9A\u0BBE\u0BAE\u0BCD\u0BAA\u0BBF\u0BAF\u0BA9\u0BCD\u0BB7\u0BBF\u0BAA\u0BCD\u0BAA\u0BC8 \u0BB5\u0BC6\u0BA9\u0BCD\u0BB1\u0BA4\u0BC1".',
-    type: "COMMENT" /* COMMENT */,
-    read: true,
-    timestamp: "2024-07-23T09:15:00Z"
-  },
-  {
-    id: "n4",
-    userId: "u4",
-    // ரீட்டா
-    articleId: "a2",
-    message: 'Congratulations! Your article "\u0BAA\u0BC1\u0BA4\u0BBF\u0BAF \u0BAA\u0BCA\u0BB0\u0BC1\u0BB3\u0BBE\u0BA4\u0BBE\u0BB0\u0B95\u0BCD \u0B95\u0BCA\u0BB3\u0BCD\u0B95\u0BC8\u0B95\u0BB3\u0BC1\u0B95\u0BCD\u0B95\u0BC1 \u0B89\u0BB2\u0B95\u0B9A\u0BCD \u0B9A\u0BA8\u0BCD\u0BA4\u0BC8\u0B95\u0BB3\u0BCD \u0B8E\u0BA4\u0BBF\u0BB0\u0BCD\u0BB5\u0BBF\u0BA9\u0BC8" has been approved and published.',
-    type: "APPROVED" /* APPROVED */,
-    read: true,
-    timestamp: "2024-07-22T09:35:00Z"
-  }
-];
-var subscribers = [
-  { id: "sub1", email: "reader1@example.com", subscribedAt: "2024-07-20T10:00:00Z" },
-  { id: "sub2", email: "newsfan@example.com", subscribedAt: "2024-07-21T11:30:00Z" },
-  { id: "sub3", email: "johndoe@example.com", subscribedAt: "2024-07-22T15:00:00Z" },
-  { id: "sub4", email: "test.user@example.com", subscribedAt: "2024-07-23T09:00:00Z" }
-];
-
 // src/auth.ts
 var import_jsonwebtoken = __toESM(require_jsonwebtoken());
 
@@ -30072,6 +29840,9 @@ function randomBytes(len) {
     );
   }
   return randomFallback(len);
+}
+function setRandomFallback(random) {
+  randomFallback = random;
 }
 function genSaltSync(rounds, seed_length) {
   rounds = rounds || GENSALT_DEFAULT_LOG2_ROUNDS;
@@ -30125,6 +29896,15 @@ function genSalt(rounds, seed_length, callback) {
       });
     });
 }
+function hashSync(password, salt) {
+  if (typeof salt === "undefined")
+    salt = GENSALT_DEFAULT_LOG2_ROUNDS;
+  if (typeof salt === "number")
+    salt = genSaltSync(salt);
+  if (typeof password !== "string" || typeof salt !== "string")
+    throw Error("Illegal arguments: " + typeof password + ", " + typeof salt);
+  return _hash(password, salt);
+}
 function hash(password, salt, callback, progressCallback) {
   function _async(callback2) {
     if (typeof password === "string" && typeof salt === "number")
@@ -30162,6 +29942,16 @@ function safeStringCompare(known, unknown) {
     diff |= known.charCodeAt(i3) ^ unknown.charCodeAt(i3);
   }
   return diff === 0;
+}
+function compareSync(password, hash2) {
+  if (typeof password !== "string" || typeof hash2 !== "string")
+    throw Error("Illegal arguments: " + typeof password + ", " + typeof hash2);
+  if (hash2.length !== 60)
+    return false;
+  return safeStringCompare(
+    hashSync(password, hash2.substring(0, hash2.length - 31)),
+    hash2
+  );
 }
 function compare(password, hashValue, callback, progressCallback) {
   function _async(callback2) {
@@ -30206,6 +29996,23 @@ function compare(password, hashValue, callback, progressCallback) {
         resolve(res);
       });
     });
+}
+function getRounds(hash2) {
+  if (typeof hash2 !== "string")
+    throw Error("Illegal arguments: " + typeof hash2);
+  return parseInt(hash2.split("$")[2], 10);
+}
+function getSalt(hash2) {
+  if (typeof hash2 !== "string")
+    throw Error("Illegal arguments: " + typeof hash2);
+  if (hash2.length !== 60)
+    throw Error("Illegal hash length: " + hash2.length + " != 60");
+  return hash2.substring(0, 29);
+}
+function truncates(password) {
+  if (typeof password !== "string")
+    throw Error("Illegal arguments: " + typeof password);
+  return utf8Length(password) > 72;
 }
 var nextTick = typeof process !== "undefined" && process && typeof process.nextTick === "function" ? typeof setImmediate === "function" ? setImmediate : process.nextTick : setTimeout;
 function utf8Length(string) {
@@ -31755,6 +31562,26 @@ function _hash(password, salt, callback, progressCallback) {
     );
   }
 }
+function encodeBase64(bytes, length) {
+  return base64_encode(bytes, length);
+}
+function decodeBase64(string, length) {
+  return base64_decode(string, length);
+}
+var bcryptjs_default = {
+  setRandomFallback,
+  genSaltSync,
+  genSalt,
+  hashSync,
+  hash,
+  compareSync,
+  compare,
+  getRounds,
+  getSalt,
+  truncates,
+  encodeBase64,
+  decodeBase64
+};
 
 // src/auth.ts
 var JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
@@ -31863,22 +31690,25 @@ var BaseRepository = class {
     return !!result.Attributes;
   }
   async query(params) {
+    var _a2;
     const command = new import_lib_dynamodb2.QueryCommand({
       TableName: this.tableName,
       IndexName: params.indexName,
       KeyConditionExpression: params.keyConditionExpression,
       ExpressionAttributeValues: params.expressionAttributeValues,
       FilterExpression: params.filterExpression,
+      ExpressionAttributeNames: params.expressionAttributeNames,
       Limit: params.limit,
       ExclusiveStartKey: params.lastEvaluatedKey
     });
     const result = await this.docClient.send(command);
     return {
-      items: result.Items?.map((item) => this.toDomain(item)) || [],
+      items: ((_a2 = result.Items) == null ? void 0 : _a2.map((item) => this.toDomain(item))) || [],
       lastEvaluatedKey: result.LastEvaluatedKey
     };
   }
   async scan(params = {}) {
+    var _a2;
     const {
       filterExpression,
       expressionAttributeValues,
@@ -31898,13 +31728,14 @@ var BaseRepository = class {
     });
     const result = await this.docClient.send(command);
     return {
-      items: result.Items?.map((item) => this.toDomain(item)) || [],
+      items: ((_a2 = result.Items) == null ? void 0 : _a2.map((item) => this.toDomain(item))) || [],
       lastEvaluatedKey: result.LastEvaluatedKey
     };
   }
 };
 
 // src/repositories/UserRepository.ts
+var import_lib_dynamodb3 = __toESM(require_dist_cjs58());
 var UserRepository = class extends BaseRepository {
   constructor() {
     super(...arguments);
@@ -31947,6 +31778,358 @@ var UserRepository = class extends BaseRepository {
   async updateRefreshToken(userId, refreshToken) {
     await this.update(userId, { refreshToken });
   }
+  async findAll() {
+    const command = new import_lib_dynamodb3.ScanCommand({
+      TableName: this.tableName
+    });
+    const result = await this.docClient.send(command);
+    return result.Items ? result.Items.map((item) => this.toDomain(item)) : [];
+  }
+  async findById(userId) {
+    if (!userId)
+      return null;
+    const command = new import_lib_dynamodb3.GetCommand({
+      TableName: this.tableName,
+      Key: { id: userId }
+    });
+    const result = await this.docClient.send(command);
+    return result.Item ? this.toDomain(result.Item) : null;
+  }
+  async deleteUser(userId) {
+    const command = new import_lib_dynamodb3.DeleteCommand({
+      TableName: this.tableName,
+      Key: { id: userId },
+      ReturnValues: "ALL_OLD"
+    });
+    const result = await this.docClient.send(command);
+    return !!result.Attributes;
+  }
+  async updateUser(userId, userData) {
+    const existingUser = await this.findById(userId);
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+    const updatedUser = {
+      ...existingUser,
+      ...userData,
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const dbItem = this.toDB(updatedUser);
+    await this.docClient.send(
+      new import_lib_dynamodb3.PutCommand({
+        TableName: this.tableName,
+        Item: dbItem
+      })
+    );
+    return updatedUser;
+  }
+};
+
+// src/models/Article.ts
+var createArticle = (articleData) => {
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  return {
+    ...articleData,
+    id: `a_${v4_default()}`,
+    views: 0,
+    createdAt: now,
+    updatedAt: now
+  };
+};
+
+// src/repositories/ArticleRepository.ts
+var ArticleRepository = class extends BaseRepository {
+  constructor() {
+    super(...arguments);
+    this.tableName = process.env.ARTICLES_TABLE || "Articles";
+  }
+  toDomain(item) {
+    return {
+      id: item.id,
+      title: item.title,
+      slug: item.slug,
+      summary: item.summary,
+      content: item.content,
+      coverImageUrl: item.coverImageUrl,
+      authorId: item.authorId,
+      categoryId: item.categoryId,
+      tags: item.tags || [],
+      status: item.status,
+      publishedAt: item.publishedAt || null,
+      views: item.views || 0,
+      videoUrl: item.videoUrl,
+      isAdvertisement: item.isAdvertisement || false,
+      isFeatured: item.isFeatured || false,
+      rejectionReason: item.rejectionReason,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    };
+  }
+  toDB(article) {
+    return {
+      ...article,
+      // Ensure we don't store undefined values
+      ...article.tags === void 0 && { tags: [] },
+      ...article.views === void 0 && { views: 0 },
+      ...article.isAdvertisement === void 0 && { isAdvertisement: false },
+      ...article.isFeatured === void 0 && { isFeatured: false },
+      ...article.rejectionReason === void 0 && { rejectionReason: null },
+      ...article.videoUrl === void 0 && { videoUrl: null }
+    };
+  }
+  async createArticle(articleData) {
+    const article = createArticle(articleData);
+    return this.create(article);
+  }
+  async findBySlug(slug) {
+    const result = await this.query({
+      indexName: "SlugIndex",
+      keyConditionExpression: "slug = :slug",
+      expressionAttributeValues: { ":slug": slug }
+    });
+    return result.items[0] || null;
+  }
+  async findByAuthor(authorId) {
+    const result = await this.query({
+      indexName: "AuthorIndex",
+      keyConditionExpression: "authorId = :authorId",
+      expressionAttributeValues: { ":authorId": authorId }
+    });
+    return result.items;
+  }
+  async findByStatus(status) {
+    const result = await this.query({
+      indexName: "StatusIndex",
+      keyConditionExpression: "#status = :status",
+      expressionAttributeNames: { "#status": "status" },
+      expressionAttributeValues: { ":status": status }
+    });
+    return result.items;
+  }
+  async incrementViews(articleId) {
+    const command = new UpdateCommand({
+      TableName: this.tableName,
+      Key: { id: articleId },
+      UpdateExpression: "SET #views = if_not_exists(#views, :zero) + :inc",
+      ExpressionAttributeNames: { "#views": "views" },
+      ExpressionAttributeValues: { ":inc": 1, ":zero": 0 }
+    });
+    await this.docClient.send(command);
+  }
+};
+
+// src/repositories/CategoryRepository.ts
+var CategoryRepository = class extends BaseRepository {
+  constructor() {
+    super(...arguments);
+    this.tableName = process.env.CATEGORIES_TABLE || "Categories";
+  }
+  toDomain(item) {
+    return {
+      id: item.id,
+      name: item.name,
+      slug: item.slug,
+      description: item.description || "",
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    };
+  }
+  toDB(category) {
+    return {
+      ...category,
+      ...category.description === void 0 && { description: "" }
+    };
+  }
+  async findByName(name) {
+    const result = await this.query({
+      indexName: "NameIndex",
+      keyConditionExpression: "#name = :name",
+      expressionAttributeNames: { "#name": "name" },
+      expressionAttributeValues: { ":name": name }
+    });
+    return result.items[0] || null;
+  }
+  async findBySlug(slug) {
+    const result = await this.query({
+      indexName: "SlugIndex",
+      keyConditionExpression: "slug = :slug",
+      expressionAttributeValues: { ":slug": slug }
+    });
+    return result.items[0] || null;
+  }
+};
+
+// src/repositories/CommentRepository.ts
+var CommentRepository = class extends BaseRepository {
+  constructor() {
+    super(...arguments);
+    this.tableName = process.env.COMMENTS_TABLE || "Comments";
+  }
+  toDomain(item) {
+    return {
+      id: item.id,
+      authorName: item.authorName,
+      authorEmail: item.authorEmail,
+      authorAvatarUrl: item.authorAvatarUrl,
+      text: item.text,
+      date: item.date,
+      status: item.status,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    };
+  }
+  toDB(comment) {
+    return {
+      ...comment,
+      // Ensure we don't store undefined values
+      ...comment.authorEmail === void 0 && { authorEmail: "" },
+      ...comment.authorAvatarUrl === void 0 && { authorAvatarUrl: "" }
+    };
+  }
+  async findByArticle(articleId) {
+    const result = await this.query({
+      indexName: "ArticleIndex",
+      keyConditionExpression: "articleId = :articleId",
+      expressionAttributeValues: {
+        ":articleId": articleId,
+        ":status": "APPROVED"
+      },
+      filterExpression: "#status = :status",
+      expressionAttributeNames: { "#status": "status" }
+    });
+    return result.items;
+  }
+  async findByStatus(status) {
+    const result = await this.query({
+      indexName: "StatusIndex",
+      keyConditionExpression: "#status = :status",
+      expressionAttributeNames: { "#status": "status" },
+      expressionAttributeValues: { ":status": status }
+    });
+    return result.items;
+  }
+  async findByAuthor(authorId) {
+    const result = await this.query({
+      indexName: "AuthorIndex",
+      keyConditionExpression: "authorId = :authorId",
+      expressionAttributeValues: { ":authorId": authorId }
+    });
+    return result.items;
+  }
+};
+
+// src/repositories/NotificationRepository.ts
+var NotificationRepository = class extends BaseRepository {
+  constructor() {
+    super(...arguments);
+    this.tableName = process.env.NOTIFICATIONS_TABLE || "Notifications";
+  }
+  toDomain(item) {
+    return {
+      id: item.id,
+      userId: item.userId,
+      articleId: item.articleId,
+      message: item.message,
+      type: item.type,
+      read: item.read || false,
+      timestamp: item.timestamp || (/* @__PURE__ */ new Date()).toISOString()
+    };
+  }
+  toDB(notification) {
+    return {
+      ...notification,
+      ...notification.read === void 0 && { read: false },
+      ...notification.timestamp === void 0 && { timestamp: (/* @__PURE__ */ new Date()).toISOString() }
+    };
+  }
+  async findByUser(userId, unreadOnly = false) {
+    const params = {
+      indexName: "UserIndex",
+      keyConditionExpression: "userId = :userId",
+      expressionAttributeValues: { ":userId": userId }
+    };
+    if (unreadOnly) {
+      params.filterExpression = "#read = :read";
+      params.expressionAttributeNames = { "#read": "read" };
+      params.expressionAttributeValues[":read"] = false;
+    }
+    const result = await this.query(params);
+    return result.items;
+  }
+  async markAsRead(notificationId) {
+    await this.update(notificationId, {
+      read: true,
+      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    });
+  }
+  async markAllAsRead(userId) {
+    const notifications = await this.findByUser(userId, true);
+    await Promise.all(
+      notifications.map(
+        (notification) => this.markAsRead(notification.id)
+      )
+    );
+  }
+};
+
+// src/repositories/SubscriberRepository.ts
+var SubscriberRepository = class extends BaseRepository {
+  constructor() {
+    super(...arguments);
+    this.tableName = process.env.SUBSCRIBERS_TABLE || "Subscribers";
+  }
+  toDomain(item) {
+    return {
+      id: item.id,
+      email: item.email,
+      name: item.name,
+      isActive: item.isActive !== false,
+      // Default to true if not set
+      subscribedAt: item.subscribedAt || (/* @__PURE__ */ new Date()).toISOString(),
+      unsubscribedAt: item.unsubscribedAt,
+      preferences: item.preferences || {},
+      createdAt: item.createdAt || (/* @__PURE__ */ new Date()).toISOString(),
+      updatedAt: item.updatedAt || (/* @__PURE__ */ new Date()).toISOString()
+    };
+  }
+  toDB(subscriber) {
+    return {
+      ...subscriber,
+      // Ensure we don't store undefined values
+      ...subscriber.isActive === void 0 && { isActive: true },
+      ...subscriber.preferences === void 0 && { preferences: {} }
+    };
+  }
+  async findByEmail(email) {
+    const result = await this.query({
+      indexName: "EmailIndex",
+      keyConditionExpression: "email = :email",
+      expressionAttributeValues: {
+        ":email": email,
+        ":isActive": true
+      },
+      filterExpression: "isActive = :isActive"
+    });
+    return result.items[0] || null;
+  }
+  async unsubscribe(email) {
+    const subscriber = await this.findByEmail(email);
+    if (!subscriber)
+      return false;
+    await this.update(subscriber.id, {
+      isActive: false,
+      unsubscribedAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+    return true;
+  }
+  async getActiveSubscribers() {
+    const result = await this.query({
+      indexName: "IsActiveIndex",
+      keyConditionExpression: "isActive = :isActive",
+      expressionAttributeValues: { ":isActive": true }
+    });
+    return result.items;
+  }
 };
 
 // src/handlers.ts
@@ -31958,270 +32141,359 @@ var respond = (statusCode, body) => ({
   body: JSON.stringify(body)
 });
 var userRepository = new UserRepository();
+var articleRepository = new ArticleRepository();
+var categoryRepository = new CategoryRepository();
+var commentRepository = new CommentRepository();
+var notificationRepository = new NotificationRepository();
+var subscriberRepository = new SubscriberRepository();
 var login = async (event) => {
   const { email, password } = JSON.parse(event.body || "{}");
   if (!email || !password) {
     return respond(400, { message: "Email and password are required" });
   }
-  const trimmedEmail = String(email).trim();
-  const normalizedEmail = trimmedEmail.toLowerCase();
-  const emailCandidates = Array.from(/* @__PURE__ */ new Set([trimmedEmail, normalizedEmail]));
+  const trimmedEmail = String(email).trim().toLowerCase();
   try {
-    for (const candidate of emailCandidates) {
-      const dbUser = await userRepository.findByEmail(candidate);
-      if (dbUser) {
-        const passwordMatches = await comparePasswords(password, dbUser.password || "");
-        if (passwordMatches) {
-          const authResponse = createAuthResponse(dbUser);
-          try {
-            await userRepository.updateRefreshToken(dbUser.id, authResponse.refreshToken);
-          } catch (updateError) {
-            console.error("Failed to persist refresh token for user", updateError);
-          }
-          return respond(200, authResponse);
+    const user = await userRepository.findByEmail(trimmedEmail);
+    if (user) {
+      if (!user.password) {
+        return respond(401, { message: "Invalid login credentials" });
+      }
+      const passwordMatches = await comparePasswords(password, user.password);
+      if (passwordMatches) {
+        const authResponse = createAuthResponse(user);
+        try {
+          await userRepository.updateRefreshToken(user.id, authResponse.refreshToken);
+        } catch (updateError) {
+          console.error("Failed to persist refresh token for user", updateError);
         }
-        break;
+        return respond(200, authResponse);
       }
     }
-  } catch (repoError) {
-    console.error("Login repository lookup failed, falling back to mock data", repoError);
+    return respond(401, { message: "Invalid email or password" });
+  } catch (error2) {
+    console.error("Login error:", error2);
+    return respond(500, { message: "An error occurred during login" });
   }
-  const fallbackUser = users.find((u3) => u3.email === trimmedEmail || u3.email.toLowerCase() === normalizedEmail);
-  if (fallbackUser) {
-    const storedPassword = fallbackUser.password || "";
-    let passwordMatches = false;
-    if (storedPassword.startsWith("$2")) {
-      passwordMatches = await comparePasswords(password, storedPassword);
-    } else if (storedPassword.length > 0) {
-      passwordMatches = storedPassword === password;
-    }
-    if (passwordMatches) {
-      const authResponse = createAuthResponse(fallbackUser);
-      fallbackUser.refreshToken = authResponse.refreshToken;
-      return respond(200, authResponse);
-    }
+};
+var getUsers = async () => {
+  try {
+    const users = await userRepository.findAll();
+    const usersWithoutPasswords = users.map(({ password, ...user }) => user);
+    return respond(200, usersWithoutPasswords);
+  } catch (error2) {
+    console.error("Error fetching users:", error2);
+    return respond(500, { message: "Failed to fetch users" });
   }
-  return respond(401, { message: "Invalid email or password" });
 };
-var register = async (event) => {
-  const { name, email } = JSON.parse(event.body || "{}");
-  const isFirstUser = users.length === 0;
-  const newUser = {
-    id: `u${users.length + 1}`,
-    name,
-    email,
-    role: isFirstUser ? "ADMIN" /* ADMIN */ : "AUTHOR" /* AUTHOR */,
-    avatarUrl: `https://picsum.photos/seed/u${users.length + 1}/100/100`
-  };
-  users.push(newUser);
-  return respond(201, newUser);
-};
-var getUsers = async () => respond(200, users);
 var getUser = async (event) => {
-  const { id } = event.pathParameters || {};
-  return respond(200, users.find((u3) => u3.id === id));
+  var _a2;
+  try {
+    const userId = (_a2 = event.pathParameters) == null ? void 0 : _a2.userId;
+    if (!userId) {
+      return respond(400, { message: "User ID is required" });
+    }
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      return respond(404, { message: "User not found" });
+    }
+    const { password, ...userWithoutPassword } = user;
+    return respond(200, userWithoutPassword);
+  } catch (error2) {
+    console.error("Error fetching user:", error2);
+    return respond(500, { message: "Failed to fetch user" });
+  }
 };
 var createUser2 = async (event) => {
-  const userData = JSON.parse(event.body || "{}");
-  const newUser = {
-    id: `u${users.length + 1}`,
-    name: userData.name || "New User",
-    email: userData.email || "",
-    role: userData.role || "AUTHOR" /* AUTHOR */,
-    avatarUrl: userData.avatarUrl || `https://picsum.photos/seed/u${users.length + 1}/100/100`
-  };
-  users.push(newUser);
-  return respond(201, newUser);
+  try {
+    const userData = JSON.parse(event.body || "{}");
+    if (!userData.name || !userData.email) {
+      return respond(400, { message: "Name and email are required" });
+    }
+    const existingUser = await userRepository.findByEmail(userData.email);
+    if (existingUser) {
+      return respond(409, { message: "User with this email already exists" });
+    }
+    let plainTextPassword = userData.password;
+    if (userData.password) {
+      userData.password = await bcryptjs_default.hash(userData.password, 10);
+    } else {
+      plainTextPassword = v4_default().substring(0, 8);
+      userData.password = await bcryptjs_default.hash(plainTextPassword, 10);
+    }
+    const newUser = await userRepository.createUser({
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      role: userData.role || "AUTHOR" /* AUTHOR */,
+      avatarUrl: userData.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}`,
+      bio: userData.bio || ""
+    });
+    const { password, ...userWithoutPassword } = newUser;
+    const response = { ...userWithoutPassword };
+    if (!userData.password) {
+      response.temporaryPassword = plainTextPassword;
+    }
+    return respond(201, response);
+  } catch (error2) {
+    console.error("Error creating user:", error2);
+    return respond(500, { message: "Failed to create user" });
+  }
 };
 var updateUser = async (event) => {
   const { id } = event.pathParameters || {};
+  if (!id)
+    return respond(400, { message: "User ID is required" });
   const userData = JSON.parse(event.body || "{}");
-  const userIndex = users.findIndex((u3) => u3.id === id);
-  if (userIndex === -1)
-    return respond(404, { message: "User not found" });
-  users[userIndex] = { ...users[userIndex], ...userData };
-  return respond(200, users[userIndex]);
+  try {
+    const existingUser = await userRepository.findById(id);
+    if (!existingUser) {
+      return respond(404, { message: "User not found" });
+    }
+    if (userData.email && userData.email !== existingUser.email) {
+      const emailUser = await userRepository.findByEmail(userData.email);
+      if (emailUser && emailUser.id !== id) {
+        return respond(400, { message: "Email already in use" });
+      }
+    }
+    if (userData.password) {
+      userData.password = await bcryptjs_default.hash(userData.password, 10);
+    }
+    const updatedUser = await userRepository.update(id, userData);
+    return respond(200, updatedUser);
+  } catch (error2) {
+    console.error("Error updating user:", error2);
+    return respond(500, { message: "Failed to update user" });
+  }
 };
 var deleteUser = async (event) => {
   const { id } = event.pathParameters || {};
-  const userIndex = users.findIndex((u3) => u3.id === id);
-  if (userIndex === -1) {
-    return respond(404, { message: "User not found" });
+  if (!id)
+    return respond(400, { message: "User ID is required" });
+  try {
+    const user = await userRepository.findById(id);
+    if (!user) {
+      return respond(404, { message: "User not found" });
+    }
+    if (user.role === "ADMIN" /* ADMIN */) {
+      const admins = (await userRepository.findAll()).filter((u3) => u3.role === "ADMIN" /* ADMIN */);
+      if (admins.length <= 1) {
+        return respond(400, { message: "Cannot delete the last admin" });
+      }
+    }
+    await userRepository.delete(id);
+    return respond(200, { message: "User deleted successfully" });
+  } catch (error2) {
+    console.error("Error deleting user:", error2);
+    return respond(500, { message: "Failed to delete user" });
   }
-  users.splice(userIndex, 1);
-  return respond(204, null);
+};
+var register = async (event) => {
+  try {
+    const { name, email, password } = JSON.parse(event.body || "{}");
+    if (!name || !email || !password) {
+      return respond(400, { message: "Name, email, and password are required" });
+    }
+    const existingUser = await userRepository.findByEmail(email);
+    if (existingUser) {
+      return respond(409, { message: "User with this email already exists" });
+    }
+    const isFirstUser = (await userRepository.findAll()).length === 0;
+    const hashedPassword = await bcryptjs_default.hash(password, 10);
+    const newUser = await userRepository.createUser({
+      name,
+      email,
+      password: hashedPassword,
+      role: isFirstUser ? "ADMIN" /* ADMIN */ : "AUTHOR" /* AUTHOR */,
+      avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`,
+      bio: ""
+    });
+    const { password: _2, ...userWithoutPassword } = newUser;
+    return respond(201, userWithoutPassword);
+  } catch (error2) {
+    console.error("Registration error:", error2);
+    return respond(500, { message: "Failed to register user" });
+  }
 };
 var getArticles = async (event) => {
-  const params = event.queryStringParameters || {};
-  let results = [...articles];
-  if (params) {
-    if (params.categorySlug) {
-      const category = categories.find((c3) => c3.slug === params.categorySlug);
-      if (category)
-        results = results.filter((a3) => a3.categoryId === category.id);
+  var _a2, _b, _c, _d, _e, _f, _g, _h, _i;
+  try {
+    const status = (_a2 = event.queryStringParameters) == null ? void 0 : _a2.status;
+    const categoryId = (_b = event.queryStringParameters) == null ? void 0 : _b.categoryId;
+    const tag2 = (_c = event.queryStringParameters) == null ? void 0 : _c.tag;
+    const authorId = (_d = event.queryStringParameters) == null ? void 0 : _d.authorId;
+    const searchQuery = (_f = (_e = event.queryStringParameters) == null ? void 0 : _e.query) == null ? void 0 : _f.toLowerCase();
+    const isFeatured = ((_g = event.queryStringParameters) == null ? void 0 : _g.featured) === "true";
+    const limit = ((_h = event.queryStringParameters) == null ? void 0 : _h.limit) ? parseInt(event.queryStringParameters.limit) : 10;
+    const lastEvaluatedKey = (_i = event.queryStringParameters) == null ? void 0 : _i.lastEvaluatedKey;
+    const filterExpressions = [];
+    const expressionAttributeValues = {};
+    const expressionAttributeNames = {};
+    const articleStatus = status || "Published" /* PUBLISHED */;
+    filterExpressions.push("#status = :status");
+    expressionAttributeNames["#status"] = "status";
+    expressionAttributeValues[":status"] = articleStatus;
+    if (categoryId) {
+      filterExpressions.push("categoryId = :categoryId");
+      expressionAttributeValues[":categoryId"] = categoryId;
     }
-    if (params.categoryId)
-      results = results.filter((a3) => a3.categoryId === params.categoryId);
-    if (params.tag)
-      results = results.filter((a3) => a3.tags.map((t3) => t3.toLowerCase()).includes(params.tag.toLowerCase()));
-    if (params.authorId)
-      results = results.filter((a3) => a3.authorId === params.authorId);
-    if (params.query) {
-      const q3 = params.query.toLowerCase();
-      results = results.filter((a3) => a3.title.toLowerCase().includes(q3) || a3.summary.toLowerCase().includes(q3));
+    if (isFeatured) {
+      filterExpressions.push("isFeatured = :isFeatured");
+      expressionAttributeValues[":isFeatured"] = true;
     }
-    if (params.status && params.status !== "ALL") {
-      results = results.filter((a3) => a3.status === params.status);
-    } else if (!params?.status || params.status !== "ALL") {
-      results = results.filter((a3) => a3.status === "Published" /* PUBLISHED */);
+    if (authorId) {
+      filterExpressions.push("authorId = :authorId");
+      expressionAttributeValues[":authorId"] = authorId;
     }
-    if (params.featured)
-      results = results.filter((a3) => a3.isFeatured === (params.featured === "true"));
-    if (params.isAdvertisement)
-      results = results.filter((a3) => !!a3.isAdvertisement === (params.isAdvertisement === "true"));
-    if (params.limit)
-      results = results.slice(0, parseInt(params.limit, 10));
-  } else {
-    results = results.filter((a3) => a3.status === "Published" /* PUBLISHED */);
+    if (tag2) {
+      filterExpressions.push("contains(tags, :tag)");
+      expressionAttributeValues[":tag"] = tag2;
+    }
+    const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.scan({
+      filterExpression: filterExpressions.join(" AND "),
+      expressionAttributeNames: Object.keys(expressionAttributeNames).length > 0 ? expressionAttributeNames : void 0,
+      expressionAttributeValues: Object.keys(expressionAttributeValues).length > 0 ? expressionAttributeValues : void 0,
+      limit,
+      lastEvaluatedKey: lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : void 0
+    });
+    let filteredItems = items;
+    if (searchQuery) {
+      filteredItems = items.filter(
+        (article) => {
+          var _a3, _b2;
+          return article.title.toLowerCase().includes(searchQuery) || (((_a3 = article.summary) == null ? void 0 : _a3.toLowerCase()) || "").includes(searchQuery) || (((_b2 = article.content) == null ? void 0 : _b2.toLowerCase()) || "").includes(searchQuery);
+        }
+      );
+    }
+    const response = {
+      items: filteredItems,
+      total: filteredItems.length
+      // Note: This is just the count of the current page
+    };
+    if (newLastEvaluatedKey) {
+      response.lastEvaluatedKey = encodeURIComponent(JSON.stringify(newLastEvaluatedKey));
+      response.hasMore = true;
+    }
+    return respond(200, response);
+  } catch (error2) {
+    console.error("Error fetching articles:", error2);
+    return respond(500, { message: "Failed to fetch articles" });
   }
-  return respond(200, results);
 };
 var getArticleById = async (event) => {
-  const { id } = event.pathParameters || {};
-  return respond(200, articles.find((a3) => a3.id === id));
+  try {
+    const { id } = event.pathParameters || {};
+    if (!id)
+      return respond(400, { message: "Article ID is required" });
+    const article = await articleRepository.getById(id);
+    if (!article)
+      return respond(404, { message: "Article not found" });
+    return respond(200, article);
+  } catch (error2) {
+    console.error("Error getting article by ID:", error2);
+    return respond(500, { message: "Internal server error" });
+  }
 };
 var getArticleBySlug = async (event) => {
-  const { slug } = event.pathParameters || {};
-  return respond(200, articles.find((a3) => a3.slug === slug));
-};
-var createArticle = async (event) => {
-  const articleData = JSON.parse(event.body || "{}");
-  const newArticle = {
-    id: `a${articles.length + 1}`,
-    title: articleData.title || "Untitled",
-    slug: articleData.title?.toLowerCase().replace(/\s+/g, "-") || `a${articles.length + 1}`,
-    summary: articleData.summary || "",
-    content: articleData.content || "",
-    coverImageUrl: articleData.coverImageUrl || "https://picsum.photos/seed/new/800/400",
-    authorId: articleData.authorId || "",
-    categoryId: articleData.categoryId || "",
-    tags: articleData.tags || [],
-    status: articleData.status || "Draft" /* DRAFT */,
-    publishedAt: null,
-    views: 0,
-    comments: [],
-    ...articleData
-  };
-  articles.unshift(newArticle);
-  return respond(201, newArticle);
+  try {
+    const { slug } = event.pathParameters || {};
+    if (!slug)
+      return respond(400, { message: "Article slug is required" });
+    const article = await articleRepository.findBySlug(slug);
+    if (!article)
+      return respond(404, { message: "Article not found" });
+    return respond(200, article);
+  } catch (error2) {
+    console.error("Error getting article by slug:", error2);
+    return respond(500, { message: "Internal server error" });
+  }
 };
 var updateArticle = async (event) => {
-  const { id } = event.pathParameters || {};
-  const articleData = JSON.parse(event.body || "{}");
-  const articleIndex = articles.findIndex((a3) => a3.id === id);
-  if (articleIndex === -1)
-    return respond(404, { message: "Article not found" });
-  articles[articleIndex] = { ...articles[articleIndex], ...articleData };
-  return respond(200, articles[articleIndex]);
-};
-var deleteArticle = async (event) => {
-  const { id } = event.pathParameters || {};
-  const articleIndex = articles.findIndex((a3) => a3.id === id);
-  if (articleIndex === -1) {
-    return respond(404, { message: "Article not found" });
+  try {
+    const { id } = event.pathParameters || {};
+    if (!id)
+      return respond(400, { message: "Article ID is required" });
+    const articleData = JSON.parse(event.body || "{}");
+    const updates = {
+      ...articleData,
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const updatedArticle = await articleRepository.update(id, updates);
+    if (!updatedArticle)
+      return respond(404, { message: "Article not found" });
+    return respond(200, updatedArticle);
+  } catch (error2) {
+    console.error("Error updating article:", error2);
+    return respond(500, { message: "Failed to update article" });
   }
-  articles.splice(articleIndex, 1);
-  return respond(204, null);
 };
 var updateArticleStatus = async (event) => {
-  const { id } = event.pathParameters || {};
-  const { status, reason } = JSON.parse(event.body || "{}");
-  const articleIndex = articles.findIndex((a3) => a3.id === id);
-  if (articleIndex === -1)
-    return respond(404, { message: "Article not found" });
-  articles[articleIndex].status = status;
-  if (status === "Rejected" /* REJECTED */)
-    articles[articleIndex].rejectionReason = reason;
-  return respond(200, articles[articleIndex]);
+  try {
+    const { id } = event.pathParameters || {};
+    if (!id)
+      return respond(400, { message: "Article ID is required" });
+    const { status, reason } = JSON.parse(event.body || "{}");
+    const updates = {
+      status,
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    if (status === "Rejected" /* REJECTED */) {
+      const { items: recentArticles } = await articleRepository.scan({
+        filterExpression: "#status = :status",
+        expressionAttributeNames: { "#status": "status" },
+        expressionAttributeValues: { ":status": "PUBLISHED" },
+        limit: 5
+      });
+      recentArticles.sort((a3, b3) => {
+        const dateA = a3.publishedAt ? new Date(a3.publishedAt).getTime() : 0;
+        const dateB = b3.publishedAt ? new Date(b3.publishedAt).getTime() : 0;
+        return dateB - dateA;
+      });
+    }
+    const updatedArticle = await articleRepository.update(id, updates);
+    if (!updatedArticle)
+      return respond(404, { message: "Article not found" });
+    return respond(200, updatedArticle);
+  } catch (error2) {
+    console.error("Error updating article status:", error2);
+    return respond(500, { message: "Failed to update article status" });
+  }
 };
 var updateFeaturedStatus = async (event) => {
-  const { updates } = JSON.parse(event.body || "{}");
-  (updates || []).forEach((update) => {
-    const articleIndex = articles.findIndex((a3) => a3.id === update.articleId);
-    if (articleIndex !== -1)
-      articles[articleIndex].isFeatured = update.isFeatured;
-  });
-  return respond(204, null);
-};
-var getCategories = async () => respond(200, categories);
-var createCategory = async (event) => {
-  const catData = JSON.parse(event.body || "{}");
-  const newCategory = { id: `c${categories.length + 1}`, ...catData };
-  categories.push(newCategory);
-  return respond(201, newCategory);
-};
-var updateCategory = async (event) => {
-  const { id } = event.pathParameters || {};
-  const catData = JSON.parse(event.body || "{}");
-  const catIndex = categories.findIndex((c3) => c3.id === id);
-  if (catIndex === -1)
-    return respond(404, { message: "Category not found" });
-  categories[catIndex] = { ...categories[catIndex], ...catData };
-  return respond(200, categories[catIndex]);
-};
-var deleteCategory = async (event) => {
-  const { id } = event.pathParameters || {};
-  const catIndex = categories.findIndex((c3) => c3.id === id);
-  if (catIndex !== -1) {
-    categories.splice(catIndex, 1);
+  try {
+    const { updates } = JSON.parse(event.body || "{}");
+    if (!updates || !Array.isArray(updates)) {
+      return respond(400, { message: "Invalid update format" });
+    }
+    await Promise.all(updates.map(async (update) => {
+      await articleRepository.update(update.articleId, { isFeatured: update.isFeatured });
+    }));
+    return respond(204, null);
+  } catch (error2) {
+    console.error("Error updating featured status:", error2);
+    return respond(500, { message: "Failed to update featured status" });
   }
-  return respond(204, null);
 };
-var getPendingComments = async () => {
-  const pending = [];
-  articles.forEach((article) => {
-    article.comments.forEach((comment) => {
-      if (comment.status === "PENDING")
-        pending.push({ ...comment, article });
-    });
-  });
-  return respond(200, pending);
-};
-var postComment = async (event) => {
-  const { id } = event.pathParameters || {};
-  const { text } = JSON.parse(event.body || "{}");
-  const articleIndex = articles.findIndex((a3) => a3.id === id);
-  if (articleIndex === -1)
-    return respond(404, { message: "Article not found" });
-  const newComment = {
-    id: `com${v4_default()}`,
-    authorName: "Anonymous User",
-    authorAvatarUrl: `https://picsum.photos/seed/${v4_default()}/50/50`,
-    text,
-    date: (/* @__PURE__ */ new Date()).toISOString(),
-    status: "PENDING"
-  };
-  articles[articleIndex].comments.push(newComment);
-  return respond(201, newComment);
-};
-var updateCommentStatus = async (event) => {
-  const { articleId, commentId } = event.pathParameters || {};
-  const { status } = JSON.parse(event.body || "{}");
-  const articleIndex = articles.findIndex((a3) => a3.id === articleId);
-  if (articleIndex === -1)
-    return respond(404, { message: "Article not found" });
-  const commentIndex = articles[articleIndex].comments.findIndex((c3) => c3.id === commentId);
-  if (commentIndex === -1)
-    return respond(404, { message: "Comment not found" });
-  articles[articleIndex].comments[commentIndex].status = status;
-  return respond(204, null);
+var getCategories = async () => {
+  try {
+    const { items: categories } = await categoryRepository.scan({});
+    return respond(200, categories);
+  } catch (error2) {
+    console.error("Error fetching categories:", error2);
+    return respond(500, { message: "Failed to fetch categories" });
+  }
 };
 var getNotificationsForUser = async (event) => {
   const { userId } = event.pathParameters || {};
-  return respond(200, notifications.filter((n3) => n3.userId === userId));
+  const { items: userNotifications } = await notificationRepository.scan({
+    filterExpression: "userId = :userId",
+    expressionAttributeValues: { ":userId": userId }
+  });
+  userNotifications.sort((a3, b3) => new Date(b3.timestamp).getTime() - new Date(a3.timestamp).getTime());
+  return respond(200, userNotifications);
 };
 var getAllTags = async () => {
   const tagCounts = /* @__PURE__ */ new Map();
+  const { items: articles } = await articleRepository.scan({});
   articles.forEach((article) => {
     article.tags.forEach((tag2) => {
       const lowerCaseTag = tag2.toLowerCase();
@@ -32231,15 +32503,38 @@ var getAllTags = async () => {
   const result = Array.from(tagCounts.entries()).map(([name, count]) => ({ name, count })).sort((a3, b3) => b3.count - a3.count);
   return respond(200, result);
 };
-var getSubscribers = async () => respond(200, subscribers);
+var getSubscribers = async () => {
+  try {
+    const { items: subscribers } = await subscriberRepository.scan({
+      filterExpression: "isActive = :isActive",
+      expressionAttributeValues: { ":isActive": true }
+    });
+    return respond(200, subscribers);
+  } catch (error2) {
+    console.error("Error fetching subscribers:", error2);
+    return respond(500, { message: "Failed to fetch subscribers" });
+  }
+};
 var subscribe = async (event) => {
   const { email } = JSON.parse(event.body || "{}");
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  const { items: [existingSubscriber] } = await subscriberRepository.scan({
+    filterExpression: "email = :email",
+    expressionAttributeValues: { ":email": email },
+    limit: 1
+  });
+  if (existingSubscriber) {
+    return respond(409, { message: "Subscriber already exists" });
+  }
   const newSubscriber = {
-    id: `sub${subscribers.length + 1}`,
+    id: `s${Date.now()}`,
     email,
-    subscribedAt: (/* @__PURE__ */ new Date()).toISOString()
+    isActive: true,
+    subscribedAt: now,
+    createdAt: now,
+    updatedAt: now
   };
-  subscribers.push(newSubscriber);
+  await subscriberRepository.create(newSubscriber);
   return respond(201, newSubscriber);
 };
 var contact = async (event) => {
@@ -32249,11 +32544,7 @@ var contact = async (event) => {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   contact,
-  createArticle,
-  createCategory,
   createUser,
-  deleteArticle,
-  deleteCategory,
   deleteUser,
   getAllTags,
   getArticleById,
@@ -32261,18 +32552,14 @@ var contact = async (event) => {
   getArticles,
   getCategories,
   getNotificationsForUser,
-  getPendingComments,
   getSubscribers,
   getUser,
   getUsers,
   login,
-  postComment,
   register,
   subscribe,
   updateArticle,
   updateArticleStatus,
-  updateCategory,
-  updateCommentStatus,
   updateFeaturedStatus,
   updateUser
 });

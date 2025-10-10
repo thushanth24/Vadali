@@ -66,6 +66,7 @@ export abstract class BaseRepository<T> {
     keyConditionExpression: string;
     expressionAttributeValues: Record<string, any>;
     filterExpression?: string;
+    expressionAttributeNames?: Record<string, string>;
     limit?: number;
     lastEvaluatedKey?: Record<string, any>;
   }): Promise<{ items: T[]; lastEvaluatedKey?: Record<string, any> }> {
@@ -75,6 +76,7 @@ export abstract class BaseRepository<T> {
       KeyConditionExpression: params.keyConditionExpression,
       ExpressionAttributeValues: params.expressionAttributeValues,
       FilterExpression: params.filterExpression,
+      ExpressionAttributeNames: params.expressionAttributeNames,
       Limit: params.limit,
       ExclusiveStartKey: params.lastEvaluatedKey
     });

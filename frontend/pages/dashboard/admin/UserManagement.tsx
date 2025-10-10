@@ -3,24 +3,33 @@ import { fetchUsers, createUser, updateUser, deleteUser } from '../../../service
 import { User, UserRole } from '../../../types';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
-import { Edit, Trash2, PlusCircle } from 'lucide-react';
+import { Edit, Trash2, PlusCircle, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const UserManagement: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
     // State for the form fields
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<UserRole>(UserRole.AUTHOR);
 
-    const loadUsers = () => {
-        setLoading(true);
-        fetchUsers()
-            .then(setUsers)
-            .finally(() => setLoading(false));
+    const loadUsers = async () => {
+        try {
+            setLoading(true);
+            const data = await fetchUsers();
+            setUsers(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error('Failed to load users:', error);
+            toast.error('Failed to load users');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -56,37 +65,57 @@ const UserManagement: React.FC = () => {
         setEditingUser(null);
     };
 
+    const handleClosePasswordModal = () => {
+        setIsPasswordModalOpen(false);
+        setGeneratedPassword(null);
+    };
+
+    const copyToClipboard = () => {
+        if (generatedPassword) {
+            navigator.clipboard.writeText(generatedPassword);
+            toast.success('Password copied to clipboard');
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !email) {
-            alert('Please fill in all fields.');
+            toast.error('Please fill in all required fields');
             return;
         }
 
         try {
             if (editingUser) {
                 await updateUser(editingUser.id, { name, email, role });
+                toast.success('User updated successfully');
             } else {
-                await createUser({ name, email, role });
+                const newUser = await createUser({ name, email, role });
+                toast.success('User created successfully');
+                if (newUser.temporaryPassword) {
+                    setGeneratedPassword(newUser.temporaryPassword);
+                    setIsPasswordModalOpen(true);
+                }
             }
             handleCloseModal();
-            loadUsers(); // Refresh the list
+            loadUsers();
         } catch (error) {
-            alert(`Failed to ${editingUser ? 'update' : 'create'} user.`);
-        }
-    };
-    
-    const handleDelete = async (userId: string) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            try {
-                await deleteUser(userId);
-                setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-            } catch {
-                alert("Failed to delete user.");
-            }
+            console.error(`Failed to ${editingUser ? 'update' : 'create'} user:`, error);
+            toast.error(`Failed to ${editingUser ? 'update' : 'create'} user`);
         }
     };
 
+    const handleDelete = async (userId: string) => {
+        if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+            try {
+                await deleteUser(userId);
+                setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+                toast.success('User deleted successfully');
+            } catch (error) {
+                console.error('Failed to delete user:', error);
+                toast.error('Failed to delete user');
+            }
+        }
+    };
 
     return (
         <div>
@@ -108,20 +137,62 @@ const UserManagement: React.FC = () => {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center">Loading users...</td></tr>
+                            <tr>
+                                <td colSpan={4} className="p-8 text-center">
+                                    <div className="flex flex-col items-center justify-center space-y-2">
+                                        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                                        <span className="text-gray-500">Loading users...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : users.length === 0 ? (
+                            <tr>
+                                <td colSpan={4} className="p-8 text-center text-gray-500">
+                                    No users found
+                                </td>
+                            </tr>
                         ) : users.map(user => (
                             <tr key={user.id} className="border-b hover:bg-gray-50">
                                 <td className="p-4 flex items-center">
-                                    <img src={user.avatarUrl} alt={user.name} className="h-10 w-10 rounded-full mr-3" />
-                                    <span className="font-medium text-gray-800">{user.name}</span>
+                                    {user.avatarUrl ? (
+                                        <img
+                                            src={user.avatarUrl}
+                                            alt={user.name || user.email || 'User avatar'}
+                                            className="h-10 w-10 rounded-full object-cover mr-3"
+                                        />
+                                    ) : (
+                                        <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 mr-3">
+                                            {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <span className="font-medium text-gray-900">
+                                        {user.name || user.email || ''}
+                                    </span>
                                 </td>
-                                <td className="p-4 text-gray-600">{user.email}</td>
-                                <td className="p-4">{getRoleChip(user.role)}</td>
-                                <td className="p-4 space-x-2">
-                                    <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => handleOpenModal(user)}>
+                                <td className="p-4 text-gray-600">{user.email || ''}</td>
+                                <td className="p-4">
+                                    {user.role ? (
+                                        getRoleChip(user.role)
+                                    ) : null}
+                                </td>
+                                <td className="p-4 space-x-2 whitespace-nowrap">
+                                    <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        className="text-blue-600 hover:bg-blue-50" 
+                                        onClick={() => handleOpenModal(user)}
+                                        aria-label="Edit user"
+                                    >
                                         <Edit className="h-4 w-4" />
                                     </Button>
-                                    <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleDelete(user.id)}>
+                                    <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        className="text-red-600 hover:bg-red-50" 
+                                        onClick={() => handleDelete(user.id)}
+                                        disabled={user.role === UserRole.ADMIN}
+                                        aria-label="Delete user"
+                                    >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </td>
@@ -177,6 +248,25 @@ const UserManagement: React.FC = () => {
                         </Button>
                     </div>
                 </form>
+            </Modal>
+
+            <Modal isOpen={isPasswordModalOpen} onClose={handleClosePasswordModal} title="Temporary Password">
+                <div className="space-y-4">
+                    <p className="text-gray-600">
+                        The user has been created. Please share this temporary password with them.
+                    </p>
+                    <div className="bg-gray-100 p-3 rounded-md flex items-center justify-between">
+                        <span className="font-mono text-lg text-gray-800">{generatedPassword}</span>
+                        <Button onClick={copyToClipboard} variant="secondary" size="sm">
+                            Copy
+                        </Button>
+                    </div>
+                    <div className="flex justify-end">
+                        <Button onClick={handleClosePasswordModal} variant="primary">
+                            Close
+                        </Button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );

@@ -40,11 +40,12 @@ export interface AuthResponse {
 
 export interface Comment {
   id: string;
+  articleId: string;
+  authorId: string;
   authorName: string;
   authorEmail?: string;
   authorAvatarUrl: string;
-  text: string;
-  date: string;
+  content: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   createdAt: string;
   updatedAt: string;
@@ -62,6 +63,9 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Article {
@@ -99,8 +103,11 @@ export interface Notification {
 export interface Subscriber {
   id: string;
   email: string;
-  subscribedAt: string;
+  name?: string;
   isActive: boolean;
+  subscribedAt: string;
+  unsubscribedAt?: string;
+  preferences?: Record<string, any>;
   createdAt: string;
   updatedAt: string;
 }

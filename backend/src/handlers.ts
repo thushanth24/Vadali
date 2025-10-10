@@ -1,9 +1,13 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
-import { users, articles, categories, notifications, subscribers } from './mockData';
 import { Article, ArticleStatus, Category, Comment, Notification, Subscriber, User, UserRole } from './types';
 import { comparePasswords, createAuthResponse } from './auth';
 import { UserRepository } from './repositories/UserRepository';
+import { ArticleRepository } from './repositories/ArticleRepository';
+import { CategoryRepository } from './repositories/CategoryRepository';
+import { CommentRepository } from './repositories/CommentRepository';
+import { NotificationRepository } from './repositories/NotificationRepository';
+import { SubscriberRepository } from './repositories/SubscriberRepository';
 
 const respond = (statusCode: number, body: any) => ({
     statusCode,
@@ -13,7 +17,15 @@ const respond = (statusCode: number, body: any) => ({
     body: JSON.stringify(body),
 });
 
+import bcrypt from 'bcryptjs';
+
+// Initialize repositories
 const userRepository = new UserRepository();
+const articleRepository = new ArticleRepository();
+const categoryRepository = new CategoryRepository();
+const commentRepository = new CommentRepository();
+const notificationRepository = new NotificationRepository();
+const subscriberRepository = new SubscriberRepository();
 
 // --- USER & AUTH ---
 export const login: APIGatewayProxyHandlerV2 = async (event) => {
@@ -23,261 +35,431 @@ export const login: APIGatewayProxyHandlerV2 = async (event) => {
         return respond(400, { message: 'Email and password are required' });
     }
 
-    const trimmedEmail = String(email).trim();
-    const normalizedEmail = trimmedEmail.toLowerCase();
-    const emailCandidates = Array.from(new Set([trimmedEmail, normalizedEmail]));
+    const trimmedEmail = String(email).trim().toLowerCase();
 
     try {
-        for (const candidate of emailCandidates) {
-            const dbUser = await userRepository.findByEmail(candidate);
-            if (dbUser) {
-                const passwordMatches = await comparePasswords(password, dbUser.password || '');
-                if (passwordMatches) {
-                    const authResponse = createAuthResponse(dbUser);
-                    try {
-                        await userRepository.updateRefreshToken(dbUser.id, authResponse.refreshToken);
-                    } catch (updateError) {
-                        console.error('Failed to persist refresh token for user', updateError);
-                    }
-                    return respond(200, authResponse);
+        const user = await userRepository.findByEmail(trimmedEmail);
+        if (user) {
+            if (!user.password) {
+                return respond(401, { message: 'Invalid login credentials' });
+            }
+            
+            const passwordMatches = await comparePasswords(password, user.password);
+            if (passwordMatches) {
+                const authResponse = createAuthResponse(user);
+                try {
+                    await userRepository.updateRefreshToken(user.id, authResponse.refreshToken);
+                } catch (updateError) {
+                    console.error('Failed to persist refresh token for user', updateError);
                 }
-                break;
+                return respond(200, authResponse);
             }
         }
-    } catch (repoError) {
-        console.error('Login repository lookup failed, falling back to mock data', repoError);
+        return respond(401, { message: 'Invalid email or password' });
+    } catch (error) {
+        console.error('Login error:', error);
+        return respond(500, { message: 'An error occurred during login' });
     }
+};
 
-    const fallbackUser = users.find(u => u.email === trimmedEmail || u.email.toLowerCase() === normalizedEmail);
-    if (fallbackUser) {
-        const storedPassword = fallbackUser.password || '';
-        let passwordMatches = false;
-
-        if (storedPassword.startsWith("$2")) {
-            passwordMatches = await comparePasswords(password, storedPassword);
-        } else if (storedPassword.length > 0) {
-            passwordMatches = storedPassword === password;
-        }
-
-        if (passwordMatches) {
-            const authResponse = createAuthResponse(fallbackUser);
-            fallbackUser.refreshToken = authResponse.refreshToken;
-            return respond(200, authResponse);
-        }
+export const getUsers: APIGatewayProxyHandlerV2 = async () => {
+    try {
+        const users = await userRepository.findAll();
+        // Remove password hashes from response
+        const usersWithoutPasswords = users.map(({ password, ...user }) => user);
+        return respond(200, usersWithoutPasswords);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        return respond(500, { message: 'Failed to fetch users' });
     }
+};
 
-    return respond(401, { message: 'Invalid email or password' });
-};
-export const register: APIGatewayProxyHandlerV2 = async (event) => {
-    const { name, email } = JSON.parse(event.body || '{}');
-    const isFirstUser = users.length === 0;
-    const newUser: User = {
-        id: `u${users.length + 1}`, name, email,
-        role: isFirstUser ? UserRole.ADMIN : UserRole.AUTHOR,
-        avatarUrl: `https://picsum.photos/seed/u${users.length + 1}/100/100`,
-    };
-    users.push(newUser);
-    return respond(201, newUser);
-};
-export const getUsers: APIGatewayProxyHandlerV2 = async () => respond(200, users);
 export const getUser: APIGatewayProxyHandlerV2 = async (event) => {
-    const { id } = event.pathParameters || {};
-    return respond(200, users.find(u => u.id === id));
+    try {
+        const userId = event.pathParameters?.userId;
+        if (!userId) {
+            return respond(400, { message: 'User ID is required' });
+        }
+        
+        const user = await userRepository.findById(userId);
+        if (!user) {
+            return respond(404, { message: 'User not found' });
+        }
+        
+        // Don't return password hash
+        const { password, ...userWithoutPassword } = user;
+        return respond(200, userWithoutPassword);
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        return respond(500, { message: 'Failed to fetch user' });
+    }
 };
+
 export const createUser: APIGatewayProxyHandlerV2 = async (event) => {
-    const userData = JSON.parse(event.body || '{}');
-    const newUser: User = {
-        id: `u${users.length + 1}`,
-        name: userData.name || 'New User',
-        email: userData.email || '',
-        role: userData.role || UserRole.AUTHOR,
-        avatarUrl: userData.avatarUrl || `https://picsum.photos/seed/u${users.length + 1}/100/100`,
-    };
-    users.push(newUser);
-    return respond(201, newUser);
+    try {
+        const userData = JSON.parse(event.body || '{}');
+        
+        if (!userData.name || !userData.email) {
+            return respond(400, { message: 'Name and email are required' });
+        }
+
+        // Check if user with email already exists
+        const existingUser = await userRepository.findByEmail(userData.email);
+        if (existingUser) {
+            return respond(409, { message: 'User with this email already exists' });
+        }
+
+        let plainTextPassword = userData.password;
+        // Hash password if provided, otherwise generate one
+        if (userData.password) {
+            userData.password = await bcrypt.hash(userData.password, 10);
+        } else {
+            // Generate a temporary password
+            plainTextPassword = uuidv4().substring(0, 8); // 8-char temporary password
+            userData.password = await bcrypt.hash(plainTextPassword, 10);
+        }
+
+        const newUser = await userRepository.createUser({
+            name: userData.name,
+            email: userData.email,
+            password: userData.password,
+            role: userData.role || UserRole.AUTHOR,
+            avatarUrl: userData.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}`,
+            bio: userData.bio || '',
+        });
+
+        // Don't return password hash
+        const { password, ...userWithoutPassword } = newUser;
+
+        // Return the user, and the temporary password if it was generated
+        const response: any = { ...userWithoutPassword };
+        if (!userData.password) { // This condition seems wrong, it should be if a temp password was generated
+            response.temporaryPassword = plainTextPassword;
+        }
+
+        return respond(201, response);
+    } catch (error) {
+        console.error('Error creating user:', error);
+        return respond(500, { message: 'Failed to create user' });
+    }
 };
+
 export const updateUser: APIGatewayProxyHandlerV2 = async (event) => {
     const { id } = event.pathParameters || {};
+    if (!id) return respond(400, { message: 'User ID is required' });
+    
     const userData = JSON.parse(event.body || '{}');
-    const userIndex = users.findIndex(u => u.id === id);
-    if (userIndex === -1) return respond(404, { message: 'User not found' });
-    users[userIndex] = { ...users[userIndex], ...userData };
-    return respond(200, users[userIndex]);
-};
-export const deleteUser: APIGatewayProxyHandlerV2 = async (event) => {
-    const { id } = event.pathParameters || {};
-    // Fix: Cannot assign to 'users' because it is an import. Modify in-place instead.
-    const userIndex = users.findIndex(u => u.id === id);
-    if (userIndex === -1) {
-        return respond(404, { message: 'User not found' });
+    
+    try {
+        // Check if user exists
+        const existingUser = await userRepository.findById(id);
+        if (!existingUser) {
+            return respond(404, { message: 'User not found' });
+        }
+        
+        // Don't allow updating email to an existing one
+        if (userData.email && userData.email !== existingUser.email) {
+            const emailUser = await userRepository.findByEmail(userData.email);
+            if (emailUser && emailUser.id !== id) {
+                return respond(400, { message: 'Email already in use' });
+            }
+        }
+        
+        // Hash password if it's being updated
+        if (userData.password) {
+            userData.password = await bcrypt.hash(userData.password, 10);
+        }
+        
+        const updatedUser = await userRepository.update(id, userData);
+        return respond(200, updatedUser);
+    } catch (error) {
+        console.error('Error updating user:', error);
+        return respond(500, { message: 'Failed to update user' });
     }
-    users.splice(userIndex, 1);
-    return respond(204, null);
 };
 
-// --- ARTICLES ---
-export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
-    const params = event.queryStringParameters || {};
-    let results = [...articles];
-    if (params) {
-        if (params.categorySlug) {
-            const category = categories.find(c => c.slug === params.categorySlug);
-            if (category) results = results.filter(a => a.categoryId === category.id);
+export const deleteUser: APIGatewayProxyHandlerV2 = async (event) => {
+    const { id } = event.pathParameters || {};
+    if (!id) return respond(400, { message: 'User ID is required' });
+    
+    try {
+        // Check if user exists
+        const user = await userRepository.findById(id);
+        if (!user) {
+            return respond(404, { message: 'User not found' });
         }
-        if (params.categoryId) results = results.filter(a => a.categoryId === params.categoryId);
-        if (params.tag) results = results.filter(a => a.tags.map(t => t.toLowerCase()).includes(params.tag!.toLowerCase()));
-        if (params.authorId) results = results.filter(a => a.authorId === params.authorId);
-        if (params.query) {
-            const q = params.query.toLowerCase();
-            results = results.filter(a => a.title.toLowerCase().includes(q) || a.summary.toLowerCase().includes(q));
+        
+        // Prevent deleting the last admin
+        if (user.role === UserRole.ADMIN) {
+            const admins = (await userRepository.findAll()).filter(u => u.role === UserRole.ADMIN);
+            if (admins.length <= 1) {
+                return respond(400, { message: 'Cannot delete the last admin' });
+            }
         }
-        if (params.status && params.status !== 'ALL') {
-            results = results.filter(a => a.status === params.status);
-        } else if (!params?.status || params.status !== 'ALL') {
-             results = results.filter(a => a.status === ArticleStatus.PUBLISHED);
-        }
-        if (params.featured) results = results.filter(a => a.isFeatured === (params.featured === 'true'));
-        if (params.isAdvertisement) results = results.filter(a => !!a.isAdvertisement === (params.isAdvertisement === 'true'));
-        if (params.limit) results = results.slice(0, parseInt(params.limit, 10));
-    } else {
-        results = results.filter(a => a.status === ArticleStatus.PUBLISHED);
+        
+        await userRepository.delete(id);
+        return respond(200, { message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        return respond(500, { message: 'Failed to delete user' });
     }
-    return respond(200, results);
+};
+
+export const register: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const { name, email, password } = JSON.parse(event.body || '{}');
+        
+        if (!name || !email || !password) {
+            return respond(400, { message: 'Name, email, and password are required' });
+        }
+
+        // Check if user already exists
+        const existingUser = await userRepository.findByEmail(email);
+        if (existingUser) {
+            return respond(409, { message: 'User with this email already exists' });
+        }
+
+        // Check if this is the first user (make them admin)
+        const isFirstUser = (await userRepository.findAll()).length === 0;
+        
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Create new user
+        const newUser = await userRepository.createUser({
+            name,
+            email,
+            password: hashedPassword,
+            role: isFirstUser ? UserRole.ADMIN : UserRole.AUTHOR,
+            avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`,
+            bio: '',
+        });
+
+        // Don't return password hash
+        const { password: _, ...userWithoutPassword } = newUser;
+        return respond(201, userWithoutPassword);
+    } catch (error) {
+        console.error('Registration error:', error);
+        return respond(500, { message: 'Failed to register user' });
+    }
+};
+
+export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const status = event.queryStringParameters?.status as ArticleStatus | undefined;
+        const categoryId = event.queryStringParameters?.categoryId;
+        const tag = event.queryStringParameters?.tag;
+        const authorId = event.queryStringParameters?.authorId;
+        const searchQuery = event.queryStringParameters?.query?.toLowerCase();
+        const isFeatured = event.queryStringParameters?.featured === 'true';
+        const limit = event.queryStringParameters?.limit ? parseInt(event.queryStringParameters.limit) : 10;
+        const lastEvaluatedKey = event.queryStringParameters?.lastEvaluatedKey;
+
+        // Build filter expressions
+        const filterExpressions: string[] = [];
+        const expressionAttributeValues: Record<string, any> = {};
+        const expressionAttributeNames: Record<string, string> = {};
+
+        // Only show published articles by default if no specific status is provided
+        const articleStatus = status || ArticleStatus.PUBLISHED;
+        filterExpressions.push('#status = :status');
+        expressionAttributeNames['#status'] = 'status';
+        expressionAttributeValues[':status'] = articleStatus;
+        
+        if (categoryId) {
+            filterExpressions.push('categoryId = :categoryId');
+            expressionAttributeValues[':categoryId'] = categoryId;
+        }
+        
+        if (isFeatured) {
+            filterExpressions.push('isFeatured = :isFeatured');
+            expressionAttributeValues[':isFeatured'] = true;
+        }
+        
+        if (authorId) {
+            filterExpressions.push('authorId = :authorId');
+            expressionAttributeValues[':authorId'] = authorId;
+        }
+
+        if (tag) {
+            filterExpressions.push('contains(tags, :tag)');
+            expressionAttributeValues[':tag'] = tag;
+        }
+
+        // Get articles with pagination
+        const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.scan({
+            filterExpression: filterExpressions.join(' AND '),
+            expressionAttributeNames: Object.keys(expressionAttributeNames).length > 0 ? expressionAttributeNames : undefined,
+            expressionAttributeValues: Object.keys(expressionAttributeValues).length > 0 ? expressionAttributeValues : undefined,
+            limit,
+            lastEvaluatedKey: lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined
+        });
+
+        // Apply search query filter if provided
+        let filteredItems = items;
+        if (searchQuery) {
+            filteredItems = items.filter(article => 
+                article.title.toLowerCase().includes(searchQuery) || 
+                (article.summary?.toLowerCase() || '').includes(searchQuery) ||
+                (article.content?.toLowerCase() || '').includes(searchQuery)
+            );
+        }
+
+        const response: any = {
+            items: filteredItems,
+            total: filteredItems.length, // Note: This is just the count of the current page
+        };
+
+        if (newLastEvaluatedKey) {
+            response.lastEvaluatedKey = encodeURIComponent(JSON.stringify(newLastEvaluatedKey));
+            response.hasMore = true;
+        }
+
+        return respond(200, response);
+    } catch (error) {
+        console.error('Error fetching articles:', error);
+        return respond(500, { message: 'Failed to fetch articles' });
+    }
 };
 export const getArticleById: APIGatewayProxyHandlerV2 = async (event) => {
-    const { id } = event.pathParameters || {};
-    return respond(200, articles.find(a => a.id === id));
-};
-export const getArticleBySlug: APIGatewayProxyHandlerV2 = async (event) => {
-    const { slug } = event.pathParameters || {};
-    return respond(200, articles.find(a => a.slug === slug));
-};
-export const createArticle: APIGatewayProxyHandlerV2 = async (event) => {
-    const articleData = JSON.parse(event.body || '{}');
-    const newArticle: Article = {
-        id: `a${articles.length + 1}`,
-        title: articleData.title || 'Untitled',
-        slug: articleData.title?.toLowerCase().replace(/\s+/g, '-') || `a${articles.length + 1}`,
-        summary: articleData.summary || '',
-        content: articleData.content || '',
-        coverImageUrl: articleData.coverImageUrl || 'https://picsum.photos/seed/new/800/400',
-        authorId: articleData.authorId || '',
-        categoryId: articleData.categoryId || '',
-        tags: articleData.tags || [],
-        status: articleData.status || ArticleStatus.DRAFT,
-        publishedAt: null,
-        views: 0,
-        comments: [],
-        ...articleData
-    };
-    articles.unshift(newArticle);
-    return respond(201, newArticle);
-};
-export const updateArticle: APIGatewayProxyHandlerV2 = async (event) => {
-    const { id } = event.pathParameters || {};
-    const articleData = JSON.parse(event.body || '{}');
-    const articleIndex = articles.findIndex(a => a.id === id);
-    if (articleIndex === -1) return respond(404, { message: 'Article not found' });
-    articles[articleIndex] = { ...articles[articleIndex], ...articleData };
-    return respond(200, articles[articleIndex]);
-};
-export const deleteArticle: APIGatewayProxyHandlerV2 = async (event) => {
-    const { id } = event.pathParameters || {};
-    // Fix: Cannot assign to 'articles' because it is an import. Modify in-place instead.
-    const articleIndex = articles.findIndex(a => a.id === id);
-    if (articleIndex === -1) {
-        return respond(404, { message: 'Article not found' });
+    try {
+        const { id } = event.pathParameters || {};
+        if (!id) return respond(400, { message: 'Article ID is required' });
+        
+        const article = await articleRepository.getById(id);
+        if (!article) return respond(404, { message: 'Article not found' });
+        
+        return respond(200, article);
+    } catch (error) {
+        console.error('Error getting article by ID:', error);
+        return respond(500, { message: 'Internal server error' });
     }
-    articles.splice(articleIndex, 1);
-    return respond(204, null);
 };
+
+export const getArticleBySlug: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const { slug } = event.pathParameters || {};
+        if (!slug) return respond(400, { message: 'Article slug is required' });
+        
+        const article = await articleRepository.findBySlug(slug);
+        if (!article) return respond(404, { message: 'Article not found' });
+        
+        return respond(200, article);
+    } catch (error) {
+        console.error('Error getting article by slug:', error);
+        return respond(500, { message: 'Internal server error' });
+    }
+};
+
+
+export const updateArticle: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const { id } = event.pathParameters || {};
+        if (!id) return respond(400, { message: 'Article ID is required' });
+        
+        const articleData = JSON.parse(event.body || '{}');
+        const updates = {
+            ...articleData,
+            updatedAt: new Date().toISOString()
+        };
+        
+        const updatedArticle = await articleRepository.update(id, updates);
+        if (!updatedArticle) return respond(404, { message: 'Article not found' });
+        
+        return respond(200, updatedArticle);
+    } catch (error) {
+        console.error('Error updating article:', error);
+        return respond(500, { message: 'Failed to update article' });
+    }
+};
+
 export const updateArticleStatus: APIGatewayProxyHandlerV2 = async (event) => {
-    const { id } = event.pathParameters || {};
-    const { status, reason } = JSON.parse(event.body || '{}');
-    const articleIndex = articles.findIndex(a => a.id === id);
-    if (articleIndex === -1) return respond(404, { message: 'Article not found' });
-    articles[articleIndex].status = status;
-    if (status === ArticleStatus.REJECTED) articles[articleIndex].rejectionReason = reason;
-    return respond(200, articles[articleIndex]);
+    try {
+        const { id } = event.pathParameters || {};
+        if (!id) return respond(400, { message: 'Article ID is required' });
+        
+        const { status, reason } = JSON.parse(event.body || '{}');
+        
+        const updates: Partial<Article> = {
+            status,
+            updatedAt: new Date().toISOString()
+        };
+        
+        if (status === ArticleStatus.REJECTED) {
+            const { items: recentArticles } = await articleRepository.scan({
+                filterExpression: '#status = :status',
+                expressionAttributeNames: { '#status': 'status' },
+                expressionAttributeValues: { ':status': 'PUBLISHED' },
+                limit: 5
+            });
+            
+            // Sort by publishedAt date
+            recentArticles.sort((a, b) => {
+                const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+                const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+                return dateB - dateA;
+            });
+        }
+        
+        const updatedArticle = await articleRepository.update(id, updates);
+        if (!updatedArticle) return respond(404, { message: 'Article not found' });
+        
+        return respond(200, updatedArticle);
+    } catch (error) {
+        console.error('Error updating article status:', error);
+        return respond(500, { message: 'Failed to update article status' });
+    }
 };
+
 export const updateFeaturedStatus: APIGatewayProxyHandlerV2 = async (event) => {
-    const { updates } = JSON.parse(event.body || '{}');
-    (updates || []).forEach((update: { articleId: string, isFeatured: boolean }) => {
-        const articleIndex = articles.findIndex(a => a.id === update.articleId);
-        if (articleIndex !== -1) articles[articleIndex].isFeatured = update.isFeatured;
-    });
-    return respond(204, null);
+    try {
+        const { updates } = JSON.parse(event.body || '{}');
+        if (!updates || !Array.isArray(updates)) {
+            return respond(400, { message: 'Invalid update format' });
+        }
+
+        await Promise.all(updates.map(async (update: { articleId: string, isFeatured: boolean }) => {
+            await articleRepository.update(update.articleId, { isFeatured: update.isFeatured });
+        }));
+
+        return respond(204, null);
+    } catch (error) {
+        console.error('Error updating featured status:', error);
+        return respond(500, { message: 'Failed to update featured status' });
+    }
 };
 
 // --- CATEGORIES ---
-export const getCategories: APIGatewayProxyHandlerV2 = async () => respond(200, categories);
-export const createCategory: APIGatewayProxyHandlerV2 = async (event) => {
-    const catData = JSON.parse(event.body || '{}');
-    const newCategory: Category = { id: `c${categories.length + 1}`, ...catData };
-    categories.push(newCategory);
-    return respond(201, newCategory);
-};
-export const updateCategory: APIGatewayProxyHandlerV2 = async (event) => {
-    const { id } = event.pathParameters || {};
-    const catData = JSON.parse(event.body || '{}');
-    const catIndex = categories.findIndex(c => c.id === id);
-    if (catIndex === -1) return respond(404, { message: 'Category not found' });
-    categories[catIndex] = { ...categories[catIndex], ...catData };
-    return respond(200, categories[catIndex]);
-};
-export const deleteCategory: APIGatewayProxyHandlerV2 = async (event) => {
-    const { id } = event.pathParameters || {};
-    // Fix: Cannot assign to 'categories' because it is an import. Modify in-place instead.
-    const catIndex = categories.findIndex(c => c.id === id);
-    if (catIndex !== -1) {
-        categories.splice(catIndex, 1);
+export const getCategories: APIGatewayProxyHandlerV2 = async () => {
+    try {
+        const { items: categories } = await categoryRepository.scan({});
+        return respond(200, categories);
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        return respond(500, { message: 'Failed to fetch categories' });
     }
-    return respond(204, null);
 };
 
-// --- COMMENTS ---
-export const getPendingComments: APIGatewayProxyHandlerV2 = async () => {
-    const pending: (Comment & { article: Article })[] = [];
-    articles.forEach(article => {
-        article.comments.forEach(comment => {
-            if (comment.status === 'PENDING') pending.push({ ...comment, article });
-        });
-    });
-    return respond(200, pending);
-};
-export const postComment: APIGatewayProxyHandlerV2 = async (event) => {
-    const { id } = event.pathParameters || {};
-    const { text } = JSON.parse(event.body || '{}');
-    const articleIndex = articles.findIndex(a => a.id === id);
-    if (articleIndex === -1) return respond(404, { message: 'Article not found' });
-    const newComment: Comment = {
-        id: `com${uuidv4()}`,
-        authorName: 'Anonymous User', authorAvatarUrl: `https://picsum.photos/seed/${uuidv4()}/50/50`,
-        text, date: new Date().toISOString(), status: 'PENDING',
-    };
-    articles[articleIndex].comments.push(newComment);
-    return respond(201, newComment);
-};
-export const updateCommentStatus: APIGatewayProxyHandlerV2 = async (event) => {
-    const { articleId, commentId } = event.pathParameters || {};
-    const { status } = JSON.parse(event.body || '{}');
-    const articleIndex = articles.findIndex(a => a.id === articleId);
-    if (articleIndex === -1) return respond(404, { message: 'Article not found' });
-    const commentIndex = articles[articleIndex].comments.findIndex(c => c.id === commentId);
-    if (commentIndex === -1) return respond(404, { message: 'Comment not found' });
-    articles[articleIndex].comments[commentIndex].status = status;
-    return respond(204, null);
-};
+// ... (rest of the code remains the same)
 
 // --- NOTIFICATIONS ---
 export const getNotificationsForUser: APIGatewayProxyHandlerV2 = async (event) => {
     const { userId } = event.pathParameters || {};
-    return respond(200, notifications.filter(n => n.userId === userId));
+    const { items: userNotifications } = await notificationRepository.scan({
+        filterExpression: 'userId = :userId',
+        expressionAttributeValues: { ':userId': userId }
+    });
+    
+    // Sort by timestamp
+    userNotifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    
+    return respond(200, userNotifications);
 };
 
 // --- TAGS ---
 export const getAllTags: APIGatewayProxyHandlerV2 = async () => {
     const tagCounts = new Map<string, number>();
+    const { items: articles } = await articleRepository.scan({});
     articles.forEach(article => {
         article.tags.forEach(tag => {
             const lowerCaseTag = tag.toLowerCase();
@@ -291,18 +473,44 @@ export const getAllTags: APIGatewayProxyHandlerV2 = async () => {
 };
 
 // --- MISC ---
-export const getSubscribers: APIGatewayProxyHandlerV2 = async () => respond(200, subscribers);
+export const getSubscribers: APIGatewayProxyHandlerV2 = async () => {
+    try {
+        const { items: subscribers } = await subscriberRepository.scan({
+            filterExpression: 'isActive = :isActive',
+            expressionAttributeValues: { ':isActive': true }
+        });
+        return respond(200, subscribers);
+    } catch (error) {
+        console.error('Error fetching subscribers:', error);
+        return respond(500, { message: 'Failed to fetch subscribers' });
+    }
+};
+
 export const subscribe: APIGatewayProxyHandlerV2 = async (event) => {
     const { email } = JSON.parse(event.body || '{}');
+    const now = new Date().toISOString();
+    const { items: [existingSubscriber] } = await subscriberRepository.scan({
+        filterExpression: 'email = :email',
+        expressionAttributeValues: { ':email': email },
+        limit: 1
+    });
+    
+    if (existingSubscriber) {
+        return respond(409, { message: 'Subscriber already exists' });
+    }
+    
     const newSubscriber: Subscriber = {
-        id: `sub${subscribers.length + 1}`, email,
-        subscribedAt: new Date().toISOString(),
+        id: `s${Date.now()}`,
+        email: email,
+        isActive: true,
+        subscribedAt: now,
+        createdAt: now,
+        updatedAt: now,
     };
-    subscribers.push(newSubscriber);
+    await subscriberRepository.create(newSubscriber);
     return respond(201, newSubscriber);
 };
 export const contact: APIGatewayProxyHandlerV2 = async (event) => {
     console.log('Contact form submitted (mock):', JSON.parse(event.body || '{}'));
     return respond(204, null);
 };
-

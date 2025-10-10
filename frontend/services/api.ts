@@ -266,7 +266,9 @@ interface FetchArticlesParams {
 export const fetchArticles = async (params: FetchArticlesParams = {}): Promise<Article[]> => {
     try {
         const url = buildArticlesUrl(params);
-        return await apiRequest<Article[]>(url);
+        const response = await apiRequest<{ items: Article[], total: number, lastEvaluatedKey?: string, hasMore?: boolean }>(url);
+        // Backend returns { items: Article[], total: number }, but we just need the items array
+        return response.items || [];
     } catch (error) {
         console.error('Failed to fetch articles:', error);
         // You could add error handling logic here, e.g., show a toast notification
