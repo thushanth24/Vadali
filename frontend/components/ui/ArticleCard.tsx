@@ -3,14 +3,21 @@ import { Link } from 'react-router-dom';
 import { Article, Category } from '../../types';
 import { Clock } from 'lucide-react';
 
-interface ArticleCardProps {
+export interface ArticleCardProps {
   article: Article;
   category?: Category;
   hideImage?: boolean; 
   isAdvertisement?: boolean;
+  className?: string;
 }
 
-const ArticleCard: React.FC<ArticleCardProps> = ({ article, category, hideImage = false, isAdvertisement = false }) => {
+const ArticleCard: React.FC<ArticleCardProps> = ({ 
+  article, 
+  category, 
+  hideImage = false, 
+  isAdvertisement = false,
+  className = ''
+}) => {
   const publishedDate = article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('ta-IN', {
     year: 'numeric',
     month: 'short',
@@ -18,7 +25,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, category, hideImage 
   }) : '';
 
   return (
-    <div className="bg-white group overflow-hidden relative">
+    <div className={`bg-white group overflow-hidden relative ${className}`}>
       {isAdvertisement && (
         <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded z-10">
           Ad
