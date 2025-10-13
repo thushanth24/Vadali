@@ -26,10 +26,34 @@ const CreateArticle: React.FC = () => {
             const formData = new FormData(e.currentTarget);
             let coverImageUrl = '';
 
+            console.log('Form data:', Object.fromEntries(formData.entries()));
+            console.log('Cover image file:', coverImageFile);
+
             if (coverImageFile) {
-                // In a real app, you'd show upload progress.
-                alert('Uploading image to S3... (mock)');
-                coverImageUrl = await uploadFileToS3(coverImageFile);
+                try {
+                    console.log('Starting file upload to S3...');
+                    console.log('File details:', {
+                        name: coverImageFile.name,
+                        type: coverImageFile.type,
+                        size: coverImageFile.size
+                    });
+                    
+                    // Show upload progress to user
+                    alert('Uploading image to S3...');
+                    coverImageUrl = await uploadFileToS3(coverImageFile);
+                    console.log('File uploaded successfully. URL:', coverImageUrl);
+                    alert('Image uploaded successfully!');
+                } catch (error) {
+                    console.error('Error uploading image:', {
+                        error,
+                        message: error.message,
+                        stack: error.stack,
+                        name: error.name
+                    });
+                    alert('Failed to upload image. Please check console for details.');
+                    setIsSubmitting(false);
+                    return;
+                }
             }
 
             const articleData = {

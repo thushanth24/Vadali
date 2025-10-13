@@ -452,21 +452,82 @@ export const submitContactForm = async (formData: { name: string, email: string,
     });
 };
 
-export const getUploadUrl = async (fileName: string, fileType: string): Promise<{ uploadUrl: string, key: string }> => {
-    return apiRequest<{ uploadUrl: string, key: string }>('/upload-url', {
-        method: 'POST',
-        body: JSON.stringify({ fileName, fileType }),
-    });
+export const getUploadUrl = async (fileName: string, fileType: string): Promise<{ uploadUrl: string, fileKey: string, fileUrl: string }> => {
+    console.log('Requesting upload URL for:', { fileName, fileType });
+    try {
+        const response = await apiRequest<{ 
+            uploadUrl: string, 
+            fileKey: string, 
+            fileUrl: string 
+        }>('/upload-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                fileName, 
+                fileType 
+            }),
+        });
+        
+        console.log('Received upload URL response:', response);
+        return response;
+    } catch (error) {
+        console.error('Error in getUploadUrl:', {
+            error,
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+            fileName,
+            fileType
+        });
+        throw new Error(`Failed to get upload URL: ${error.message}`);
+    }
 };
 
 export const uploadFileToS3 = async (file: File): Promise<string> => {
-    // This is now a two-step process handled in the components:
-    // 1. Get a presigned URL from our backend.
-    // 2. PUT the file to that URL.
-    // This helper is simplified as the logic is now more complex and component-specific.
-    // We can simulate it here for any remaining simple cases, but it's better to refactor.
-    console.log(`Uploading ${file.name} to S3...`);
-    // In a real scenario, the component would handle this.
-    // Returning a placeholder.
-    return `https://vadali-media-assets-dev.s3.amazonaws.com/${file.name}`;
+    console.log('Starting file upload process...');
+    console.log('File details:', { name: file.name, type: file.type, size: file.size });
+    
+    try {
+        console.log('Requesting pre-signed URL from backend...');
+        const { uploadUrl, fileUrl } = await getUploadUrl(file.name, file.type);
+        console.log('Received pre-signed URL:', { uploadUrl, fileUrl });
+        
+        console.log('Uploading file to S3...');
+        const response = await fetch(uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+                'Content-Type': file.type,
+                'Cache-Control': 'max-age=31536000' // 1 year cache
+            },
+            // Important: Don't include CORS headers in the request to S3
+            // The pre-signed URL already includes the necessary CORS headers
+        });
+        
+        console.log('S3 upload response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('S3 upload failed:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorText,
+                headers: Object.fromEntries(response.headers.entries())
+            });
+            throw new Error(`Failed to upload file to S3: ${response.status} ${response.statusText}`);
+        }
+        
+        console.log('File uploaded successfully');
+        return fileUrl;
+    } catch (error) {
+        console.error('Error in uploadFileToS3:', {
+            error,
+            message: error.message,
+            name: error.name,
+            stack: error.stack
+        });
+        throw new Error(`Failed to upload file: ${error.message}`);
+    }
 };

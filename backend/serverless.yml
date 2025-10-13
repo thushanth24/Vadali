@@ -21,6 +21,17 @@ provider:
         - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.USERS_TABLE}/index/*
         - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.CATEGORIES_TABLE}
         - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.CATEGORIES_TABLE}/index/*
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:PutObjectAcl
+        - s3:GetObject
+        - s3:DeleteObject
+      Resource: arn:aws:s3:::${self:provider.environment.S3_BUCKET_NAME}/*
+    - Effect: Allow
+      Action:
+        - s3:ListBucket
+      Resource: arn:aws:s3:::${self:provider.environment.S3_BUCKET_NAME}
   httpApi:
     cors:
       allowedOrigins:
@@ -45,6 +56,7 @@ provider:
     ARTICLES_TABLE: vadali-media-articles-${self:provider.stage}
     USERS_TABLE: vadali-media-users-${self:provider.stage}
     CATEGORIES_TABLE: vadali-media-categories-${self:provider.stage}
+    S3_BUCKET_NAME: 'vadaliarticles'
     ALLOWED_ORIGIN: ${env:FRONTEND_ORIGIN, 'http://localhost:3000'}
 
 functions:
@@ -180,6 +192,14 @@ functions:
     handler: src/handlers.contact
     events:
       - httpApi: 'POST /contact'
+      
+  # File Upload
+  getUploadUrl:
+    handler: src/handlers.getUploadUrl
+    events:
+      - httpApi:
+          method: POST
+          path: /upload-url
 
 package:
   individually: false
@@ -195,6 +215,7 @@ custom:
 
 resources:
   Resources:
+
     # --- ARTICLES TABLE ---
     ArticlesTable:
       Type: AWS::DynamoDB::Table
@@ -259,5 +280,4 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
-
 

@@ -2,6 +2,7 @@ import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 import { Article, ArticleStatus, Category, Comment, Notification, Subscriber, User, UserRole } from './types';
 import { comparePasswords, createAuthResponse } from './auth';
+import { generateUploadUrl } from './utils/s3';
 import { UserRepository } from './repositories/UserRepository';
 import { ArticleRepository } from './repositories/ArticleRepository';
 import { CategoryRepository } from './repositories/CategoryRepository';
@@ -654,4 +655,25 @@ export const subscribe: APIGatewayProxyHandlerV2 = async (event) => {
 export const contact: APIGatewayProxyHandlerV2 = async (event) => {
     console.log('Contact form submitted (mock):', JSON.parse(event.body || '{}'));
     return respond(204, null);
+};
+
+export const getUploadUrl: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const { fileName, fileType } = JSON.parse(event.body || '{}');
+        
+        if (!fileName || !fileType) {
+            return respond(400, { message: 'fileName and fileType are required' });
+        }
+
+        const { uploadUrl, fileKey, fileUrl } = await generateUploadUrl(fileName, fileType);
+        
+        return respond(200, {
+            uploadUrl,
+            fileKey,
+            fileUrl
+        });
+    } catch (error) {
+        console.error('Error generating upload URL:', error);
+        return respond(500, { message: 'Error generating upload URL' });
+    }
 };
