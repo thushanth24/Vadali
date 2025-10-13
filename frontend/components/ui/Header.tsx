@@ -23,6 +23,9 @@ const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
+  const [visible, setVisible] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -59,9 +62,32 @@ const Header: React.FC = () => {
     setSearchTerm(query);
   }, [location.search]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollPos = window.pageYOffset;
+      const isVisible = prevScrollPos > currentScrollPos || currentScrollPos < 50;
+      
+      setVisible(isVisible);
+      setScrolled(currentScrollPos > 50);
+      setPrevScrollPos(currentScrollPos);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [prevScrollPos]);
+
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement> | React.MouseEvent<HTMLButtonElement>) => {
+    if ((e as React.KeyboardEvent).key === 'Enter' || e.type === 'click') {
+      if (searchTerm.trim()) {
+        navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+        setSearchTerm('');
+      }
+    }
   };
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -84,129 +110,108 @@ const Header: React.FC = () => {
   });
 
   return (
-    <header className="bg-white text-gray-800 sticky top-0 z-50 shadow-lg">
-      {/* Utility Bar */}
-      <div className="bg-[#0c1a3a] text-blue-100 border-b border-blue-900">
-        <div className="container mx-auto px-4 py-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs md:text-sm">
-          <div className="flex items-center gap-3">
-            <span className="uppercase tracking-wider font-semibold text-blue-200">{today}</span>
-            <span className="hidden sm:inline-flex items-center gap-2 text-blue">
-              <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-              Live | Tamil Edition
-            </span>
-          </div>
-          <div className="flex items-center justify-between sm:justify-end gap-4 text-blue-100">
-            <span className="hidden md:inline uppercase tracking-[0.2em] text-[11px] text-blue-200/80">
-              Follow Vadali Media
-            </span>
-            <div className="flex items-center gap-3">
+    <header className="bg-white text-gray-800 sticky top-0 z-50 shadow-lg border-b border-gray-100">
+      {/* Main Header */}
+      <div className={`bg-white transition-all duration-300 ${scrolled ? 'shadow-sm' : ''} ${visible ? 'translate-y-0' : '-translate-y-16'}`}>
+        <div className="container mx-auto px-4 py-2">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* Logo Section - Left */}
+            <div className="flex-shrink-0">
+              <Link to="/" className="flex items-center gap-3 group transition-transform duration-200 hover:scale-[1.02]">
+                <div className="relative flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-br from-red-600 to-amber-500 shadow-lg group-hover:shadow-xl group-hover:rotate-6 transition-all duration-300">
+                  <Flame className="h-8 w-8 text-white" />
+                  <span className="absolute -bottom-2.5 text-[10px] font-bold uppercase text-white tracking-[0.3em] bg-red-600 px-2 py-0.5 rounded-full">
+                    Live
+                  </span>
+                </div>
+                <div className="leading-tight">
+                  <h1 className="text-3xl md:text-4xl font-black tracking-tight">
+                    <span className="text-[#0c1a3a]">Vadali</span> <span className="text-red-600">Media</span>
+                  </h1>
+                  <p className="text-xs md:text-sm uppercase tracking-[0.4em] text-gray-500 font-medium mt-0.5">
+                    Trusted Tamil Newsroom
+                  </p>
+                </div>
+              </Link>
+            </div>
+
+            {/* Date and Live Badge - Center */}
+            <div className="hidden md:flex items-center justify-center flex-1 max-w-2xl mx-4">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-gray-600 whitespace-nowrap">{today}</span>
+                <span className="h-4 w-px bg-gray-300"></span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 bg-red-50 px-3 py-1.5 rounded-full">
+                  <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
+                  Live | Tamil Edition
+                </span>
+              </div>
+            </div>
+            
+            {/* Social Icons - Right */}
+            <div className="hidden lg:flex items-center gap-2 ml-auto">
               <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Facebook"
-                className="transition-colors hover:text-white"
+                className="p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
               >
-                <Facebook size={16} />
+                <Facebook size={18} />
               </a>
               <a
                 href="https://twitter.com"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Twitter"
-                className="transition-colors hover:text-white"
+                className="p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-400 transition-all duration-200"
               >
-                <Twitter size={16} />
+                <Twitter size={18} />
               </a>
               <a
                 href="https://youtube.com"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="YouTube"
-                className="transition-colors hover:text-white"
+                className="p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
               >
-                <Youtube size={16} />
+                <Youtube size={18} />
               </a>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Header */}
-      <div className="bg-white">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap items-center justify-between gap-4 py-4">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-tr from-red-600 to-amber-500 shadow-md group-hover:scale-105 transition-transform duration-200">
-                <Flame className="h-7 w-7 text-white" />
-                <span className="absolute -bottom-2 text-[10px] uppercase text-white tracking-[0.4em]">
-                  Live
-                </span>
-              </div>
-              <div className="leading-tight">
-                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#0c1a3a] uppercase">
-                  Vadali <span className="text-red-600">Media</span>
-                </h1>
-                <p className="text-xs md:text-sm uppercase tracking-[0.35em] text-gray-500">
-                  Trusted Tamil Newsroom
-                </p>
-              </div>
-            </Link>
 
          
 
-            <div className="hidden md:flex items-center gap-3">
-              {user ? (
-                <>
-                  <Link to="/dashboard/admin">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-red-500 hover:text-red-600"
-                    >
-                      <LayoutDashboard className="h-4 w-4" />
-                      Dashboard
-                    </Button>
-                  </Link>
+            {user && (
+              <div className="hidden md:flex items-center gap-3">
+                <Link to="/dashboard/admin">
                   <Button
-                    onClick={handleLogout}
+                    variant="ghost"
                     size="sm"
-                    className="flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
+                    className="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-red-500 hover:text-red-600"
                   >
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                  </Button>
-                </>
-              ) : (
-                <Link to="/login">
-                  <Button
-                    size="sm"
-                    className="flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    Login
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
                   </Button>
                 </Link>
-              )}
-            </div>
+                <Button
+                  onClick={handleLogout}
+                  size="sm"
+                  className="flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
+            )}
 
             {/* Mobile menu button */}
             <div className="flex items-center gap-3 md:hidden">
-              {user ? (
+              {user && (
                 <button
                   onClick={handleLogout}
                   className="rounded-full bg-red-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-red-500"
                 >
                   Logout
                 </button>
-              ) : (
-                <Link
-                  to="/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="rounded-full bg-red-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-red-500"
-                >
-                  Login
-                </Link>
               )}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -222,35 +227,47 @@ const Header: React.FC = () => {
       </div>
 
       {/* Navigation Bar */}
-      <nav className="bg-[#112b6f] text-white shadow-inner">
+      <nav className="bg-gradient-to-r from-blue-900 to-blue-700 shadow-lg">
         <div className="container mx-auto px-4">
-          <div className="hidden md:flex items-center gap-4 overflow-x-auto py-3 text-sm font-semibold uppercase tracking-[0.2em]">
-            <Link
-              to="/trending"
-              className="flex items-center gap-2 rounded-full border border-red-500 bg-red-600 px-4 py-2 text-yellow-200 transition hover:bg-red-500"
-            >
-              <Flame size={16} className="text-yellow-200" />
-              Breaking
-            </Link>
-            {categories.map((category) => (
+          <div className="hidden md:flex items-center justify-between py-0">
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+              {/* Breaking News Button */}
               <Link
-                key={category.id}
-                to={`/category/${category.slug}`}
-                className="rounded-full px-4 py-2 transition hover:bg-white hover:text-[#112b6f]"
+                to="/trending"
+                className="flex items-center gap-2 rounded-none bg-gradient-to-r from-red-600 to-red-500 px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-md transition-all duration-200 hover:from-red-500 hover:to-red-600 hover:shadow-lg hover:scale-105 hover:bg-opacity-90"
               >
-                {category.name}
+                <Flame size={16} className="text-yellow-300 animate-pulse" />
+                Breaking News
               </Link>
-            ))}
+              
+              {/* Category Links */}
+              <div className="flex items-center gap-1">
+                {categories.map((category, index) => (
+                  <Link
+                    key={category.id}
+                    to={`/category/${category.slug}`}
+                    className={`relative px-5 py-3.5 text-sm font-medium uppercase tracking-wider text-white transition-all duration-200 ${
+                      index === 0 ? 'ml-1' : ''
+                    } hover:bg-blue-800/50`}
+                  >
+                    <span className="relative z-10">{category.name}</span>
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+            
+          
           </div>
         </div>
       </nav>
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="container mx-auto px-4 py-5 md:hidden">
+        <div className="container mx-auto px-4 py-8 md:hidden">
          
 
-          <nav className="flex flex-col gap-2">
+          <nav className="flex flex-col gap-2 pb-4">
             <Link
               to="/trending"
               onClick={() => setIsMenuOpen(false)}
@@ -271,7 +288,7 @@ const Header: React.FC = () => {
             ))}
           </nav>
           <div className="mt-5 border-t border-gray-200 pt-5">
-            {user ? (
+            {user && (
               <div className="flex flex-col gap-2">
                 <Link to="/dashboard/admin" onClick={() => setIsMenuOpen(false)}>
                   <Button variant="ghost" className="flex w-full items-center justify-start gap-2">
@@ -291,13 +308,6 @@ const Header: React.FC = () => {
                   Logout
                 </Button>
               </div>
-            ) : (
-              <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="primary" className="flex w-full items-center justify-start gap-2">
-                  <LogIn className="h-4 w-4" />
-                  Login
-                </Button>
-              </Link>
             )}
           </div>
         </div>
