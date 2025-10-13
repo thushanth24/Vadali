@@ -23,7 +23,6 @@ import AboutUsPage from './pages/AboutUsPage';
 import ContactUsPage from './pages/ContactUsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
-import TagPage from './pages/TagPage';
 import AuthorPage from './pages/AuthorPage';
 import SearchPage from './pages/SearchPage';
 import TrendingPage from './pages/TrendingPage';
@@ -40,7 +39,6 @@ import ReportsAnalytics from './pages/dashboard/admin/ReportsAnalytics';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import MaintenancePage from './pages/MaintenancePage';
-import RegisterPage from './pages/RegisterPage';
 
 const App: React.FC = () => {
   return (
@@ -51,7 +49,6 @@ const App: React.FC = () => {
           <Route index element={<HomePage />} />
           <Route path="article/:slug" element={<ArticlePage />} />
           <Route path="category/:slug" element={<CategoryPage />} />
-          <Route path="tag/:slug" element={<TagPage />} />
           <Route path="author/:slug" element={<AuthorPage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="trending" element={<TrendingPage />} />
@@ -67,7 +64,6 @@ const App: React.FC = () => {
         {/* Auth Pages with Layout */}
         <Route path="/" element={<MainLayout />}>
           <Route path="login" element={<LoginPage />} />
-          <Route path="register" element={<RegisterPage />} />
         </Route>
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
