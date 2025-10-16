@@ -20,6 +20,15 @@ const respond = (statusCode: number, body: any) => ({
 
 import bcrypt from 'bcryptjs';
 
+const slugify = (value: string) => {
+    return value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .replace(/-+/g, '-');
+};
+
 // Initialize repositories
 const userRepository = new UserRepository();
 const articleRepository = new ArticleRepository();
@@ -239,6 +248,111 @@ export const register: APIGatewayProxyHandlerV2 = async (event) => {
     } catch (error) {
         console.error('Registration error:', error);
         return respond(500, { message: 'Failed to register user' });
+    }
+};
+
+export const createArticle: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const payload = JSON.parse(event.body || '{}');
+
+        const title = typeof payload.title === 'string' ? payload.title.trim() : '';
+        const summary = typeof payload.summary === 'string' ? payload.summary.trim() : '';
+        const content = typeof payload.content === 'string' ? payload.content.trim() : '';
+        const categoryId = typeof payload.categoryId === 'string' ? payload.categoryId.trim() : '';
+        const authorId = typeof payload.authorId === 'string' ? payload.authorId.trim() : '';
+
+        if (!title || !summary || !content || !categoryId || !authorId) {
+            return respond(400, { message: 'title, summary, content, categoryId, and authorId are required' });
+        }
+
+        const tags: string[] = Array.isArray(payload.tags)
+            ? payload.tags
+                .map((tag: unknown) => (typeof tag === 'string' ? tag.trim() : ''))
+                .filter((tag: string) => tag.length > 0)
+            : [];
+
+        const allowedStatuses = Object.values(ArticleStatus) as string[];
+        const defaultStatus = ArticleStatus.PENDING_REVIEW;
+        const status = typeof payload.status === 'string' && allowedStatuses.includes(payload.status)
+            ? payload.status as ArticleStatus
+            : defaultStatus;
+
+        const [author, category] = await Promise.all([
+            userRepository.findById(authorId),
+            categoryRepository.getById(categoryId)
+        ]);
+
+        if (!author) {
+            return respond(404, { message: 'Author not found' });
+        }
+
+        if (!category) {
+            return respond(404, { message: 'Category not found' });
+        }
+
+        const preferredSlugSource = typeof payload.slug === 'string' && payload.slug.trim().length > 0
+            ? payload.slug
+            : title;
+        let baseSlug = slugify(preferredSlugSource);
+        if (!baseSlug) {
+            baseSlug = slugify(`article-${uuidv4()}`);
+        }
+
+        let slug = baseSlug;
+        let suffix = 1;
+        // Ensure slug uniqueness
+        while (await articleRepository.findBySlug(slug)) {
+            slug = `${baseSlug}-${suffix}`;
+            suffix += 1;
+        }
+
+        const coverImageUrl = typeof payload.coverImageUrl === 'string'
+            ? payload.coverImageUrl.trim()
+            : '';
+
+        const publishedAt = status === ArticleStatus.PUBLISHED
+            ? (typeof payload.publishedAt === 'string' && payload.publishedAt.trim().length > 0
+                ? payload.publishedAt
+                : new Date().toISOString())
+            : null;
+
+        const isAdvertisement = typeof payload.isAdvertisement === 'boolean'
+            ? payload.isAdvertisement
+            : false;
+
+        const isFeatured = typeof payload.isFeatured === 'boolean'
+            ? payload.isFeatured
+            : false;
+
+        const article = await articleRepository.createArticle({
+            title,
+            slug,
+            summary,
+            content,
+            coverImageUrl,
+            authorId,
+            categoryId,
+            tags,
+            status,
+            publishedAt,
+            videoUrl: typeof payload.videoUrl === 'string' && payload.videoUrl.trim().length > 0
+                ? payload.videoUrl.trim()
+                : undefined,
+            isAdvertisement,
+            isFeatured,
+            rejectionReason: status === ArticleStatus.REJECTED && typeof payload.rejectionReason === 'string'
+                ? payload.rejectionReason.trim()
+                : undefined,
+        });
+
+        return respond(201, article);
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error creating article:', {
+            message: errorMessage,
+            stack: error instanceof Error ? error.stack : undefined,
+        });
+        return respond(500, { message: 'Failed to create article', error: errorMessage });
     }
 };
 

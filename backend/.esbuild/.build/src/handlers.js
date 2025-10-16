@@ -56360,6 +56360,7 @@ var require_dist_cjs90 = __commonJS({
 var handlers_exports = {};
 __export(handlers_exports, {
   contact: () => contact,
+  createArticle: () => createArticle2,
   createCategory: () => createCategory,
   createUser: () => createUser2,
   deleteCategory: () => deleteCategory,
@@ -56431,6 +56432,15 @@ function v4(options, buf, offset) {
   return unsafeStringify(rnds);
 }
 var v4_default = v4;
+
+// src/types.ts
+var ArticleStatus = /* @__PURE__ */ ((ArticleStatus2) => {
+  ArticleStatus2["DRAFT"] = "Draft";
+  ArticleStatus2["PENDING_REVIEW"] = "Pending Review";
+  ArticleStatus2["PUBLISHED"] = "Published";
+  ArticleStatus2["REJECTED"] = "Rejected";
+  return ArticleStatus2;
+})(ArticleStatus || {});
 
 // src/auth.ts
 var import_jsonwebtoken = __toESM(require_jsonwebtoken());
@@ -58525,28 +58535,26 @@ var ArticleRepository = class extends BaseRepository {
   }
   async findBySlug(slug) {
     const result = await this.query({
-      indexName: "SlugIndex",
+      indexName: "slug-index",
       keyConditionExpression: "slug = :slug",
       expressionAttributeValues: { ":slug": slug }
     });
     return result.items[0] || null;
   }
   async findByAuthor(authorId) {
-    const result = await this.query({
-      indexName: "AuthorIndex",
-      keyConditionExpression: "authorId = :authorId",
+    const { items } = await this.scan({
+      filterExpression: "authorId = :authorId",
       expressionAttributeValues: { ":authorId": authorId }
     });
-    return result.items;
+    return items;
   }
   async findByStatus(status) {
-    const result = await this.query({
-      indexName: "StatusIndex",
-      keyConditionExpression: "#status = :status",
+    const { items } = await this.scan({
+      filterExpression: "#status = :status",
       expressionAttributeNames: { "#status": "status" },
       expressionAttributeValues: { ":status": status }
     });
-    return result.items;
+    return items;
   }
   async incrementViews(articleId) {
     const command = new UpdateCommand({
@@ -58782,6 +58790,9 @@ var respond = (statusCode, body) => ({
   },
   body: JSON.stringify(body)
 });
+var slugify = (value) => {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").replace(/-+/g, "-");
+};
 var userRepository = new UserRepository();
 var articleRepository = new ArticleRepository();
 var categoryRepository = new CategoryRepository();
@@ -58949,6 +58960,72 @@ var register = async (event) => {
   } catch (error2) {
     console.error("Registration error:", error2);
     return respond(500, { message: "Failed to register user" });
+  }
+};
+var createArticle2 = async (event) => {
+  try {
+    const payload2 = JSON.parse(event.body || "{}");
+    const title = typeof payload2.title === "string" ? payload2.title.trim() : "";
+    const summary = typeof payload2.summary === "string" ? payload2.summary.trim() : "";
+    const content = typeof payload2.content === "string" ? payload2.content.trim() : "";
+    const categoryId = typeof payload2.categoryId === "string" ? payload2.categoryId.trim() : "";
+    const authorId = typeof payload2.authorId === "string" ? payload2.authorId.trim() : "";
+    if (!title || !summary || !content || !categoryId || !authorId) {
+      return respond(400, { message: "title, summary, content, categoryId, and authorId are required" });
+    }
+    const tags = Array.isArray(payload2.tags) ? payload2.tags.map((tag2) => typeof tag2 === "string" ? tag2.trim() : "").filter((tag2) => tag2.length > 0) : [];
+    const allowedStatuses = Object.values(ArticleStatus);
+    const defaultStatus = "Pending Review" /* PENDING_REVIEW */;
+    const status = typeof payload2.status === "string" && allowedStatuses.includes(payload2.status) ? payload2.status : defaultStatus;
+    const [author, category] = await Promise.all([
+      userRepository.findById(authorId),
+      categoryRepository.getById(categoryId)
+    ]);
+    if (!author) {
+      return respond(404, { message: "Author not found" });
+    }
+    if (!category) {
+      return respond(404, { message: "Category not found" });
+    }
+    const preferredSlugSource = typeof payload2.slug === "string" && payload2.slug.trim().length > 0 ? payload2.slug : title;
+    let baseSlug = slugify(preferredSlugSource);
+    if (!baseSlug) {
+      baseSlug = slugify(`article-${v4_default()}`);
+    }
+    let slug = baseSlug;
+    let suffix = 1;
+    while (await articleRepository.findBySlug(slug)) {
+      slug = `${baseSlug}-${suffix}`;
+      suffix += 1;
+    }
+    const coverImageUrl = typeof payload2.coverImageUrl === "string" ? payload2.coverImageUrl.trim() : "";
+    const publishedAt = status === "Published" /* PUBLISHED */ ? typeof payload2.publishedAt === "string" && payload2.publishedAt.trim().length > 0 ? payload2.publishedAt : (/* @__PURE__ */ new Date()).toISOString() : null;
+    const isAdvertisement = typeof payload2.isAdvertisement === "boolean" ? payload2.isAdvertisement : false;
+    const isFeatured = typeof payload2.isFeatured === "boolean" ? payload2.isFeatured : false;
+    const article = await articleRepository.createArticle({
+      title,
+      slug,
+      summary,
+      content,
+      coverImageUrl,
+      authorId,
+      categoryId,
+      tags,
+      status,
+      publishedAt,
+      videoUrl: typeof payload2.videoUrl === "string" && payload2.videoUrl.trim().length > 0 ? payload2.videoUrl.trim() : void 0,
+      isAdvertisement,
+      isFeatured,
+      rejectionReason: status === "Rejected" /* REJECTED */ && typeof payload2.rejectionReason === "string" ? payload2.rejectionReason.trim() : void 0
+    });
+    return respond(201, article);
+  } catch (error2) {
+    const errorMessage = error2 instanceof Error ? error2.message : "Unknown error";
+    console.error("Error creating article:", {
+      message: errorMessage,
+      stack: error2 instanceof Error ? error2.stack : void 0
+    });
+    return respond(500, { message: "Failed to create article", error: errorMessage });
   }
 };
 var getArticles = async (event) => {
@@ -59313,6 +59390,7 @@ var getUploadUrl = async (event) => {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   contact,
+  createArticle,
   createCategory,
   createUser,
   deleteCategory,

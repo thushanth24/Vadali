@@ -47,7 +47,7 @@ export class ArticleRepository extends BaseRepository<Article> {
 
   async findBySlug(slug: string): Promise<Article | null> {
     const result = await this.query({
-      indexName: 'SlugIndex',
+      indexName: 'slug-index',
       keyConditionExpression: 'slug = :slug',
       expressionAttributeValues: { ':slug': slug }
     });
@@ -56,24 +56,22 @@ export class ArticleRepository extends BaseRepository<Article> {
   }
 
   async findByAuthor(authorId: string): Promise<Article[]> {
-    const result = await this.query({
-      indexName: 'AuthorIndex',
-      keyConditionExpression: 'authorId = :authorId',
+    const { items } = await this.scan({
+      filterExpression: 'authorId = :authorId',
       expressionAttributeValues: { ':authorId': authorId }
     });
     
-    return result.items;
+    return items;
   }
 
   async findByStatus(status: string): Promise<Article[]> {
-    const result = await this.query({
-      indexName: 'StatusIndex',
-      keyConditionExpression: '#status = :status',
+    const { items } = await this.scan({
+      filterExpression: '#status = :status',
       expressionAttributeNames: { '#status': 'status' },
       expressionAttributeValues: { ':status': status }
     });
     
-    return result.items;
+    return items;
   }
 
   async incrementViews(articleId: string): Promise<void> {
