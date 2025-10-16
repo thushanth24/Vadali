@@ -574,6 +574,72 @@ export const updateArticle: APIGatewayProxyHandlerV2 = async (event) => {
     }
 };
 
+export const deleteArticle: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const { id } = event.pathParameters || {};
+        if (!id) {
+            return respond(400, { message: 'Article ID is required' });
+        }
+
+        const existingArticle = await articleRepository.getById(id);
+        if (!existingArticle) {
+            return respond(404, { message: 'Article not found' });
+        }
+
+        const deleted = await articleRepository.delete(id);
+        if (!deleted) {
+            return respond(500, { message: 'Failed to delete article' });
+        }
+
+        const cleanupWarnings: string[] = [];
+
+        await Promise.all([
+            (async () => {
+                try {
+                    const relatedComments = await commentRepository.scan({
+                        filterExpression: 'articleId = :articleId',
+                        expressionAttributeValues: { ':articleId': id }
+                    });
+
+                    if (relatedComments.items.length > 0) {
+                        await Promise.allSettled(
+                            relatedComments.items.map((comment) => commentRepository.delete(comment.id))
+                        );
+                    }
+                } catch (error) {
+                    console.warn('Failed to clean up comments for deleted article', { articleId: id, error });
+                    cleanupWarnings.push('Comments cleanup failed');
+                }
+            })(),
+            (async () => {
+                try {
+                    const relatedNotifications = await notificationRepository.scan({
+                        filterExpression: 'articleId = :articleId',
+                        expressionAttributeValues: { ':articleId': id }
+                    });
+
+                    if (relatedNotifications.items.length > 0) {
+                        await Promise.allSettled(
+                            relatedNotifications.items.map((notification) => notificationRepository.delete(notification.id))
+                        );
+                    }
+                } catch (error) {
+                    console.warn('Failed to clean up notifications for deleted article', { articleId: id, error });
+                    cleanupWarnings.push('Notifications cleanup failed');
+                }
+            })()
+        ]);
+
+        return respond(200, {
+            message: 'Article deleted successfully',
+            ...(cleanupWarnings.length > 0 ? { warnings: cleanupWarnings } : {})
+        });
+    } catch (error) {
+        console.error('Error deleting article:', error);
+        return respond(500, { message: 'Failed to delete article' });
+    }
+};
+
 export const updateArticleStatus: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         const { id } = event.pathParameters || {};

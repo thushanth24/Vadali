@@ -33,6 +33,7 @@ const AllArticles: React.FC = () => {
             try {
                 await deleteArticle(articleId);
                 setArticles(prev => prev.filter(a => a.id !== articleId));
+                alert('Article deleted successfully.');
             } catch {
                 alert('Failed to delete article.');
             }
@@ -81,12 +82,12 @@ const AllArticles: React.FC = () => {
                                     <td className="p-4">{getStatusChip(article.status)}</td>
                                     <td className="p-4 text-gray-600">{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'N/A'}</td>
                                     <td className="p-4 space-x-2">
-                                        <Link to={`/dashboard/author/preview/${article.id}`} target="_blank">
+                                        <Link to={`/article/${article.slug}`} target="_blank" rel="noopener noreferrer">
                                             <Button size="sm" variant="ghost" className="text-gray-600 hover:bg-gray-100">
                                                 <Eye className="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <Link to={`/dashboard/author/edit/${article.id}`}>
+                                        <Link to={`/dashboard/admin/articles/edit/${article.id}`}>
                                             <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50">
                                                 <Edit className="h-4 w-4" />
                                             </Button>

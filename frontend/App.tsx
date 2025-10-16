@@ -19,6 +19,7 @@ import { UserRole } from './types';
 import UserManagement from './pages/dashboard/admin/UserManagement';
 import CategoryManagement from './pages/dashboard/admin/CategoryManagement';
 import AllArticles from './pages/dashboard/admin/AllArticles';
+import AdminEditArticle from './pages/dashboard/admin/EditArticle';
 import AboutUsPage from './pages/AboutUsPage';
 import ContactUsPage from './pages/ContactUsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
@@ -89,6 +90,7 @@ const App: React.FC = () => {
             <Route path="users" element={<UserManagement />} />
             <Route path="categories" element={<CategoryManagement />} />
             <Route path="articles" element={<AllArticles />} />
+            <Route path="articles/edit/:id" element={<AdminEditArticle />} />
             <Route path="ads" element={<AdManagement />} />
             <Route path="newsletter" element={<NewsletterManagement />} />
             <Route path="reports" element={<ReportsAnalytics />} />

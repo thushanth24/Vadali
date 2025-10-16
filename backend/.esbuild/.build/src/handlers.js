@@ -56363,6 +56363,7 @@ __export(handlers_exports, {
   createArticle: () => createArticle2,
   createCategory: () => createCategory,
   createUser: () => createUser2,
+  deleteArticle: () => deleteArticle,
   deleteCategory: () => deleteCategory,
   deleteUser: () => deleteUser,
   getAllTags: () => getAllTags,
@@ -59218,6 +59219,64 @@ var updateArticle = async (event) => {
     return respond(500, { message: "Failed to update article" });
   }
 };
+var deleteArticle = async (event) => {
+  try {
+    const { id } = event.pathParameters || {};
+    if (!id) {
+      return respond(400, { message: "Article ID is required" });
+    }
+    const existingArticle = await articleRepository.getById(id);
+    if (!existingArticle) {
+      return respond(404, { message: "Article not found" });
+    }
+    const deleted = await articleRepository.delete(id);
+    if (!deleted) {
+      return respond(500, { message: "Failed to delete article" });
+    }
+    const cleanupWarnings = [];
+    await Promise.all([
+      (async () => {
+        try {
+          const relatedComments = await commentRepository.scan({
+            filterExpression: "articleId = :articleId",
+            expressionAttributeValues: { ":articleId": id }
+          });
+          if (relatedComments.items.length > 0) {
+            await Promise.allSettled(
+              relatedComments.items.map((comment) => commentRepository.delete(comment.id))
+            );
+          }
+        } catch (error2) {
+          console.warn("Failed to clean up comments for deleted article", { articleId: id, error: error2 });
+          cleanupWarnings.push("Comments cleanup failed");
+        }
+      })(),
+      (async () => {
+        try {
+          const relatedNotifications = await notificationRepository.scan({
+            filterExpression: "articleId = :articleId",
+            expressionAttributeValues: { ":articleId": id }
+          });
+          if (relatedNotifications.items.length > 0) {
+            await Promise.allSettled(
+              relatedNotifications.items.map((notification) => notificationRepository.delete(notification.id))
+            );
+          }
+        } catch (error2) {
+          console.warn("Failed to clean up notifications for deleted article", { articleId: id, error: error2 });
+          cleanupWarnings.push("Notifications cleanup failed");
+        }
+      })()
+    ]);
+    return respond(200, {
+      message: "Article deleted successfully",
+      ...cleanupWarnings.length > 0 ? { warnings: cleanupWarnings } : {}
+    });
+  } catch (error2) {
+    console.error("Error deleting article:", error2);
+    return respond(500, { message: "Failed to delete article" });
+  }
+};
 var updateArticleStatus = async (event) => {
   try {
     const { id } = event.pathParameters || {};
@@ -59475,6 +59534,7 @@ var getUploadUrl = async (event) => {
   createArticle,
   createCategory,
   createUser,
+  deleteArticle,
   deleteCategory,
   deleteUser,
   getAllTags,
