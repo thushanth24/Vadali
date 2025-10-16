@@ -86,7 +86,7 @@ export const getUsers: APIGatewayProxyHandlerV2 = async () => {
 
 export const getUser: APIGatewayProxyHandlerV2 = async (event) => {
     try {
-        const userId = event.pathParameters?.userId;
+        const userId = event.pathParameters?.userId ?? event.pathParameters?.id;
         if (!userId) {
             return respond(400, { message: 'User ID is required' });
         }

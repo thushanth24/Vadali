@@ -133,6 +133,63 @@ const apiRequest = async <T = void>(
   }
 };
 
+type ArticleApiResponse = Omit<Article, 'status' | 'comments'> & {
+  status: string;
+  comments?: Comment[];
+};
+
+type ArticlesResponse = {
+  items?: ArticleApiResponse[];
+  total: number;
+  lastEvaluatedKey?: string;
+  hasMore?: boolean;
+};
+
+const normalizeArticleStatus = (status: unknown): ArticleStatus => {
+  if (typeof status !== 'string') {
+    return ArticleStatus.PENDING_REVIEW;
+  }
+
+  const normalized = status.trim().toLowerCase();
+  const collapsed = normalized.replace(/[\s_-]+/g, ' ');
+
+  if (['published', 'publish', 'approved', 'live'].includes(collapsed)) {
+    return ArticleStatus.PUBLISHED;
+  }
+
+  if (['draft', 'drafts'].includes(collapsed)) {
+    return ArticleStatus.DRAFT;
+  }
+
+  if (['rejected', 'declined', 'denied'].includes(collapsed)) {
+    return ArticleStatus.REJECTED;
+  }
+
+  if (
+    [
+      'pending review',
+      'pending',
+      'submitted',
+      'awaiting review',
+      'in review',
+      'under review',
+    ].includes(collapsed)
+  ) {
+    return ArticleStatus.PENDING_REVIEW;
+  }
+
+  return ArticleStatus.PENDING_REVIEW;
+};
+
+const normalizeArticle = (article: ArticleApiResponse): Article => ({
+  ...article,
+  status: normalizeArticleStatus(article.status),
+  comments: Array.isArray(article.comments) ? article.comments : [],
+});
+
+const normalizeArticles = (articles: ArticleApiResponse[] = []): Article[] =>
+  articles.map(normalizeArticle);
+
 // --- AUTH ENDPOINTS ---
 interface LoginRequest {
   email: string;
@@ -284,9 +341,9 @@ interface FetchArticlesParams {
 export const fetchArticles = async (params: FetchArticlesParams = {}): Promise<Article[]> => {
     try {
         const url = buildArticlesUrl(params);
-        const response = await apiRequest<{ items: Article[], total: number, lastEvaluatedKey?: string, hasMore?: boolean }>(url);
+        const response = await apiRequest<ArticlesResponse>(url);
         // Backend returns { items: Article[], total: number }, but we just need the items array
-        return response.items || [];
+        return normalizeArticles(response.items ?? []);
     } catch (error) {
         console.error('Failed to fetch articles:', error);
         // You could add error handling logic here, e.g., show a toast notification
@@ -341,25 +398,29 @@ function buildArticlesUrl(params: FetchArticlesParams): string {
 }
 
 export const fetchArticleById = async (id: string): Promise<Article | undefined> => {
-    return apiRequest<Article | undefined>(`/articles/id/${id}`);
+    const article = await apiRequest<ArticleApiResponse | undefined>(`/articles/id/${id}`);
+    return article ? normalizeArticle(article) : undefined;
 };
 
 export const fetchArticleBySlug = async (slug: string): Promise<Article | undefined> => {
-    return apiRequest<Article | undefined>(`/articles/slug/${slug}`);
+    const article = await apiRequest<ArticleApiResponse | undefined>(`/articles/slug/${slug}`);
+    return article ? normalizeArticle(article) : undefined;
 };
 
 export const createArticle = async (articleData: Partial<Article>): Promise<Article> => {
-    return apiRequest<Article>('/articles', {
+    const article = await apiRequest<ArticleApiResponse>('/articles', {
         method: 'POST',
         body: JSON.stringify(articleData),
     });
+    return normalizeArticle(article);
 };
 
 export const updateArticle = async (articleId: string, articleData: Partial<Article>): Promise<Article> => {
-    return apiRequest<Article>(`/articles/${articleId}`, {
+    const article = await apiRequest<ArticleApiResponse>(`/articles/${articleId}`, {
         method: 'PUT',
         body: JSON.stringify(articleData),
     });
+    return normalizeArticle(article);
 };
 
 export const deleteArticle = async (articleId: string): Promise<void> => {
@@ -367,10 +428,11 @@ export const deleteArticle = async (articleId: string): Promise<void> => {
 };
 
 export const updateArticleStatus = async (articleId: string, status: ArticleStatus, reason?: string): Promise<Article> => {
-    return apiRequest<Article>(`/articles/${articleId}/status`, {
+    const article = await apiRequest<ArticleApiResponse>(`/articles/${articleId}/status`, {
         method: 'PUT',
         body: JSON.stringify({ status, reason }),
     });
+    return normalizeArticle(article);
 };
 
 export const updateFeaturedStatus = async (updates: { articleId: string, isFeatured: boolean }[]): Promise<void> => {

@@ -58841,7 +58841,7 @@ var getUsers = async () => {
 };
 var getUser = async (event) => {
   try {
-    const userId = event.pathParameters?.userId;
+    const userId = event.pathParameters?.userId ?? event.pathParameters?.id;
     if (!userId) {
       return respond(400, { message: "User ID is required" });
     }
