@@ -59030,7 +59030,7 @@ var createArticle2 = async (event) => {
 };
 var getArticles = async (event) => {
   try {
-    const status = event.queryStringParameters?.status;
+    const rawStatusParam = event.queryStringParameters?.status;
     const categoryId = event.queryStringParameters?.categoryId;
     const tag2 = event.queryStringParameters?.tag;
     const authorId = event.queryStringParameters?.authorId;
@@ -59041,10 +59041,92 @@ var getArticles = async (event) => {
     const filterExpressions = [];
     const expressionAttributeValues = {};
     const expressionAttributeNames = {};
-    const articleStatus = status || "Published" /* PUBLISHED */;
-    filterExpressions.push("#status = :status");
-    expressionAttributeNames["#status"] = "status";
-    expressionAttributeValues[":status"] = articleStatus;
+    const resolveStatusFilter = (statusParam) => {
+      if (!statusParam || statusParam.trim().length === 0) {
+        return { values: ["Published" /* PUBLISHED */], applyFilter: true };
+      }
+      const cleaned = statusParam.trim().toLowerCase();
+      if (cleaned === "all") {
+        return { values: [], applyFilter: false };
+      }
+      const normalized = cleaned.replace(/[\s_-]+/g, " ");
+      const pendingValues = [
+        "Pending Review" /* PENDING_REVIEW */,
+        "Pending Review",
+        "pending review",
+        "PENDING_REVIEW",
+        "Submitted",
+        "submitted",
+        "SUBMITTED",
+        "Pending",
+        "pending",
+        "PENDING"
+      ];
+      switch (normalized) {
+        case "draft":
+        case "drafts":
+          return {
+            values: Array.from(/* @__PURE__ */ new Set(["Draft" /* DRAFT */, "Draft", "draft", "DRAFT"])),
+            applyFilter: true
+          };
+        case "pending review":
+        case "pending":
+        case "submitted":
+        case "awaiting review":
+          return { values: Array.from(new Set(pendingValues)), applyFilter: true };
+        case "published":
+        case "approved":
+        case "live":
+          return {
+            values: Array.from(
+              /* @__PURE__ */ new Set([
+                "Published" /* PUBLISHED */,
+                "Published",
+                "published",
+                "PUBLISHED",
+                "Approved",
+                "approved",
+                "APPROVED"
+              ])
+            ),
+            applyFilter: true
+          };
+        case "rejected":
+        case "declined":
+        case "denied":
+          return {
+            values: Array.from(/* @__PURE__ */ new Set(["Rejected" /* REJECTED */, "Rejected", "rejected", "REJECTED"])),
+            applyFilter: true
+          };
+        default: {
+          const enumMatch = Object.values(ArticleStatus).find(
+            (status) => status.toLowerCase() === normalized
+          );
+          if (enumMatch) {
+            return resolveStatusFilter(enumMatch);
+          }
+          return {
+            values: Array.from(/* @__PURE__ */ new Set(["Published" /* PUBLISHED */, "Published", "published", "PUBLISHED"])),
+            applyFilter: true
+          };
+        }
+      }
+    };
+    const { values: resolvedStatuses, applyFilter: shouldFilterByStatus } = resolveStatusFilter(rawStatusParam);
+    if (shouldFilterByStatus && resolvedStatuses.length > 0) {
+      expressionAttributeNames["#status"] = "status";
+      const dedupedStatuses = Array.from(new Set(resolvedStatuses));
+      if (dedupedStatuses.length === 1) {
+        filterExpressions.push("#status = :status0");
+        expressionAttributeValues[":status0"] = dedupedStatuses[0];
+      } else {
+        const placeholders = dedupedStatuses.map((_3, index) => `:status${index}`);
+        filterExpressions.push(`#status IN (${placeholders.join(", ")})`);
+        dedupedStatuses.forEach((statusValue, index) => {
+          expressionAttributeValues[`:status${index}`] = statusValue;
+        });
+      }
+    }
     if (categoryId) {
       filterExpressions.push("categoryId = :categoryId");
       expressionAttributeValues[":categoryId"] = categoryId;

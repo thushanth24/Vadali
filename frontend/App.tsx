@@ -33,6 +33,7 @@ import ReviewArticle from './pages/dashboard/editor/ReviewArticle';
 import ScheduleArticle from './pages/dashboard/editor/ScheduleArticle';
 import FeaturedManager from './pages/dashboard/editor/FeaturedManager';
 import CommentModeration from './pages/dashboard/editor/CommentModeration';
+import ArticleManagement from './pages/dashboard/editor/ArticleManagement';
 import AdManagement from './pages/dashboard/admin/AdManagement';
 import NewsletterManagement from './pages/dashboard/admin/NewsletterManagement';
 import ReportsAnalytics from './pages/dashboard/admin/ReportsAnalytics';
@@ -101,6 +102,7 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }>
             <Route index element={<EditorDashboard />} />
+            <Route path="articles" element={<ArticleManagement />} />
             <Route path="review/:id" element={<ReviewArticle />} />
             <Route path="schedule/:id" element={<ScheduleArticle />} />
             <Route path="featured" element={<FeaturedManager />} />

@@ -16,7 +16,7 @@ const AuthorPage: React.FC = () => {
       setLoading(true);
       Promise.all([
         fetchUser(slug),
-        fetchArticles({ authorId: slug }),
+        fetchArticles({ author: slug }),  // Changed from authorId to author
         fetchCategories()
       ]).then(([authorData, articlesData, categoriesData]) => {
         setAuthor(authorData);

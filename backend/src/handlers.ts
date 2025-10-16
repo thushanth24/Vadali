@@ -358,7 +358,7 @@ export const createArticle: APIGatewayProxyHandlerV2 = async (event) => {
 
 export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
     try {
-        const status = event.queryStringParameters?.status as ArticleStatus | undefined;
+        const rawStatusParam = event.queryStringParameters?.status;
         const categoryId = event.queryStringParameters?.categoryId;
         const tag = event.queryStringParameters?.tag;
         const authorId = event.queryStringParameters?.authorId;
@@ -372,11 +372,100 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         const expressionAttributeValues: Record<string, any> = {};
         const expressionAttributeNames: Record<string, string> = {};
 
-        // Only show published articles by default if no specific status is provided
-        const articleStatus = status || ArticleStatus.PUBLISHED;
-        filterExpressions.push('#status = :status');
-        expressionAttributeNames['#status'] = 'status';
-        expressionAttributeValues[':status'] = articleStatus;
+        const resolveStatusFilter = (statusParam?: string): { values: string[]; applyFilter: boolean } => {
+            if (!statusParam || statusParam.trim().length === 0) {
+                return { values: [ArticleStatus.PUBLISHED], applyFilter: true };
+            }
+
+            const cleaned = statusParam.trim().toLowerCase();
+
+            if (cleaned === 'all') {
+                return { values: [], applyFilter: false };
+            }
+
+            const normalized = cleaned.replace(/[\s_-]+/g, ' ');
+            const pendingValues = [
+                ArticleStatus.PENDING_REVIEW,
+                'Pending Review',
+                'pending review',
+                'PENDING_REVIEW',
+                'Submitted',
+                'submitted',
+                'SUBMITTED',
+                'Pending',
+                'pending',
+                'PENDING',
+            ];
+
+            switch (normalized) {
+                case 'draft':
+                case 'drafts':
+                    return {
+                        values: Array.from(new Set([ArticleStatus.DRAFT, 'Draft', 'draft', 'DRAFT'])),
+                        applyFilter: true,
+                    };
+                case 'pending review':
+                case 'pending':
+                case 'submitted':
+                case 'awaiting review':
+                    return { values: Array.from(new Set(pendingValues)), applyFilter: true };
+                case 'published':
+                case 'approved':
+                case 'live':
+                    return {
+                        values: Array.from(
+                            new Set([
+                                ArticleStatus.PUBLISHED,
+                                'Published',
+                                'published',
+                                'PUBLISHED',
+                                'Approved',
+                                'approved',
+                                'APPROVED',
+                            ])
+                        ),
+                        applyFilter: true,
+                    };
+                case 'rejected':
+                case 'declined':
+                case 'denied':
+                    return {
+                        values: Array.from(new Set([ArticleStatus.REJECTED, 'Rejected', 'rejected', 'REJECTED'])),
+                        applyFilter: true,
+                    };
+                default: {
+                    const enumMatch = (Object.values(ArticleStatus) as string[]).find(
+                        (status) => status.toLowerCase() === normalized
+                    );
+                    if (enumMatch) {
+                        return resolveStatusFilter(enumMatch);
+                    }
+                    // Fallback to published behaviour to avoid leaking unpublished content
+                    return {
+                        values: Array.from(new Set([ArticleStatus.PUBLISHED, 'Published', 'published', 'PUBLISHED'])),
+                        applyFilter: true,
+                    };
+                }
+            }
+        };
+
+        const { values: resolvedStatuses, applyFilter: shouldFilterByStatus } = resolveStatusFilter(rawStatusParam);
+
+        if (shouldFilterByStatus && resolvedStatuses.length > 0) {
+            expressionAttributeNames['#status'] = 'status';
+
+            const dedupedStatuses = Array.from(new Set(resolvedStatuses));
+            if (dedupedStatuses.length === 1) {
+                filterExpressions.push('#status = :status0');
+                expressionAttributeValues[':status0'] = dedupedStatuses[0];
+            } else {
+                const placeholders = dedupedStatuses.map((_, index) => `:status${index}`);
+                filterExpressions.push(`#status IN (${placeholders.join(', ')})`);
+                dedupedStatuses.forEach((statusValue, index) => {
+                    expressionAttributeValues[`:status${index}`] = statusValue;
+                });
+            }
+        }
         
         if (categoryId) {
             filterExpressions.push('categoryId = :categoryId');

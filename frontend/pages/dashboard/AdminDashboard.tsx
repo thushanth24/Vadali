@@ -25,7 +25,8 @@ const AdminDashboard: React.FC = () => {
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            fetchArticles({ status: 'ALL' }),
+            // Fetch all articles by not passing a status filter
+            fetchArticles({}),
             fetchUsers(),
             fetchCategories()
         ]).then(([articleData, userData, categoryData]) => {
