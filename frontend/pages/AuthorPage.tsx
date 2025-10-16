@@ -3,6 +3,7 @@ import { useParams, Link, Navigate } from 'react-router-dom';
 import { fetchArticles, fetchUser, fetchCategories } from '../services/api';
 import { Article, User, Category } from '../types';
 import ArticleCard from '../components/ui/ArticleCard';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const AuthorPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>(); // Using slug as authorId
@@ -31,7 +32,7 @@ const AuthorPage: React.FC = () => {
   }, [slug]);
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8 text-center">Loading author profile...</div>;
+    return <LoadingSpinner label="Loading author profile..." className="container mx-auto px-4" />;
   }
 
   if (!author) {

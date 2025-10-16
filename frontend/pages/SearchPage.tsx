@@ -4,6 +4,7 @@ import { fetchArticles, fetchCategories } from '../services/api';
 import ArticleCard from '../components/ui/ArticleCard';
 import { Article, Category } from '../types';
 import { Search } from 'lucide-react';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -39,7 +40,7 @@ const SearchPage: React.FC = () => {
       </div>
       
       {loading ? (
-        <div className="text-center py-16">Loading...</div>
+        <LoadingSpinner label="Searching articles..." className="py-16" />
       ) : query ? (
         searchResults.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

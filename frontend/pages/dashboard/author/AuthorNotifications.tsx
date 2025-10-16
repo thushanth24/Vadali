@@ -5,6 +5,7 @@ import { Notification as NotificationType, NotificationType as NotifEnum, Articl
 import { Bell, CheckCircle, XCircle, MessageSquare, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '../../../components/ui/Button';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 
 const NotificationIcon: React.FC<{ type: NotifEnum }> = ({ type }) => {
     const iconProps = { size: 24, className: 'mr-4 flex-shrink-0' };
@@ -50,7 +51,7 @@ const AuthorNotifications: React.FC = () => {
         // In a real app, this would also be an API call
     };
     
-    if (loading) return <div>Loading notifications...</div>;
+    if (loading) return <LoadingSpinner label="Loading notifications..." className="py-16" />;
     
     return (
         <div>

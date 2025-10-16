@@ -3,7 +3,8 @@ import { fetchUsers, createUser, updateUser, deleteUser } from '../../../service
 import { User, UserRole } from '../../../types';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
-import { Edit, Trash2, PlusCircle, Loader2 } from 'lucide-react';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
+import { Edit, Trash2, PlusCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const UserManagement: React.FC = () => {
@@ -153,11 +154,8 @@ const UserManagement: React.FC = () => {
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan={4} className="p-8 text-center">
-                                    <div className="flex flex-col items-center justify-center space-y-2">
-                                        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-                                        <span className="text-gray-500">Loading users...</span>
-                                    </div>
+                                <td colSpan={4} className="p-8">
+                                    <LoadingSpinner label="Loading users..." className="py-0" />
                                 </td>
                             </tr>
                         ) : users.length === 0 ? (

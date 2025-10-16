@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchSubscribers } from '../../../services/api';
 import { Subscriber } from '../../../types';
 import Button from '../../../components/ui/Button';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Users, Send } from 'lucide-react';
 
 const NewsletterManagement: React.FC = () => {
@@ -58,7 +59,7 @@ const NewsletterManagement: React.FC = () => {
                             <Users className="h-6 w-6 mr-3 text-blue-500" />
                             <h3 className="text-xl font-bold">Subscribers ({subscribers.length})</h3>
                         </div>
-                         {loading ? <p>Loading subscribers...</p> : (
+                         {loading ? <LoadingSpinner label="Loading subscribers..." className="py-6" /> : (
                             <ul className="space-y-2 h-96 overflow-y-auto pr-2">
                                 {subscribers.map(sub => (
                                     <li key={sub.id} className="p-2 bg-gray-50 rounded text-sm">

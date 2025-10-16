@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { fetchArticles, fetchCategories } from '../services/api';
 import { Article, Category } from '../types';
 import { Eye, Flame } from 'lucide-react';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const TrendingPage: React.FC = () => {
   const [trendingArticles, setTrendingArticles] = useState<Article[]>([]);
@@ -23,7 +24,7 @@ const TrendingPage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8 text-center">Loading trending articles...</div>;
+    return <LoadingSpinner label="Loading trending articles..." className="container mx-auto px-4" />;
   }
   
   return (

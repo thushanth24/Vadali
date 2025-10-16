@@ -5,6 +5,7 @@ import { fetchArticles } from '../../services/api';
 import { Article, ArticleStatus } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import Button from '../../components/ui/Button';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { PlusCircle, Edit, Eye } from 'lucide-react';
 
 const AuthorDashboard: React.FC = () => {
@@ -54,7 +55,7 @@ const AuthorDashboard: React.FC = () => {
                     </thead>
                     <tbody>
                         {loading ? (
-                             <tr><td colSpan={5} className="text-center p-8">Loading articles...</td></tr>
+                             <tr><td colSpan={5} className="p-8"><LoadingSpinner label="Loading articles..." className="py-0" /></td></tr>
                         ) : myArticles.length > 0 ? myArticles.map(article => {
                             const isEditable = article.status === ArticleStatus.DRAFT || article.status === ArticleStatus.REJECTED;
                             return (

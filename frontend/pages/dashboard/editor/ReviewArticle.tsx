@@ -4,6 +4,7 @@ import { fetchArticleById, fetchUser, fetchCategories, updateArticleStatus } fro
 import { Article, ArticleStatus, User, Category } from '../../../types';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 
 const ReviewArticle: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -66,7 +67,7 @@ const ReviewArticle: React.FC = () => {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <LoadingSpinner label="Loading article..." className="py-16" />;
     if (!article) return <Navigate to="/dashboard/editor" replace />;
 
     return (

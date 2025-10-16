@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { fetchArticles, fetchCategories } from '../services/api';
 import ArticleCard from '../components/ui/ArticleCard';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { Article, Category } from '../types';
 
 const CategoryPage: React.FC = () => {
@@ -39,7 +40,7 @@ const CategoryPage: React.FC = () => {
   }, [slug]);
   
   if (loading) {
-    return <div className="container mx-auto px-4 py-8 text-center">Loading...</div>;
+    return <LoadingSpinner label="Loading category..." className="container mx-auto px-4 py-16" />;
   }
   
   if (!category) {

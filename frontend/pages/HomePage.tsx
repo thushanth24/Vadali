@@ -5,6 +5,7 @@ import ArticleCard, { ArticleCardProps } from '../components/ui/ArticleCard';
 import { fetchArticles, fetchCategories } from '../services/api';
 import { Article, Category } from '../types';
 import { Clock } from 'lucide-react';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 // Extended ArticleCard component with additional props
 interface ExtendedArticleCardProps extends Omit<ArticleCardProps, 'className'> {
@@ -116,11 +117,7 @@ const HomePage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p>Loading...</p>
-      </div>
-    );
+    return <LoadingSpinner label="Loading homepage..." fullScreen />;
   }
 
   const articlesForFeed = publishedArticles.filter(a => !a.isAdvertisement);

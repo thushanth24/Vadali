@@ -1,12 +1,8 @@
 
 import React, { createContext, useState, ReactNode, useEffect, useCallback, useContext } from 'react';
 import { User } from '../types';
-import { apiLogin, refreshToken as refreshTokenApi, AuthResponse } from '../services/api';
-
-interface AuthTokens {
-  token: string;
-  refreshToken: string;
-}
+import { apiLogin, refreshToken as refreshTokenApi } from '../services/api';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 interface AuthTokens {
   token: string;
@@ -17,7 +13,6 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  loading: boolean;
   isAuthenticated: boolean;
 }
 
@@ -37,7 +32,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(true);
   const [authTokens, setAuthTokens] = useState<AuthTokens | null>(null);
 
   // Initialize auth state from localStorage
@@ -60,7 +55,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.removeItem('authTokens');
         localStorage.removeItem('user');
       } finally {
-        setLoading(false);
+        setInitializing(false);
       }
     };
 
@@ -148,13 +143,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user, 
     login, 
     logout, 
-    loading, 
     isAuthenticated: !!user 
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {initializing ? (
+        <LoadingSpinner label="Checking authentication..." fullScreen />
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };

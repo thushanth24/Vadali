@@ -9,12 +9,8 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
-
-  if (loading) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;

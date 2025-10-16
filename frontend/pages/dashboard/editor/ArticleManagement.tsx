@@ -4,6 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { Article, ArticleStatus } from '../../../types';
 import { fetchArticles, updateArticleStatus } from '../../../services/api';
 import { format } from 'date-fns';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 
 interface ArticleWithAuthor extends Article {
   author?: {
@@ -214,9 +215,7 @@ export default function ArticleManagement() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
+        <LoadingSpinner label="Loading articles..." className="h-64" />
       ) : (
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul className="divide-y divide-gray-200">

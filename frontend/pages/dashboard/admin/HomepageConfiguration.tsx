@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchArticles, updateFeaturedStatus } from '../../../services/api';
 import { Article, ArticleStatus } from '../../../types';
 import Button from '../../../components/ui/Button';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 const HomepageConfiguration: React.FC = () => {
@@ -76,7 +77,7 @@ const HomepageConfiguration: React.FC = () => {
         </li>
     );
 
-    if (loading) return <div>Loading configuration...</div>;
+    if (loading) return <LoadingSpinner label="Loading configuration..." className="py-16" />;
 
     return (
         <div className="space-y-8">

@@ -3,6 +3,7 @@ import { fetchCategories, createCategory, updateCategory, deleteCategory, fetchA
 import { Category, Article } from '../../../types';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Edit, Trash2, PlusCircle } from 'lucide-react';
 
 const CategoryManagement: React.FC = () => {
@@ -97,7 +98,7 @@ const CategoryManagement: React.FC = () => {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center">Loading categories...</td></tr>
+                            <tr><td colSpan={4} className="p-8"><LoadingSpinner label="Loading categories..." className="py-0" /></td></tr>
                         ) : categories.map(category => (
                             <tr key={category.id} className="border-b hover:bg-gray-50">
                                 <td className="p-4 font-medium text-gray-800">{category.name}</td>

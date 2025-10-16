@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { fetchArticles, updateFeaturedStatus } from '../../../services/api';
 import { Article, ArticleStatus } from '../../../types';
 import Button from '../../../components/ui/Button';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 const FeaturedManager: React.FC = () => {
@@ -80,7 +81,7 @@ const FeaturedManager: React.FC = () => {
         </li>
     );
 
-    if (loading) return <div>Loading articles...</div>;
+    if (loading) return <LoadingSpinner label="Loading articles..." className="py-16" />;
 
     return (
         <div>

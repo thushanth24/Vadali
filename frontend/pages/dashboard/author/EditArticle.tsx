@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import Button from '../../../components/ui/Button';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { fetchCategories, fetchArticleById, uploadFileToS3, updateArticle } from '../../../services/api';
 import { Article, ArticleStatus, Category } from '../../../types';
 import RichTextEditor from '../../../components/ui/RichTextEditor';
@@ -92,7 +93,7 @@ const EditArticle: React.FC = () => {
     };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <LoadingSpinner label="Loading article..." className="py-16" />;
     }
 
     if (!article) {

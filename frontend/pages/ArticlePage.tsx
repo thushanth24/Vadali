@@ -5,6 +5,7 @@ import { Article, User, Category, Comment } from '../types';
 import { ArticleStatus } from '../types';
 import { Calendar, User as UserIcon, MessageSquare, Tag, Facebook, Twitter, Linkedin } from 'lucide-react';
 import Button from '../components/ui/Button';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const ArticlePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -77,7 +78,7 @@ const ArticlePage: React.FC = () => {
 
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8 text-center">Loading article...</div>;
+    return <LoadingSpinner label="Loading article..." className="container mx-auto px-4" />;
   }
   
   if (!article) {

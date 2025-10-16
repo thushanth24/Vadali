@@ -3,6 +3,7 @@ import { fetchArticles, createArticle, updateArticle, deleteArticle } from '../.
 import { Article, ArticleStatus, Category } from '../../../types';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Edit, Trash2, PlusCircle } from 'lucide-react';
 
 const AdManagement: React.FC = () => {
@@ -94,7 +95,7 @@ const AdManagement: React.FC = () => {
                     </thead>
                     <tbody>
                        {loading ? (
-                           <tr><td colSpan={4} className="p-8 text-center">Loading ads...</td></tr>
+                           <tr><td colSpan={4} className="p-8"><LoadingSpinner label="Loading advertisements..." className="py-0" /></td></tr>
                        ) : ads.map(ad => (
                             <tr key={ad.id} className="border-b hover:bg-gray-50">
                                 <td className="p-4 font-medium">{ad.title}</td>

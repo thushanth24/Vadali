@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { fetchArticles, fetchCategories, fetchUsers } from '../../../services/api';
 import { Article, Category, User, UserRole } from '../../../types';
 import Button from '../../../components/ui/Button';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Download } from 'lucide-react';
 
 interface ChartData {
@@ -14,7 +15,9 @@ const BarChart: React.FC<{ title: string; data: ChartData[]; loading: boolean }>
     return (
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-bold mb-4">{title}</h3>
-            {loading ? <p>Loading chart data...</p> : (
+            {loading ? (
+                <LoadingSpinner label={`Loading ${title.toLowerCase()}...`} className="py-6" />
+            ) : (
                 <div className="space-y-3">
                     {data.map(item => (
                         <div key={item.label} className="flex items-center">

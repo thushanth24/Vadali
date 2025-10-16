@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { fetchArticles, fetchUsers, fetchCategories } from '../../services/api';
 import { Article, ArticleStatus, User, Category } from '../../types';
 import Button from '../../components/ui/Button';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { FileCheck, Clock, CheckSquare, Star, FileText, ArrowRight } from 'lucide-react';
 
 const StatCard: React.FC<{ 
@@ -60,7 +61,7 @@ const EditorDashboard: React.FC = () => {
         }).finally(() => setLoading(false));
     }, []);
     
-    if (loading) return <div>Loading dashboard...</div>;
+    if (loading) return <LoadingSpinner label="Loading dashboard..." />;
 
     const pendingArticles = articles.filter(a => a.status === ArticleStatus.PENDING_REVIEW);
     const publishedArticles = articles.filter(a => a.status === ArticleStatus.PUBLISHED).length;

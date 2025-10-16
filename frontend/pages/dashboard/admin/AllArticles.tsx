@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { fetchArticles, fetchUsers, fetchCategories, deleteArticle } from '../../../services/api';
 import { Article, ArticleStatus, User, Category } from '../../../types';
 import Button from '../../../components/ui/Button';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Edit, Trash2, Eye } from 'lucide-react';
 
 const AllArticles: React.FC = () => {
@@ -70,7 +71,7 @@ const AllArticles: React.FC = () => {
                     </thead>
                     <tbody>
                        {loading ? (
-                           <tr><td colSpan={6} className="p-8 text-center">Loading articles...</td></tr>
+                           <tr><td colSpan={6} className="p-8"><LoadingSpinner label="Loading articles..." className="py-0" /></td></tr>
                        ) : articles.map(article => {
                             const author = users.find(u => u.id === article.authorId);
                             const category = categories.find(c => c.id === article.categoryId);

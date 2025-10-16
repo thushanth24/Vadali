@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { fetchArticleById, updateArticle } from '../../../services/api';
 import Button from '../../../components/ui/Button';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Article, ArticleStatus } from '../../../types';
 
 const ScheduleArticle: React.FC = () => {
@@ -55,7 +56,7 @@ const ScheduleArticle: React.FC = () => {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <LoadingSpinner label="Loading article..." className="py-16" />;
     if (!article) return <Navigate to="/dashboard/editor" replace />;
 
     return (

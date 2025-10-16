@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Article, User, Category, ArticleStatus, UserRole } from '../../types';
 import { fetchArticles, fetchUsers, fetchCategories } from '../../services/api';
 import { Users, Newspaper, Tag, BarChart2 } from 'lucide-react';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 const StatCard: React.FC<{ icon: React.ElementType, title: string, value: number | string, color: string }> = ({ icon: Icon, title, value, color }) => (
     <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
@@ -37,7 +38,7 @@ const AdminDashboard: React.FC = () => {
     }, []);
 
     if (loading) {
-        return <div>Loading dashboard...</div>;
+        return <LoadingSpinner label="Loading dashboard..." />;
     }
     
     const totalViews = articles.reduce((sum, a) => sum + a.views, 0).toLocaleString();

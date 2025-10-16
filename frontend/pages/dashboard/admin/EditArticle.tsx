@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../../components/ui/Button';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { fetchArticleById, fetchCategories, updateArticle, uploadFileToS3 } from '../../../services/api';
 import { Article, Category } from '../../../types';
 import RichTextEditor from '../../../components/ui/RichTextEditor';
@@ -98,7 +99,7 @@ const AdminEditArticle: React.FC = () => {
     };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <LoadingSpinner label="Loading article..." className="py-16" />;
     }
 
     if (error) {

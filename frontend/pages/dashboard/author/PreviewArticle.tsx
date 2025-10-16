@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { fetchArticleById, fetchUser, fetchCategories } from '../../../services/api';
 import { Article, User, Category } from '../../../types';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Calendar, User as UserIcon, MessageSquare, Tag, ArrowLeft } from 'lucide-react';
 
 const PreviewArticle: React.FC = () => {
@@ -36,7 +37,7 @@ const PreviewArticle: React.FC = () => {
   }, [id]);
 
   if (loading) {
-      return <div>Loading preview...</div>;
+      return <LoadingSpinner label="Loading preview..." className="py-16" />;
   }
 
   if (!article) {

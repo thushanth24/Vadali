@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { fetchPendingComments, updateCommentStatus } from '../../../services/api';
 import { Comment, Article } from '../../../types';
 import Button from '../../../components/ui/Button';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Check, Trash2, MessageSquare } from 'lucide-react';
 
 interface CommentWithArticle extends Comment {
@@ -58,7 +59,7 @@ const CommentModeration: React.FC = () => {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={5} className="p-8 text-center text-gray-500">Loading comments...</td></tr>
+                            <tr><td colSpan={5} className="p-8"><LoadingSpinner label="Loading comments..." className="py-0" /></td></tr>
                         ) : pendingComments.length > 0 ? pendingComments.map(comment => (
                             <tr key={comment.id} className="border-b hover:bg-gray-50">
                                 <td className="p-4 text-gray-700 max-w-sm">"{comment.text}"</td>
