@@ -26,7 +26,7 @@ const CategoryPage: React.FC = () => {
         setCategory(currentCategory);
 
         if (currentCategory) {
-          const articlesData = await fetchArticles({ categorySlug: slug });
+          const articlesData = await fetchArticles({ categoryId: currentCategory.id });
           setArticles(articlesData);
         }
       } catch (error) {

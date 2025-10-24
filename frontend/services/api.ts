@@ -327,15 +327,20 @@ export const deleteUser = async (userId: string): Promise<void> => {
 // --- ARTICLES ---
 interface FetchArticlesParams {
     category?: string; 
+    categoryId?: string;
+    categorySlug?: string;
     author?: string;
+    authorId?: string;
     status?: ArticleStatus | 'published' | 'draft' | 'archived'; // Support both enum and string literals
     featured?: boolean;
+    isAdvertisement?: boolean;
     limit?: number | string;
     offset?: number | string;
     page?: number | string;
     pageSize?: number | string;
     sortBy?: 'createdAt' | 'updatedAt' | 'publishedAt' | 'title';
     sortOrder?: 'asc' | 'desc';
+    query?: string;
 }
 
 export const fetchArticles = async (params: FetchArticlesParams = {}): Promise<Article[]> => {
@@ -361,7 +366,10 @@ function buildArticlesUrl(params: FetchArticlesParams): string {
 
     // Map parameters to their expected API names
     if (params.category) searchParams.append('category', params.category);
+    if (params.categoryId) searchParams.append('categoryId', params.categoryId);
+    if (params.categorySlug) searchParams.append('categorySlug', params.categorySlug);
     if (params.author) searchParams.append('author', params.author);
+    if (params.authorId) searchParams.append('authorId', params.authorId);
     
     // Handle status with fallback for different API expectations
     if (params.status) {
@@ -369,6 +377,18 @@ function buildArticlesUrl(params: FetchArticlesParams): string {
         searchParams.append('status', statusValue);
     }
     
+    if (params.query) {
+        searchParams.append('query', params.query);
+    }
+
+    if (params.featured !== undefined) {
+        searchParams.append('featured', String(params.featured));
+    }
+
+    if (params.isAdvertisement !== undefined) {
+        searchParams.append('isAdvertisement', String(params.isAdvertisement));
+    }
+
     // Handle both limit/offset and page/pageSize pagination
     const resolvedLimit = params.limit ?? params.pageSize ?? 10;
     searchParams.append('limit', String(resolvedLimit));
