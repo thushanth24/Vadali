@@ -10,6 +10,7 @@ export class CategoryRepository extends BaseRepository<Category> {
       name: item.name,
       slug: item.slug,
       description: item.description || '',
+      showInHeader: item.showInHeader !== undefined ? Boolean(item.showInHeader) : true,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt
     };

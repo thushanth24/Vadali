@@ -697,9 +697,25 @@ export const updateFeaturedStatus: APIGatewayProxyHandlerV2 = async (event) => {
 };
 
 // --- CATEGORIES ---
-export const getCategories: APIGatewayProxyHandlerV2 = async () => {
+export const getCategories: APIGatewayProxyHandlerV2 = async (event) => {
     try {
-        const { items: categories } = await categoryRepository.scan({});
+        const { items } = await categoryRepository.scan({});
+        const showInHeaderParam = event.queryStringParameters?.showInHeader;
+
+        const normalizedParam = typeof showInHeaderParam === 'string'
+            ? showInHeaderParam.trim().toLowerCase()
+            : undefined;
+
+        const filterValue = normalizedParam === 'true'
+            ? true
+            : normalizedParam === 'false'
+                ? false
+                : undefined;
+
+        const categories = filterValue === undefined
+            ? items
+            : items.filter(category => (category.showInHeader ?? true) === filterValue);
+
         return respond(200, categories);
     } catch (error) {
         console.error('Error fetching categories:', error);
@@ -715,6 +731,18 @@ export const createCategory: APIGatewayProxyHandlerV2 = async (event) => {
         const description = typeof payload.description === 'string'
             ? payload.description.trim()
             : undefined;
+        let showInHeader = true;
+
+        if (typeof payload.showInHeader === 'boolean') {
+            showInHeader = payload.showInHeader;
+        } else if (typeof payload.showInHeader === 'string') {
+            const normalized = payload.showInHeader.trim().toLowerCase();
+            if (normalized === 'true') {
+                showInHeader = true;
+            } else if (normalized === 'false') {
+                showInHeader = false;
+            }
+        }
 
         if (!rawName || !rawSlug) {
             return respond(400, { message: 'Category name and slug are required' });
@@ -742,6 +770,7 @@ export const createCategory: APIGatewayProxyHandlerV2 = async (event) => {
             name,
             slug,
             description,
+            showInHeader,
             createdAt: timestamp,
             updatedAt: timestamp,
         };
@@ -801,6 +830,17 @@ export const updateCategory: APIGatewayProxyHandlerV2 = async (event) => {
 
         if (typeof payload.description === 'string') {
             updates.description = payload.description.trim();
+        }
+
+        if (typeof payload.showInHeader === 'boolean') {
+            updates.showInHeader = payload.showInHeader;
+        } else if (typeof payload.showInHeader === 'string') {
+            const normalized = payload.showInHeader.trim().toLowerCase();
+            if (normalized === 'true') {
+                updates.showInHeader = true;
+            } else if (normalized === 'false') {
+                updates.showInHeader = false;
+            }
         }
 
         if (Object.keys(updates).length === 0) {

@@ -42,6 +42,10 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  description?: string;
+  showInHeader?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Article {

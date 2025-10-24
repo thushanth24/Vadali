@@ -31,26 +31,47 @@ const Header: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
 
-    fetchCategories()
-      .then((response) => {
-        if (!isMounted) return;
+    const normalizeCategories = (response: unknown): Category[] => {
+      if (Array.isArray(response)) {
+        return response as Category[];
+      }
 
-        if (Array.isArray(response)) {
-          setCategories(response);
-          return;
+      const maybeWrapped = response as { categories?: Category[] };
+      if (maybeWrapped?.categories && Array.isArray(maybeWrapped.categories)) {
+        return maybeWrapped.categories;
+      }
+
+      return [];
+    };
+
+    const loadCategories = async () => {
+      try {
+        const primaryResponse = await fetchCategories({ showInHeader: true });
+        let resolvedCategories = normalizeCategories(primaryResponse);
+        let usedFallback = false;
+
+        if (resolvedCategories.length === 0) {
+          const fallbackResponse = await fetchCategories();
+          resolvedCategories = normalizeCategories(fallbackResponse);
+          usedFallback = true;
         }
 
-        const maybeWrapped = response as { categories?: Category[] };
-        if (maybeWrapped?.categories && Array.isArray(maybeWrapped.categories)) {
-          setCategories(maybeWrapped.categories);
+        if (isMounted) {
+          setCategories(
+            usedFallback
+              ? resolvedCategories
+              : resolvedCategories.filter((category) => (category.showInHeader ?? true))
+          );
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Failed to load categories', error);
         if (isMounted) {
           setCategories([]);
         }
-      });
+      }
+    };
+
+    loadCategories();
 
     return () => {
       isMounted = false;

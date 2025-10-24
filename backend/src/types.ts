@@ -64,6 +64,7 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
+  showInHeader?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

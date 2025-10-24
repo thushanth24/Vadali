@@ -58581,6 +58581,7 @@ var CategoryRepository = class extends BaseRepository {
       name: item.name,
       slug: item.slug,
       description: item.description || "",
+      showInHeader: item.showInHeader !== void 0 ? Boolean(item.showInHeader) : true,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt
     };
@@ -59324,9 +59325,13 @@ var updateFeaturedStatus = async (event) => {
     return respond(500, { message: "Failed to update featured status" });
   }
 };
-var getCategories = async () => {
+var getCategories = async (event) => {
   try {
-    const { items: categories } = await categoryRepository.scan({});
+    const { items } = await categoryRepository.scan({});
+    const showInHeaderParam = event.queryStringParameters?.showInHeader;
+    const normalizedParam = typeof showInHeaderParam === "string" ? showInHeaderParam.trim().toLowerCase() : void 0;
+    const filterValue = normalizedParam === "true" ? true : normalizedParam === "false" ? false : void 0;
+    const categories = filterValue === void 0 ? items : items.filter((category) => (category.showInHeader ?? true) === filterValue);
     return respond(200, categories);
   } catch (error2) {
     console.error("Error fetching categories:", error2);
@@ -59339,6 +59344,17 @@ var createCategory = async (event) => {
     const rawName = typeof payload2.name === "string" ? payload2.name.trim() : "";
     const rawSlug = typeof payload2.slug === "string" ? payload2.slug.trim() : "";
     const description = typeof payload2.description === "string" ? payload2.description.trim() : void 0;
+    let showInHeader = true;
+    if (typeof payload2.showInHeader === "boolean") {
+      showInHeader = payload2.showInHeader;
+    } else if (typeof payload2.showInHeader === "string") {
+      const normalized = payload2.showInHeader.trim().toLowerCase();
+      if (normalized === "true") {
+        showInHeader = true;
+      } else if (normalized === "false") {
+        showInHeader = false;
+      }
+    }
     if (!rawName || !rawSlug) {
       return respond(400, { message: "Category name and slug are required" });
     }
@@ -59360,6 +59376,7 @@ var createCategory = async (event) => {
       name,
       slug,
       description,
+      showInHeader,
       createdAt: timestamp,
       updatedAt: timestamp
     };
@@ -59410,6 +59427,16 @@ var updateCategory = async (event) => {
     }
     if (typeof payload2.description === "string") {
       updates.description = payload2.description.trim();
+    }
+    if (typeof payload2.showInHeader === "boolean") {
+      updates.showInHeader = payload2.showInHeader;
+    } else if (typeof payload2.showInHeader === "string") {
+      const normalized = payload2.showInHeader.trim().toLowerCase();
+      if (normalized === "true") {
+        updates.showInHeader = true;
+      } else if (normalized === "false") {
+        updates.showInHeader = false;
+      }
     }
     if (Object.keys(updates).length === 0) {
       return respond(400, { message: "No valid category fields provided for update" });

@@ -463,11 +463,17 @@ export const updateFeaturedStatus = async (updates: { articleId: string, isFeatu
 };
 
 // --- CATEGORIES ---
-export const fetchCategories = async (): Promise<Category[]> => {
-    return apiRequest<Category[]>('/categories');
+export const fetchCategories = async (params?: { showInHeader?: boolean }): Promise<Category[]> => {
+    const query = new URLSearchParams();
+    if (typeof params?.showInHeader === 'boolean') {
+        query.set('showInHeader', String(params.showInHeader));
+    }
+
+    const endpoint = query.toString() ? `/categories?${query.toString()}` : '/categories';
+    return apiRequest<Category[]>(endpoint);
 };
 
-export const createCategory = async (catData: { name: string; slug: string }): Promise<Category> => {
+export const createCategory = async (catData: { name: string; slug: string; description?: string; showInHeader?: boolean }): Promise<Category> => {
     return apiRequest<Category>('/categories', {
         method: 'POST',
         body: JSON.stringify(catData),
