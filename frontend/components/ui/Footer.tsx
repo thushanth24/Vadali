@@ -74,7 +74,7 @@ const Footer: React.FC = () => {
         <div className="mt-8 border-t border-gray-700 pt-6 text-center text-gray-400">
           <p>&copy; {new Date().getFullYear()} Vadali Media. All rights reserved.</p>
           <p className="text-sm mt-2">
-            Developed by <a href="https://axzell.com" target="_blank" rel="noopener noreferrer" className="hover:text-white underline">Axzell Innovations</a>
+            Developed by <a href="https://axzellin.com" target="_blank" rel="noopener noreferrer" className="hover:text-white underline">axzell innovations</a>
           </p>
         </div>
       </div>
