@@ -5,6 +5,7 @@ import { Article, ArticleStatus, User, Category } from '../../../types';
 import Button from '../../../components/ui/Button';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Edit, Trash2, Eye } from 'lucide-react';
+import { formatArticleDate } from '../../../lib/articleDate';
 
 const AllArticles: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
@@ -72,16 +73,21 @@ const AllArticles: React.FC = () => {
                     <tbody>
                        {loading ? (
                            <tr><td colSpan={6} className="p-8"><LoadingSpinner label="Loading articles..." className="py-0" /></td></tr>
-                       ) : articles.map(article => {
-                            const author = users.find(u => u.id === article.authorId);
-                            const category = categories.find(c => c.id === article.categoryId);
-                            return (
-                                <tr key={article.id} className="border-b hover:bg-gray-50">
-                                    <td className="p-4 font-medium text-gray-800">{article.title}</td>
-                                    <td className="p-4 text-gray-600">{author?.name || 'N/A'}</td>
-                                    <td className="p-4 text-gray-600">{category?.name || 'N/A'}</td>
-                                    <td className="p-4">{getStatusChip(article.status)}</td>
-                                    <td className="p-4 text-gray-600">{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'N/A'}</td>
+                         ) : articles.map(article => {
+                              const author = users.find(u => u.id === article.authorId);
+                              const category = categories.find(c => c.id === article.categoryId);
+                              const publishedLabel = formatArticleDate(article, {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                              });
+                              return (
+                                  <tr key={article.id} className="border-b hover:bg-gray-50">
+                                      <td className="p-4 font-medium text-gray-800">{article.title}</td>
+                                      <td className="p-4 text-gray-600">{author?.name || 'N/A'}</td>
+                                      <td className="p-4 text-gray-600">{category?.name || 'N/A'}</td>
+                                      <td className="p-4">{getStatusChip(article.status)}</td>
+                                      <td className="p-4 text-gray-600">{publishedLabel || 'N/A'}</td>
                                     <td className="p-4 space-x-2">
                                         <Link to={`/article/${article.slug}`} target="_blank" rel="noopener noreferrer">
                                             <Button size="sm" variant="ghost" className="text-gray-600 hover:bg-gray-100">

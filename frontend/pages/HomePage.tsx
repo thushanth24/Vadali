@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ArticleCard, { ArticleCardProps } from '../components/ui/ArticleCard';
@@ -6,6 +6,7 @@ import { fetchArticles, fetchCategories } from '../services/api';
 import { Article, Category } from '../types';
 import { Clock } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { formatArticleDate } from '../lib/articleDate';
 
 // Extended ArticleCard component with additional props
 interface ExtendedArticleCardProps extends Omit<ArticleCardProps, 'className'> {
@@ -15,8 +16,14 @@ interface ExtendedArticleCardProps extends Omit<ArticleCardProps, 'className'> {
 
 const ArticleCardWrapper: React.FC<ExtendedArticleCardProps> = (props) => {
   const { variant = 'vertical', className = '', ...rest } = props;
-  
+
   if (variant === 'horizontal') {
+    const formattedDate = formatArticleDate(rest.article, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+
     return (
       <div className={`flex flex-col sm:flex-row gap-4 ${className}`}>
         <div className="sm:w-1/3">
@@ -28,23 +35,17 @@ const ArticleCardWrapper: React.FC<ExtendedArticleCardProps> = (props) => {
               {rest.article.title}
             </Link>
           </h3>
-          <p className="text-gray-600 text-sm line-clamp-2">{rest.article.summary}</p>
-          <div className="flex items-center text-xs text-gray-500 mt-2">
-            <Clock size={12} className="mr-1" />
-            <span>{
-              rest.article.publishedAt ? 
-              new Date(rest.article.publishedAt).toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric',
-                year: 'numeric'
-              }) : ''
-            }</span>
-          </div>
+          {formattedDate && (
+            <div className="flex items-center text-xs text-gray-500 mt-2">
+              <Clock size={12} className="mr-1" />
+              <span>{formattedDate}</span>
+            </div>
+          )}
         </div>
       </div>
     );
   }
-  
+
   return <ArticleCard {...rest} className={className} />;
 };
 
@@ -55,7 +56,7 @@ const BreakingNewsTicker: React.FC<{ articles: Article[] }> = ({ articles }) => 
       <Link to={`/article/${a.slug}`} className="hover:text-gray-200 transition-colors">
         {a.title}
       </Link>
-      {i < 4 && <span className="mx-4 text-gray-300">•</span>}
+      {i < 4 && <span className="mx-4 text-gray-300">â€¢</span>}
     </React.Fragment>
   ));
   
@@ -150,69 +151,75 @@ const HomePage: React.FC = () => {
                         className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
                       />
                     </Link>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-                      <div className="max-w-3xl">
-                        <div className="inline-block bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                          Featured
-                        </div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight mb-2">
-                          <Link to={`/article/${mainFeaturedArticle.slug}`} className="hover:underline">
-                            {mainFeaturedArticle.title}
-                          </Link>
-                        </h1>
-                        <p className="text-gray-200 text-sm line-clamp-2">{mainFeaturedArticle.summary}</p>
-                        <div className="flex items-center mt-3 text-sm text-gray-300">
-                          <Clock size={14} className="mr-1" />
-                          <span>{new Date(mainFeaturedArticle.publishedAt!).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })}</span>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
                 <div className="p-6">
+                  <div className="inline-block bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                    Featured
+                  </div>
+                  <h1 className="text-2xl md:text-xl font-bold text-gray-900 leading-tight mb-3">
+                    <Link to={`/article/${mainFeaturedArticle.slug}`} className="hover:underline">
+                      {mainFeaturedArticle.title}
+                    </Link>
+                  </h1>
+                  <div className="flex items-center text-sm text-gray-600 mb-6">
+                    <Clock size={14} className="mr-1" />
+                    <span>
+                      {mainFeaturedArticle
+                        ? formatArticleDate(mainFeaturedArticle, {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })
+                        : ''}
+                    </span>
+                  </div>
                   <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100">Top Stories</h2>
                   <div className="space-y-4">
-                    {topStories.map((article, index) => (
-                      <div 
-                        key={article.id} 
-                        className={`flex items-start gap-4 group p-3 rounded-lg transition-all duration-200 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
-                      >
-                        <div className="w-24 h-20 flex-shrink-0 overflow-hidden rounded-md shadow-sm">
-                          <Link to={`/article/${article.slug}`}>
-                            <img 
-                              src={article.coverImageUrl} 
-                              alt={article.title} 
-                              className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-110"
-                            />
-                          </Link>
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-gray-800 leading-tight group-hover:text-red-600 transition-colors">
-                            <Link to={`/article/${article.slug}`} className="line-clamp-2">
-                              {article.title}
+                    {topStories.map((article, index) => {
+                      const formattedDate = formatArticleDate(article, {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                      });
+                      const categoryName = categories.find(c => c.id === article.categoryId)?.name;
+
+                      return (
+                        <div
+                          key={article.id}
+                          className={`flex items-start gap-4 group p-3 rounded-lg transition-all duration-200 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
+                        >
+                          <div className="w-24 h-20 flex-shrink-0 overflow-hidden rounded-md shadow-sm">
+                            <Link to={`/article/${article.slug}`}>
+                              <img
+                                src={article.coverImageUrl}
+                                alt={article.title}
+                                className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-110"
+                              />
                             </Link>
-                          </h3>
-                          <div className="flex items-center text-xs text-gray-500 mt-1">
-                            <Clock size={12} className="mr-1 flex-shrink-0" />
-                            <span className="truncate">
-                              {new Date(article.publishedAt!).toLocaleDateString('en-US', { 
-                                weekday: 'short', 
-                                month: 'short', 
-                                day: 'numeric' 
-                              })}
-                            </span>
-                            <span className="mx-2">•</span>
-                            <span className="text-red-600 font-medium">
-                              {categories.find(c => c.id === article.categoryId)?.name}
-                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-bold text-gray-800 leading-tight group-hover:text-red-600 transition-colors">
+                              <Link to={`/article/${article.slug}`} className="line-clamp-2">
+                                {article.title}
+                              </Link>
+                            </h3>
+                            <div className="flex items-center text-xs text-gray-500 mt-1">
+                              {formattedDate && (
+                                <>
+                                  <Clock size={12} className="mr-1 flex-shrink-0" />
+                                  <span className="truncate">{formattedDate}</span>
+                                  <span className="mx-2">•</span>
+                                </>
+                              )}
+                              {categoryName && (
+                                <span className="text-red-600 font-medium">{categoryName}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -233,19 +240,15 @@ const HomePage: React.FC = () => {
                     </svg>
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {latestArticles.map((article, index) => {
-                    const category = categories.find(c => c.id === article.categoryId);
-                    return (
-                      <ArticleCardWrapper 
-                        key={article.id}
-                        article={article}
-                        category={category}
-                        variant={index === 0 ? 'horizontal' : 'vertical'}
-                        className={index === 0 ? 'sm:col-span-2' : ''}
-                      />
-                    );
-                  })}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {latestArticles.map(article => (
+                    <ArticleCardWrapper
+                      key={article.id}
+                      article={article}
+                      category={categories.find(c => c.id === article.categoryId)}
+                      className="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 h-full"
+                    />
+                  ))}
                 </div>
               </div>
             </section>
@@ -301,27 +304,40 @@ const HomePage: React.FC = () => {
                   <span className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-red-500 to-orange-500"></span>
                 </h2>
                 <div className="space-y-4">
-                  {trendingArticles.map((article, index) => (
-                    <div 
-                      key={article.id} 
-                      className="flex items-start gap-4 group p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <span className={`text-2xl font-extrabold ${index < 3 ? 'bg-gradient-to-br from-red-600 to-orange-500 bg-clip-text text-transparent' : 'text-gray-200'} flex-shrink-0 w-8 h-8 flex items-center justify-center`}>
-                        {index + 1}
-                      </span>
-                      <div>
-                        <h3 className="font-semibold text-gray-800 leading-tight group-hover:text-red-600 transition-colors">
-                          <Link to={`/article/${article.slug}`} className="line-clamp-2">
-                            {article.title}
-                          </Link>
-                        </h3>
-                        <div className="flex items-center text-xs text-gray-500 mt-1">
-                          <Clock size={12} className="mr-1" />
-                          <span>{new Date(article.publishedAt!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    {trendingArticles.map((article, index) => {
+                      const formattedDate = formatArticleDate(article, {
+                        month: "short",
+                        day: "numeric",
+                      });
+
+                      return (
+                        <div
+                          key={article.id}
+                          className="flex items-start gap-4 group p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <span
+                            className={`text-2xl font-extrabold ${index < 3 ? 'bg-gradient-to-br from-red-600 to-orange-500 bg-clip-text text-transparent' : 'text-gray-200'} flex-shrink-0 w-8 h-8 flex items-center justify-center`}
+                          >
+                            {index + 1}
+                          </span>
+                          <div>
+                            <h3 className="font-semibold text-gray-800 leading-tight group-hover:text-red-600 transition-colors">
+                              <Link to={`/article/${article.slug}`} className="line-clamp-2">
+                                {article.title}
+                              </Link>
+                            </h3>
+                            <div className="flex items-center text-xs text-gray-500 mt-1">
+                              {formattedDate && (
+                                <>
+                                  <Clock size={12} className="mr-1" />
+                                  <span>{formattedDate}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })}
                 </div>
               </div>
             </div>

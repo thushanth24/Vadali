@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Article, Category } from '../../types';
+import { formatArticleDate } from '../../lib/articleDate';
 import { Clock } from 'lucide-react';
 
 export interface ArticleCardProps {
@@ -18,11 +19,11 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
   isAdvertisement = false,
   className = ''
 }) => {
-  const publishedDate = article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('ta-IN', {
+  const publishedDate = formatArticleDate(article, {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
-  }) : '';
+    day: 'numeric',
+  });
 
   return (
     <div className={`bg-white group overflow-hidden relative ${className}`}>
@@ -49,10 +50,12 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
             {article.title}
           </Link>
         </h3>
-        <div className="mt-3 flex items-center text-xs text-gray-500">
+        {publishedDate && (
+          <div className="mt-3 flex items-center text-xs text-gray-500">
             <Clock size={14} className="mr-1.5" />
             <span>{publishedDate}</span>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

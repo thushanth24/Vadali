@@ -7,6 +7,7 @@ import { useAuth } from '../../hooks/useAuth';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { PlusCircle, Edit, Eye } from 'lucide-react';
+import { formatArticleDate } from '../../lib/articleDate';
 
 const AuthorDashboard: React.FC = () => {
     const { user } = useAuth();
@@ -56,14 +57,19 @@ const AuthorDashboard: React.FC = () => {
                     <tbody>
                         {loading ? (
                              <tr><td colSpan={5} className="p-8"><LoadingSpinner label="Loading articles..." className="py-0" /></td></tr>
-                        ) : myArticles.length > 0 ? myArticles.map(article => {
-                            const isEditable = article.status === ArticleStatus.DRAFT || article.status === ArticleStatus.REJECTED;
-                            return (
-                                <tr key={article.id} className="border-b hover:bg-gray-50">
-                                    <td className="p-4 font-medium text-gray-800">{article.title}</td>
-                                    <td className="p-4">{getStatusChip(article.status)}</td>
-                                    <td className="p-4">{article.views.toLocaleString()}</td>
-                                    <td className="p-4">{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'N/A'}</td>
+                           ) : myArticles.length > 0 ? myArticles.map(article => {
+                               const isEditable = article.status === ArticleStatus.DRAFT || article.status === ArticleStatus.REJECTED;
+                               const publishedLabel = formatArticleDate(article, {
+                                   year: 'numeric',
+                                   month: 'short',
+                                   day: 'numeric',
+                               });
+                               return (
+                                   <tr key={article.id} className="border-b hover:bg-gray-50">
+                                       <td className="p-4 font-medium text-gray-800">{article.title}</td>
+                                       <td className="p-4">{getStatusChip(article.status)}</td>
+                                       <td className="p-4">{article.views.toLocaleString()}</td>
+                                       <td className="p-4">{publishedLabel || 'N/A'}</td>
                                     <td className="p-4 flex items-center space-x-2">
                                         <Link to={`/dashboard/author/preview/${article.id}`}>
                                             <Button size="sm" variant="ghost" className="text-gray-600 hover:bg-gray-100">

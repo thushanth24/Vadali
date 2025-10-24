@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { subscribeToNewsletter } from '../../services/api';
+import logoUrl from '@/assets/logo.jpg';
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -27,8 +28,16 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4 text-white">Vadali Media</h3>
-            <p className="text-gray-400">Your trusted source for news and information. We provide unbiased reporting on topics that matter.</p>
+            <Link to="/" className="inline-flex items-center gap-3 group">
+              <img
+                src={logoUrl}
+                alt="Vadali Media"
+                className="h-28 w-28 drop-shadow-md group-hover:scale-[1.02] transition-transform duration-200"
+              />
+            </Link>
+            <p className="text-gray-400 mt-4">
+              Your trusted source for news and information. We provide unbiased reporting on topics that matter.
+            </p>
           </div>
           <div>
             <h4 className="font-semibold text-white mb-4">Quick Links</h4>

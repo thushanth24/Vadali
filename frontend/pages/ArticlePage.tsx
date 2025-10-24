@@ -6,6 +6,7 @@ import { ArticleStatus } from '../types';
 import { Calendar, User as UserIcon, MessageSquare, Tag, Facebook, Twitter, Linkedin } from 'lucide-react';
 import Button from '../components/ui/Button';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { formatArticleDate } from '../lib/articleDate';
 
 const ArticlePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -98,6 +99,7 @@ const ArticlePage: React.FC = () => {
     whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`
   };
 
+  const publishedDateLabel = formatArticleDate(article, { dateStyle: 'long' });
 
   return (
     <div className="bg-gray-100 py-8">
@@ -123,9 +125,12 @@ const ArticlePage: React.FC = () => {
                   </Link>
                 ) : 'அறியப்படாத ஆசிரியர்'}
               </div>
+            {publishedDateLabel && (
               <div className="flex items-center">
-                <Calendar className="h-4 w-4 mr-2" /> {new Date(article.publishedAt!).toLocaleDateString('ta-IN', { dateStyle: 'long' })}
+                <Calendar className="h-4 w-4 mr-2" />
+                <span>{publishedDateLabel}</span>
               </div>
+            )}
               <div className="flex items-center">
                 <MessageSquare className="h-4 w-4 mr-2" /> {approvedComments.length} Comments
               </div>

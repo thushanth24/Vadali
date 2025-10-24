@@ -4,6 +4,7 @@ import { fetchArticleById, fetchUser, fetchCategories } from '../../../services/
 import { Article, User, Category } from '../../../types';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Calendar, User as UserIcon, MessageSquare, Tag, ArrowLeft } from 'lucide-react';
+import { formatArticleDate } from '../../../lib/articleDate';
 
 const PreviewArticle: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +45,8 @@ const PreviewArticle: React.FC = () => {
     return <Navigate to="/dashboard/author" replace />;
   }
 
+  const publishedLabel = formatArticleDate(article, { dateStyle: 'long' });
+
   return (
     <>
         <div className="sticky top-0 bg-yellow-300 text-yellow-900 text-center py-2 font-semibold z-50">
@@ -73,10 +76,10 @@ const PreviewArticle: React.FC = () => {
                         <UserIcon className="h-4 w-4 mr-2" />
                         {author ? author.name : 'Unknown Author'}
                     </div>
-                    <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2" /> 
-                        {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('ta-IN', { dateStyle: 'long' }) : 'Not yet published'}
-                    </div>
+                      <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-2" /> 
+                          {publishedLabel || 'Not yet published'}
+                      </div>
                     <div className="flex items-center">
                         <MessageSquare className="h-4 w-4 mr-2" /> {article.comments.length} Comments
                     </div>

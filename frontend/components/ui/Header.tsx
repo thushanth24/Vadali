@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Button from './Button';
 import { Category } from '../../types';
+import logoUrl from '@/assets/logo.jpg';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -117,13 +118,16 @@ const Header: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-4">
             {/* Logo Section - Left */}
             <div className="flex-shrink-0">
-              <Link to="/" className="flex items-center gap-3 group transition-transform duration-200 hover:scale-[1.02]">
-                <div className="relative flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-br from-red-600 to-amber-500 shadow-lg group-hover:shadow-xl group-hover:rotate-6 transition-all duration-300">
-                  <Flame className="h-8 w-8 text-white" />
-                  <span className="absolute -bottom-2.5 text-[10px] font-bold uppercase text-white tracking-[0.3em] bg-red-600 px-2 py-0.5 rounded-full">
-                    Live
-                  </span>
-                </div>
+              <Link
+                to="/"
+                className="flex items-center gap-4 group transition-transform duration-200 hover:scale-[1.02]"
+              >
+                <img
+                  src={logoUrl}
+                  alt="Vadali Media"
+                  className="h-14 w-auto drop-shadow-md transition-transform duration-300 group-hover:scale-[1.03]"
+                />
+            
                 <div className="leading-tight">
                   <h1 className="text-3xl md:text-4xl font-black tracking-tight">
                     <span className="text-[#0c1a3a]">Vadali</span> <span className="text-red-600">Media</span>

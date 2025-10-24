@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Article, ArticleStatus } from '../../../types';
 import { fetchArticles, updateArticleStatus } from '../../../services/api';
 import { format } from 'date-fns';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
+import { getArticleDateString } from '../../../lib/articleDate';
 
 interface ArticleWithAuthor extends Article {
   author?: {
@@ -224,74 +225,91 @@ export default function ArticleManagement() {
                 No articles found
               </li>
             ) : (
-              articles.map((article) => (
-                <li key={article.id}>
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-blue-600 truncate">
-                        {article.title}
-                      </p>
-                      <div className="ml-2 flex-shrink-0 flex">
-                        {getStatusBadge(article.status, article.rawStatus)}
-                      </div>
-                    </div>
-                    <div className="mt-2 sm:flex sm:justify-between">
-                      <div className="sm:flex">
-                        <p className="flex items-center text-sm text-gray-500">
-                          By {article.author?.name || 'Unknown Author'}
+              articles.map((article) => {
+                const publishedDateString = getArticleDateString(article);
+                const publishedLabel = publishedDateString
+                  ? `Published on ${format(new Date(publishedDateString), 'MMM d, yyyy')}`
+                  : 'Not published yet';
+
+                return (
+                  <li key={article.id}>
+                    <div className="px-4 py-4 sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-blue-600 truncate">
+                          {article.title}
                         </p>
-                        <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                          {article.publishedAt
-                            ? `Published on ${format(new Date(article.publishedAt), 'MMM d, yyyy')}`
-                            : 'Not published yet'}
-                        </p>
+                        <div className="ml-2 flex-shrink-0 flex">
+                          {getStatusBadge(article.status, article.rawStatus)}
+                        </div>
                       </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                        <span>{article.views} views</span>
+                      <div className="mt-2 sm:flex sm:justify-between">
+                        <div className="sm:flex">
+                          <p className="flex items-center text-sm text-gray-500">
+                            By {article.author?.name || 'Unknown Author'}
+                          </p>
+                          <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                            {publishedLabel}
+                          </p>
+                        </div>
+                        <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                          <span>{article.views} views</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="mt-2 flex justify-end space-x-2">
-                      <a
-                        href={`/article/${article.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-5 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                      >
-                        View
-                      </a>
-                      {article.status === ArticleStatus.PENDING_REVIEW && (
-                        <>
-                          <button
-                            onClick={() => handleStatusChange(article.id, ArticleStatus.PUBLISHED)}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => {
-                              const reason = prompt('Please provide a reason for rejection:');
-                              if (reason) {
-                                handleStatusChange(article.id, ArticleStatus.REJECTED, reason);
-                              }
-                            }}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
-                      {article.status === ArticleStatus.PUBLISHED && (
-                        <button
-                          onClick={() => handleStatusChange(article.id, ArticleStatus.DRAFT)}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                      <div className="mt-2 flex justify-end space-x-2">
+                        <a
+                          href={`/article/${article.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-5 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                         >
-                          Archive
+                          View
+                        </a>
+                        <button
+                          onClick={() => handleStatusChange(article.id, ArticleStatus.PUBLISHED)}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                        >
+                          Mark as Published
                         </button>
-                      )}
+                        <button
+                          onClick={() => handleStatusChange(article.id, ArticleStatus.PENDING_REVIEW)}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600"
+                        >
+                          Send to Review
+                        </button>
+                        {article.status === ArticleStatus.PENDING_REVIEW && (
+                          <>
+                            <button
+                              onClick={() => handleStatusChange(article.id, ArticleStatus.PUBLISHED)}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => {
+                                const reason = prompt('Please provide a reason for rejection:');
+                                if (reason) {
+                                  handleStatusChange(article.id, ArticleStatus.REJECTED, reason);
+                                }
+                              }}
+                              className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {article.status === ArticleStatus.PUBLISHED && (
+                          <button
+                            onClick={() => handleStatusChange(article.id, ArticleStatus.DRAFT)}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                          >
+                            Archive
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </li>
-              ))
+                  </li>
+                );
+              })
             )}
           </ul>
         </div>

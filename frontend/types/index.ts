@@ -56,6 +56,8 @@ export interface Article {
   tags: string[];
   status: ArticleStatus;
   publishedAt: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   views: number;
   comments: Comment[];
   videoUrl?: string;
