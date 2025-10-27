@@ -331,7 +331,7 @@ interface FetchArticlesParams {
     categorySlug?: string;
     author?: string;
     authorId?: string;
-    status?: ArticleStatus | 'published' | 'draft' | 'archived'; // Support both enum and string literals
+    status?: ArticleStatus | 'published' | 'draft' | 'archived' | 'ALL' | 'all'; // Support both enum and string literals
     featured?: boolean;
     isAdvertisement?: boolean;
     limit?: number | string;
