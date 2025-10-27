@@ -28,6 +28,8 @@ import AuthorPage from './pages/AuthorPage';
 import SearchPage from './pages/SearchPage';
 import TrendingPage from './pages/TrendingPage';
 import AdvertisePage from './pages/AdvertisePage';
+import AdvertisementPage from './pages/AdvertisementPage';
+import AdvertisementsPage from './pages/AdvertisementsPage';
 import EditorialPolicyPage from './pages/EditorialPolicyPage';
 import SubscribePage from './pages/SubscribePage';
 import ReviewArticle from './pages/dashboard/editor/ReviewArticle';
@@ -55,6 +57,8 @@ const App: React.FC = () => {
           <Route path="search" element={<SearchPage />} />
           <Route path="trending" element={<TrendingPage />} />
           <Route path="subscribe" element={<SubscribePage />} />
+          <Route path="ads" element={<AdvertisementsPage />} />
+          <Route path="ads/:slug" element={<AdvertisementPage />} />
           <Route path="about" element={<AboutUsPage />} />
           <Route path="contact" element={<ContactUsPage />} />
           <Route path="privacy" element={<PrivacyPolicyPage />} />

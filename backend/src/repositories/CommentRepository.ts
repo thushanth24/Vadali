@@ -7,12 +7,14 @@ export class CommentRepository extends BaseRepository<Comment> {
   protected toDomain(item: any): Comment {
     return {
       id: item.id,
+      articleId: item.articleId,
+      authorId: item.authorId,
       authorName: item.authorName,
       authorEmail: item.authorEmail,
       authorAvatarUrl: item.authorAvatarUrl,
       text: item.text,
-      date: item.date,
       status: item.status,
+      date: item.date || item.createdAt,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt
     };
@@ -21,6 +23,8 @@ export class CommentRepository extends BaseRepository<Comment> {
   protected toDB(comment: Comment) {
     return {
       ...comment,
+      date: comment.date || comment.createdAt,
+      ...(comment.authorId === undefined && { authorId: null }),
       // Ensure we don't store undefined values
       ...(comment.authorEmail === undefined && { authorEmail: '' }),
       ...(comment.authorAvatarUrl === undefined && { authorAvatarUrl: '' })

@@ -259,7 +259,12 @@ const Header: React.FC = () => {
               {/* Breaking News Button */}
               <Link
                 to="/trending"
-                className="flex items-center gap-2 rounded-none bg-gradient-to-r from-red-600 to-red-500 px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-md transition-all duration-200 hover:from-red-500 hover:to-red-600 hover:shadow-lg hover:scale-105 hover:bg-opacity-90"
+                aria-current={location.pathname.startsWith('/trending') ? 'page' : undefined}
+                className={`group relative flex items-center gap-2 rounded-none px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-md transition-all duration-200 ${
+                  location.pathname.startsWith('/trending')
+                    ? 'bg-gradient-to-r from-red-500 to-red-400 shadow-lg ring-2 ring-yellow-300/80'
+                    : 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-600 hover:shadow-lg hover:scale-105 hover:bg-opacity-90'
+                }`}
               >
                 <Flame size={16} className="text-yellow-300 animate-pulse" />
                 Breaking News
@@ -267,18 +272,30 @@ const Header: React.FC = () => {
               
               {/* Category Links */}
               <div className="flex items-center gap-1">
-                {categories.map((category, index) => (
-                  <Link
-                    key={category.id}
-                    to={`/category/${category.slug}`}
-                    className={`relative px-5 py-3.5 text-sm font-medium uppercase tracking-wider text-white transition-all duration-200 ${
-                      index === 0 ? 'ml-1' : ''
-                    } hover:bg-blue-800/50`}
-                  >
-                    <span className="relative z-10">{category.name}</span>
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-                  </Link>
-                ))}
+                {categories.map((category, index) => {
+                  const isActive = location.pathname.startsWith(`/category/${category.slug}`);
+                  return (
+                    <Link
+                      key={category.id}
+                      to={`/category/${category.slug}`}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`group relative px-5 py-3.5 text-sm font-medium uppercase tracking-wider transition-all duration-200 ${
+                        index === 0 ? 'ml-1' : ''
+                      } ${
+                        isActive
+                          ? 'text-yellow-300 shadow-inner bg-blue-900/60'
+                          : 'text-white hover:text-yellow-200 hover:bg-blue-800/50'
+                      }`}
+                    >
+                      <span className="relative z-10">{category.name}</span>
+                      <span
+                        className={`absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 transform transition-transform duration-300 ${
+                          isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                        }`}
+                      ></span>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
             
@@ -296,7 +313,12 @@ const Header: React.FC = () => {
             <Link
               to="/trending"
               onClick={() => setIsMenuOpen(false)}
-              className="flex items-center gap-2 rounded-lg bg-[#112b6f] px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-[#0c1a3a]"
+              aria-current={location.pathname.startsWith('/trending') ? 'page' : undefined}
+              className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition ${
+                location.pathname.startsWith('/trending')
+                  ? 'bg-blue-900 text-yellow-200 shadow'
+                  : 'bg-[#112b6f] text-white hover:bg-[#0c1a3a]'
+              }`}
             >
               <Flame size={16} className="text-yellow-300" />
               Breaking
@@ -306,7 +328,12 @@ const Header: React.FC = () => {
                 key={category.id}
                 to={`/category/${category.slug}`}
                 onClick={() => setIsMenuOpen(false)}
-                className="rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-gray-700 transition hover:border-red-500 hover:text-red-600"
+                aria-current={location.pathname.startsWith(`/category/${category.slug}`) ? 'page' : undefined}
+                className={`rounded-lg border px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition ${
+                  location.pathname.startsWith(`/category/${category.slug}`)
+                    ? 'border-blue-700 bg-blue-900/80 text-yellow-200 shadow'
+                    : 'border-gray-200 text-gray-700 hover:border-red-500 hover:text-red-600'
+                }`}
               >
                 {category.name}
               </Link>

@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ArticleCard, { ArticleCardProps } from '../components/ui/ArticleCard';
@@ -95,6 +95,7 @@ const BreakingNewsTicker: React.FC<{ articles: Article[] }> = ({ articles }) => 
 
 const HomePage: React.FC = () => {
   const [publishedArticles, setPublishedArticles] = useState<Article[]>([]);
+  const [advertisements, setAdvertisements] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -102,12 +103,14 @@ const HomePage: React.FC = () => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [articlesData, categoriesData] = await Promise.all([
+        const [articlesData, categoriesData, advertisementsData] = await Promise.all([
             fetchArticles(),
-            fetchCategories()
+            fetchCategories(),
+            fetchArticles({ isAdvertisement: true, status: 'ALL', limit: 12 })
         ]);
         setPublishedArticles(articlesData);
         setCategories(categoriesData);
+        setAdvertisements(advertisementsData.filter(article => article.isAdvertisement));
       } catch (error) {
         console.error("Failed to load homepage data", error);
       } finally {
@@ -122,7 +125,10 @@ const HomePage: React.FC = () => {
   }
 
   const articlesForFeed = publishedArticles.filter(a => !a.isAdvertisement);
-  const advertisementArticles = publishedArticles.filter(a => a.isAdvertisement);
+  const advertisementArticles = advertisements;
+  const adsWithImages = advertisementArticles.filter(ad => ad.coverImageUrl?.trim());
+  const adsWithoutImages = advertisementArticles.filter(ad => !ad.coverImageUrl?.trim());
+  const topAdvertisements = [...adsWithImages, ...adsWithoutImages].slice(0, 2);
   
   const featuredArticles = articlesForFeed.filter(a => a.isFeatured);
   const nonFeaturedArticles = articlesForFeed.filter(a => !a.isFeatured);
@@ -145,11 +151,17 @@ const HomePage: React.FC = () => {
                 <div className="group relative">
                   <div className="overflow-hidden h-80 md:h-96">
                     <Link to={`/article/${mainFeaturedArticle.slug}`}>
-                      <img 
-                        src={mainFeaturedArticle.coverImageUrl} 
-                        alt={mainFeaturedArticle.title} 
-                        className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-                      />
+                      {mainFeaturedArticle.coverImageUrl?.trim() ? (
+                        <img 
+                          src={mainFeaturedArticle.coverImageUrl} 
+                          alt={mainFeaturedArticle.title} 
+                          className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+                          No image available
+                        </div>
+                      )}
                     </Link>
                   </div>
                 </div>
@@ -191,11 +203,17 @@ const HomePage: React.FC = () => {
                         >
                           <div className="w-24 h-20 flex-shrink-0 overflow-hidden rounded-md shadow-sm">
                             <Link to={`/article/${article.slug}`}>
-                              <img
-                                src={article.coverImageUrl}
-                                alt={article.title}
-                                className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-110"
-                              />
+                              {article.coverImageUrl?.trim() ? (
+                                <img
+                                  src={article.coverImageUrl}
+                                  alt={article.title}
+                                  className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-110"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
+                                  No image
+                                </div>
+                              )}
                             </Link>
                           </div>
                           <div className="flex-1">
@@ -254,40 +272,52 @@ const HomePage: React.FC = () => {
             </section>
 
             {/* Advertisement Section */}
-            {advertisementArticles.length > 0 && (
-              <section className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-md overflow-hidden">
+            {topAdvertisements.length > 0 && (
+              <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl shadow-md overflow-hidden border border-amber-100">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">Sponsored Content</h2>
                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">Advertisement</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {advertisementArticles.map((article, index) => (
+                    {topAdvertisements.map((article, index) => (
                       <div 
                         key={article.id}
                         className={`bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 ${index === 0 ? 'md:col-span-2' : ''}`}
                       >
-                        <Link to={`/article/${article.slug}`} className="block group">
+                        <Link to={`/ads/${article.slug}`} className="block group">
                           <div className="relative">
-                            <img 
-                              src={article.coverImageUrl} 
-                              alt={article.title} 
-                              className="w-full h-48 object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
-                              <div>
-                                <span className="inline-block bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full mb-2">
-                                  Sponsored
-                                </span>
-                                <h3 className="text-lg font-bold text-white line-clamp-2">
-                                  {article.title}
-                                </h3>
+                            {article.coverImageUrl?.trim() ? (
+                              <img 
+                                src={article.coverImageUrl} 
+                                alt={article.title} 
+                                className="w-full h-48 object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+                                Advertisement
                               </div>
-                            </div>
+                            )}
+                          </div>
+                          <div className="p-4">
+                            <span className="inline-block bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full mb-2">
+                              Sponsored
+                            </span>
+                            <h3 className="text-lg font-bold text-gray-800 line-clamp-2 hover:text-blue-600 transition-colors">
+                              {article.title}
+                            </h3>
                           </div>
                         </Link>
                       </div>
                     ))}
+                  </div>
+                  <div className="mt-6 text-center">
+                    <Link
+                      to="/ads"
+                      className="inline-flex items-center justify-center px-5 py-2.5 border border-blue-600 text-blue-600 font-semibold rounded-md hover:bg-blue-50 transition-colors"
+                    >
+                      View All Ads
+                    </Link>
                   </div>
                 </div>
               </section>

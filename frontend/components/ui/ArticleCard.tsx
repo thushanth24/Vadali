@@ -19,6 +19,9 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
   isAdvertisement = false,
   className = ''
 }) => {
+  const isAd = isAdvertisement || article.isAdvertisement;
+  const targetPath = isAd ? `/ads/${article.slug}` : `/article/${article.slug}`;
+
   const publishedDate = formatArticleDate(article, {
     year: 'numeric',
     month: 'short',
@@ -27,14 +30,14 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
 
   return (
     <div className={`bg-white group overflow-hidden relative ${className}`}>
-      {isAdvertisement && (
+      {isAd && (
         <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded z-10">
           Ad
         </div>
       )}
       {!hideImage && (
         <div className="overflow-hidden">
-            <Link to={`/article/${article.slug}`}>
+            <Link to={targetPath}>
                 <img src={article.coverImageUrl} alt={article.title} className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300" />
             </Link>
         </div>
@@ -46,7 +49,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
           </Link>
         )}
         <h3 className="text-lg font-bold mt-2 leading-tight">
-          <Link to={`/article/${article.slug}`} className="text-gray-800 group-hover:text-blue-700 transition-colors duration-300">
+          <Link to={targetPath} className="text-gray-800 group-hover:text-blue-700 transition-colors duration-300">
             {article.title}
           </Link>
         </h3>

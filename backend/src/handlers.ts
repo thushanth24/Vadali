@@ -358,14 +358,26 @@ export const createArticle: APIGatewayProxyHandlerV2 = async (event) => {
 
 export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
     try {
-        const rawStatusParam = event.queryStringParameters?.status;
-        const categoryId = event.queryStringParameters?.categoryId;
-        const tag = event.queryStringParameters?.tag;
-        const authorId = event.queryStringParameters?.authorId;
-        const searchQuery = event.queryStringParameters?.query?.toLowerCase();
-        const isFeatured = event.queryStringParameters?.featured === 'true';
-        const limit = event.queryStringParameters?.limit ? parseInt(event.queryStringParameters.limit) : 10;
-        const lastEvaluatedKey = event.queryStringParameters?.lastEvaluatedKey;
+        const queryParams = event.queryStringParameters ?? {};
+        const rawStatusParam = queryParams.status;
+        const categoryId = queryParams.categoryId;
+        const tag = queryParams.tag;
+        const authorId = queryParams.authorId;
+        const searchQuery = queryParams.query?.toLowerCase();
+        const isFeatured = queryParams.featured === 'true';
+        const limit = queryParams.limit ? parseInt(queryParams.limit, 10) : 10;
+        const lastEvaluatedKey = queryParams.lastEvaluatedKey;
+        const hasIsAdvertisementParam = Object.prototype.hasOwnProperty.call(queryParams, 'isAdvertisement');
+        const rawIsAdvertisement = queryParams.isAdvertisement;
+
+        const parseBooleanQueryParam = (value: string | undefined): boolean => {
+            if (!value) {
+                return true;
+            }
+            const normalized = value.trim().toLowerCase();
+            const falseValues = new Set(['false', '0', 'no', 'off']);
+            return !falseValues.has(normalized);
+        };
 
         // Build filter expressions
         const filterExpressions: string[] = [];
@@ -480,6 +492,11 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         if (authorId) {
             filterExpressions.push('authorId = :authorId');
             expressionAttributeValues[':authorId'] = authorId;
+        }
+
+        if (hasIsAdvertisementParam) {
+            filterExpressions.push('isAdvertisement = :isAdvertisement');
+            expressionAttributeValues[':isAdvertisement'] = parseBooleanQueryParam(rawIsAdvertisement);
         }
 
         if (tag) {
@@ -893,6 +910,143 @@ export const deleteCategory: APIGatewayProxyHandlerV2 = async (event) => {
     }
 };
 
+// --- COMMENTS ---
+const createAvatarUrl = (name: string) => `https://ui-avatars.com/api/?background=random&name=${encodeURIComponent(name)}`;
+
+export const getPendingComments: APIGatewayProxyHandlerV2 = async () => {
+    try {
+        const pendingComments = await commentRepository.findByStatus('PENDING');
+        if (pendingComments.length === 0) {
+            return respond(200, []);
+        }
+
+        pendingComments.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        const uniqueArticleIds = Array.from(new Set(pendingComments.map(comment => comment.articleId)));
+        const articles = await Promise.all(uniqueArticleIds.map(async (articleId) => {
+            try {
+                const article = await articleRepository.getById(articleId);
+                return article ? { id: articleId, article } : null;
+            } catch (error) {
+                console.warn('Failed to load article for pending comment', { articleId, error });
+                return null;
+            }
+        }));
+
+        const articleMap = new Map<string, { id: string; title: string; slug: string }>();
+        articles.forEach(entry => {
+            if (entry?.article) {
+                articleMap.set(entry.id, {
+                    id: entry.article.id,
+                    title: entry.article.title,
+                    slug: entry.article.slug,
+                });
+            }
+        });
+
+        const responsePayload = pendingComments.map(comment => ({
+            ...comment,
+            article: articleMap.get(comment.articleId) ?? {
+                id: comment.articleId,
+                title: 'Unknown article',
+                slug: '#',
+            },
+        }));
+
+        return respond(200, responsePayload);
+    } catch (error) {
+        console.error('Error fetching pending comments:', error);
+        return respond(500, { message: 'Failed to fetch pending comments' });
+    }
+};
+
+export const postComment: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const articleId = event.pathParameters?.id || event.pathParameters?.articleId;
+        if (!articleId) {
+            return respond(400, { message: 'Article ID is required' });
+        }
+
+        const article = await articleRepository.getById(articleId);
+        if (!article) {
+            return respond(404, { message: 'Article not found' });
+        }
+
+        const payload = JSON.parse(event.body || '{}');
+        const text = typeof payload.text === 'string' ? payload.text.trim() : '';
+        if (!text) {
+            return respond(400, { message: 'Comment text is required' });
+        }
+
+        const authorNameRaw = typeof payload.authorName === 'string' ? payload.authorName.trim() : '';
+        const authorName = authorNameRaw || 'Reader';
+        const authorEmailRaw = typeof payload.authorEmail === 'string' ? payload.authorEmail.trim() : '';
+        const authorEmail = authorEmailRaw ? authorEmailRaw.toLowerCase() : undefined;
+        const authorAvatarUrl = typeof payload.authorAvatarUrl === 'string' && payload.authorAvatarUrl.trim()
+            ? payload.authorAvatarUrl.trim()
+            : createAvatarUrl(authorName);
+
+        const now = new Date().toISOString();
+        const comment: Comment = {
+            id: uuidv4(),
+            articleId,
+            authorName,
+            authorEmail,
+            authorAvatarUrl,
+            text,
+            status: 'PENDING',
+            date: now,
+            createdAt: now,
+            updatedAt: now,
+        };
+
+        await commentRepository.create(comment);
+
+        return respond(201, comment);
+    } catch (error) {
+        console.error('Error posting comment:', error);
+        return respond(500, { message: 'Failed to post comment' });
+    }
+};
+
+export const updateCommentStatus: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const articleId = event.pathParameters?.articleId || event.pathParameters?.id;
+        const commentId = event.pathParameters?.commentId;
+
+        if (!articleId || !commentId) {
+            return respond(400, { message: 'Article ID and comment ID are required' });
+        }
+
+        const payload = JSON.parse(event.body || '{}');
+        const status = typeof payload.status === 'string' ? payload.status.trim().toUpperCase() : '';
+
+        if (!['APPROVED', 'REJECTED', 'PENDING'].includes(status)) {
+            return respond(400, { message: 'Invalid comment status' });
+        }
+
+        const existingComment = await commentRepository.getById(commentId);
+
+        if (!existingComment || existingComment.articleId !== articleId) {
+            return respond(404, { message: 'Comment not found' });
+        }
+
+        const updatedComment = await commentRepository.update(commentId, {
+            status,
+            updatedAt: new Date().toISOString(),
+        });
+
+        if (!updatedComment) {
+            return respond(404, { message: 'Comment not found' });
+        }
+
+        return respond(200, updatedComment);
+    } catch (error) {
+        console.error('Error updating comment status:', error);
+        return respond(500, { message: 'Failed to update comment status' });
+    }
+};
+
 // --- NOTIFICATIONS ---
 export const getNotificationsForUser: APIGatewayProxyHandlerV2 = async (event) => {
     const { userId } = event.pathParameters || {};
@@ -938,28 +1092,50 @@ export const getSubscribers: APIGatewayProxyHandlerV2 = async () => {
 };
 
 export const subscribe: APIGatewayProxyHandlerV2 = async (event) => {
-    const { email } = JSON.parse(event.body || '{}');
-    const now = new Date().toISOString();
-    const { items: [existingSubscriber] } = await subscriberRepository.scan({
-        filterExpression: 'email = :email',
-        expressionAttributeValues: { ':email': email },
-        limit: 1
-    });
-    
-    if (existingSubscriber) {
-        return respond(409, { message: 'Subscriber already exists' });
+    try {
+        const { email: rawEmail } = JSON.parse(event.body || '{}');
+        const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
+
+        if (!email) {
+            return respond(400, { message: 'Email is required' });
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return respond(400, { message: 'Invalid email address' });
+        }
+
+        const existingSubscriber = await subscriberRepository.findByEmail(email, { includeInactive: true });
+        if (existingSubscriber) {
+            if (existingSubscriber.isActive) {
+                return respond(409, { message: 'Subscriber already exists' });
+            }
+
+            const reactivatedSubscriber = await subscriberRepository.update(existingSubscriber.id, {
+                isActive: true,
+                subscribedAt: new Date().toISOString(),
+                unsubscribedAt: undefined,
+            });
+
+            return respond(200, reactivatedSubscriber);
+        }
+
+        const now = new Date().toISOString();
+        const newSubscriber: Subscriber = {
+            id: uuidv4(),
+            email,
+            isActive: true,
+            subscribedAt: now,
+            createdAt: now,
+            updatedAt: now,
+        };
+
+        await subscriberRepository.create(newSubscriber);
+        return respond(201, newSubscriber);
+    } catch (error) {
+        console.error('Error subscribing to newsletter:', error);
+        return respond(500, { message: 'Failed to subscribe to newsletter' });
     }
-    
-    const newSubscriber: Subscriber = {
-        id: `s${Date.now()}`,
-        email: email,
-        isActive: true,
-        subscribedAt: now,
-        createdAt: now,
-        updatedAt: now,
-    };
-    await subscriberRepository.create(newSubscriber);
-    return respond(201, newSubscriber);
 };
 export const contact: APIGatewayProxyHandlerV2 = async (event) => {
     console.log('Contact form submitted (mock):', JSON.parse(event.body || '{}'));

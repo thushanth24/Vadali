@@ -56372,16 +56372,19 @@ __export(handlers_exports, {
   getArticles: () => getArticles,
   getCategories: () => getCategories,
   getNotificationsForUser: () => getNotificationsForUser,
+  getPendingComments: () => getPendingComments,
   getSubscribers: () => getSubscribers,
   getUploadUrl: () => getUploadUrl,
   getUser: () => getUser,
   getUsers: () => getUsers,
   login: () => login,
+  postComment: () => postComment,
   register: () => register,
   subscribe: () => subscribe,
   updateArticle: () => updateArticle,
   updateArticleStatus: () => updateArticleStatus,
   updateCategory: () => updateCategory,
+  updateCommentStatus: () => updateCommentStatus,
   updateFeaturedStatus: () => updateFeaturedStatus,
   updateUser: () => updateUser
 });
@@ -58620,12 +58623,14 @@ var CommentRepository = class extends BaseRepository {
   toDomain(item) {
     return {
       id: item.id,
+      articleId: item.articleId,
+      authorId: item.authorId,
       authorName: item.authorName,
       authorEmail: item.authorEmail,
       authorAvatarUrl: item.authorAvatarUrl,
       text: item.text,
-      date: item.date,
       status: item.status,
+      date: item.date || item.createdAt,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt
     };
@@ -58633,6 +58638,8 @@ var CommentRepository = class extends BaseRepository {
   toDB(comment) {
     return {
       ...comment,
+      date: comment.date || comment.createdAt,
+      ...comment.authorId === void 0 && { authorId: null },
       // Ensure we don't store undefined values
       ...comment.authorEmail === void 0 && { authorEmail: "" },
       ...comment.authorAvatarUrl === void 0 && { authorAvatarUrl: "" }
@@ -58752,15 +58759,19 @@ var SubscriberRepository = class extends BaseRepository {
       ...subscriber.preferences === void 0 && { preferences: {} }
     };
   }
-  async findByEmail(email) {
+  async findByEmail(email, options) {
+    const includeInactive = options?.includeInactive === true;
+    const expressionAttributeValues = {
+      ":email": email
+    };
+    if (!includeInactive) {
+      expressionAttributeValues[":isActive"] = true;
+    }
     const result = await this.query({
       indexName: "EmailIndex",
       keyConditionExpression: "email = :email",
-      expressionAttributeValues: {
-        ":email": email,
-        ":isActive": true
-      },
-      filterExpression: "isActive = :isActive"
+      expressionAttributeValues,
+      ...includeInactive ? {} : { filterExpression: "isActive = :isActive" }
     });
     return result.items[0] || null;
   }
@@ -59032,14 +59043,25 @@ var createArticle2 = async (event) => {
 };
 var getArticles = async (event) => {
   try {
-    const rawStatusParam = event.queryStringParameters?.status;
-    const categoryId = event.queryStringParameters?.categoryId;
-    const tag2 = event.queryStringParameters?.tag;
-    const authorId = event.queryStringParameters?.authorId;
-    const searchQuery = event.queryStringParameters?.query?.toLowerCase();
-    const isFeatured = event.queryStringParameters?.featured === "true";
-    const limit = event.queryStringParameters?.limit ? parseInt(event.queryStringParameters.limit) : 10;
-    const lastEvaluatedKey = event.queryStringParameters?.lastEvaluatedKey;
+    const queryParams = event.queryStringParameters ?? {};
+    const rawStatusParam = queryParams.status;
+    const categoryId = queryParams.categoryId;
+    const tag2 = queryParams.tag;
+    const authorId = queryParams.authorId;
+    const searchQuery = queryParams.query?.toLowerCase();
+    const isFeatured = queryParams.featured === "true";
+    const limit = queryParams.limit ? parseInt(queryParams.limit, 10) : 10;
+    const lastEvaluatedKey = queryParams.lastEvaluatedKey;
+    const hasIsAdvertisementParam = Object.prototype.hasOwnProperty.call(queryParams, "isAdvertisement");
+    const rawIsAdvertisement = queryParams.isAdvertisement;
+    const parseBooleanQueryParam = (value) => {
+      if (!value) {
+        return true;
+      }
+      const normalized = value.trim().toLowerCase();
+      const falseValues = /* @__PURE__ */ new Set(["false", "0", "no", "off"]);
+      return !falseValues.has(normalized);
+    };
     const filterExpressions = [];
     const expressionAttributeValues = {};
     const expressionAttributeNames = {};
@@ -59140,6 +59162,10 @@ var getArticles = async (event) => {
     if (authorId) {
       filterExpressions.push("authorId = :authorId");
       expressionAttributeValues[":authorId"] = authorId;
+    }
+    if (hasIsAdvertisementParam) {
+      filterExpressions.push("isAdvertisement = :isAdvertisement");
+      expressionAttributeValues[":isAdvertisement"] = parseBooleanQueryParam(rawIsAdvertisement);
     }
     if (tag2) {
       filterExpressions.push("contains(tags, :tag)");
@@ -59479,6 +59505,117 @@ var deleteCategory = async (event) => {
     return respond(500, { message: "Failed to delete category" });
   }
 };
+var createAvatarUrl = (name) => `https://ui-avatars.com/api/?background=random&name=${encodeURIComponent(name)}`;
+var getPendingComments = async () => {
+  try {
+    const pendingComments = await commentRepository.findByStatus("PENDING");
+    if (pendingComments.length === 0) {
+      return respond(200, []);
+    }
+    pendingComments.sort((a5, b5) => new Date(b5.date).getTime() - new Date(a5.date).getTime());
+    const uniqueArticleIds = Array.from(new Set(pendingComments.map((comment) => comment.articleId)));
+    const articles = await Promise.all(uniqueArticleIds.map(async (articleId) => {
+      try {
+        const article = await articleRepository.getById(articleId);
+        return article ? { id: articleId, article } : null;
+      } catch (error2) {
+        console.warn("Failed to load article for pending comment", { articleId, error: error2 });
+        return null;
+      }
+    }));
+    const articleMap = /* @__PURE__ */ new Map();
+    articles.forEach((entry) => {
+      if (entry?.article) {
+        articleMap.set(entry.id, {
+          id: entry.article.id,
+          title: entry.article.title,
+          slug: entry.article.slug
+        });
+      }
+    });
+    const responsePayload = pendingComments.map((comment) => ({
+      ...comment,
+      article: articleMap.get(comment.articleId) ?? {
+        id: comment.articleId,
+        title: "Unknown article",
+        slug: "#"
+      }
+    }));
+    return respond(200, responsePayload);
+  } catch (error2) {
+    console.error("Error fetching pending comments:", error2);
+    return respond(500, { message: "Failed to fetch pending comments" });
+  }
+};
+var postComment = async (event) => {
+  try {
+    const articleId = event.pathParameters?.id || event.pathParameters?.articleId;
+    if (!articleId) {
+      return respond(400, { message: "Article ID is required" });
+    }
+    const article = await articleRepository.getById(articleId);
+    if (!article) {
+      return respond(404, { message: "Article not found" });
+    }
+    const payload2 = JSON.parse(event.body || "{}");
+    const text = typeof payload2.text === "string" ? payload2.text.trim() : "";
+    if (!text) {
+      return respond(400, { message: "Comment text is required" });
+    }
+    const authorNameRaw = typeof payload2.authorName === "string" ? payload2.authorName.trim() : "";
+    const authorName = authorNameRaw || "Reader";
+    const authorEmailRaw = typeof payload2.authorEmail === "string" ? payload2.authorEmail.trim() : "";
+    const authorEmail = authorEmailRaw ? authorEmailRaw.toLowerCase() : void 0;
+    const authorAvatarUrl = typeof payload2.authorAvatarUrl === "string" && payload2.authorAvatarUrl.trim() ? payload2.authorAvatarUrl.trim() : createAvatarUrl(authorName);
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const comment = {
+      id: v4_default(),
+      articleId,
+      authorName,
+      authorEmail,
+      authorAvatarUrl,
+      text,
+      status: "PENDING",
+      date: now,
+      createdAt: now,
+      updatedAt: now
+    };
+    await commentRepository.create(comment);
+    return respond(201, comment);
+  } catch (error2) {
+    console.error("Error posting comment:", error2);
+    return respond(500, { message: "Failed to post comment" });
+  }
+};
+var updateCommentStatus = async (event) => {
+  try {
+    const articleId = event.pathParameters?.articleId || event.pathParameters?.id;
+    const commentId = event.pathParameters?.commentId;
+    if (!articleId || !commentId) {
+      return respond(400, { message: "Article ID and comment ID are required" });
+    }
+    const payload2 = JSON.parse(event.body || "{}");
+    const status = typeof payload2.status === "string" ? payload2.status.trim().toUpperCase() : "";
+    if (!["APPROVED", "REJECTED", "PENDING"].includes(status)) {
+      return respond(400, { message: "Invalid comment status" });
+    }
+    const existingComment = await commentRepository.getById(commentId);
+    if (!existingComment || existingComment.articleId !== articleId) {
+      return respond(404, { message: "Comment not found" });
+    }
+    const updatedComment = await commentRepository.update(commentId, {
+      status,
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+    if (!updatedComment) {
+      return respond(404, { message: "Comment not found" });
+    }
+    return respond(200, updatedComment);
+  } catch (error2) {
+    console.error("Error updating comment status:", error2);
+    return respond(500, { message: "Failed to update comment status" });
+  }
+};
 var getNotificationsForUser = async (event) => {
   const { userId } = event.pathParameters || {};
   const { items: userNotifications } = await notificationRepository.scan({
@@ -59513,26 +59650,43 @@ var getSubscribers = async () => {
   }
 };
 var subscribe = async (event) => {
-  const { email } = JSON.parse(event.body || "{}");
-  const now = (/* @__PURE__ */ new Date()).toISOString();
-  const { items: [existingSubscriber] } = await subscriberRepository.scan({
-    filterExpression: "email = :email",
-    expressionAttributeValues: { ":email": email },
-    limit: 1
-  });
-  if (existingSubscriber) {
-    return respond(409, { message: "Subscriber already exists" });
+  try {
+    const { email: rawEmail } = JSON.parse(event.body || "{}");
+    const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
+    if (!email) {
+      return respond(400, { message: "Email is required" });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return respond(400, { message: "Invalid email address" });
+    }
+    const existingSubscriber = await subscriberRepository.findByEmail(email, { includeInactive: true });
+    if (existingSubscriber) {
+      if (existingSubscriber.isActive) {
+        return respond(409, { message: "Subscriber already exists" });
+      }
+      const reactivatedSubscriber = await subscriberRepository.update(existingSubscriber.id, {
+        isActive: true,
+        subscribedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        unsubscribedAt: void 0
+      });
+      return respond(200, reactivatedSubscriber);
+    }
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const newSubscriber = {
+      id: v4_default(),
+      email,
+      isActive: true,
+      subscribedAt: now,
+      createdAt: now,
+      updatedAt: now
+    };
+    await subscriberRepository.create(newSubscriber);
+    return respond(201, newSubscriber);
+  } catch (error2) {
+    console.error("Error subscribing to newsletter:", error2);
+    return respond(500, { message: "Failed to subscribe to newsletter" });
   }
-  const newSubscriber = {
-    id: `s${Date.now()}`,
-    email,
-    isActive: true,
-    subscribedAt: now,
-    createdAt: now,
-    updatedAt: now
-  };
-  await subscriberRepository.create(newSubscriber);
-  return respond(201, newSubscriber);
 };
 var contact = async (event) => {
   console.log("Contact form submitted (mock):", JSON.parse(event.body || "{}"));
@@ -59570,16 +59724,19 @@ var getUploadUrl = async (event) => {
   getArticles,
   getCategories,
   getNotificationsForUser,
+  getPendingComments,
   getSubscribers,
   getUploadUrl,
   getUser,
   getUsers,
   login,
+  postComment,
   register,
   subscribe,
   updateArticle,
   updateArticleStatus,
   updateCategory,
+  updateCommentStatus,
   updateFeaturedStatus,
   updateUser
 });

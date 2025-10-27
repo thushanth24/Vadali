@@ -41,17 +41,18 @@ export interface AuthResponse {
 export interface Comment {
   id: string;
   articleId: string;
-  authorId: string;
+  authorId?: string;
   authorName: string;
   authorEmail?: string;
   authorAvatarUrl: string;
-  content: string;
+  text: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  date: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CommentWithArticle extends Omit<Comment, 'article'> {
+export interface CommentWithArticle extends Comment {
   article: {
     id: string;
     title: string;

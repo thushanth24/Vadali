@@ -27,17 +27,23 @@ export class SubscriberRepository extends BaseRepository<Subscriber> {
     };
   }
 
-  async findByEmail(email: string): Promise<Subscriber | null> {
+  async findByEmail(email: string, options?: { includeInactive?: boolean }): Promise<Subscriber | null> {
+    const includeInactive = options?.includeInactive === true;
+    const expressionAttributeValues: Record<string, any> = {
+      ':email': email,
+    };
+
+    if (!includeInactive) {
+      expressionAttributeValues[':isActive'] = true;
+    }
+
     const result = await this.query({
       indexName: 'EmailIndex',
       keyConditionExpression: 'email = :email',
-      expressionAttributeValues: { 
-        ':email': email,
-        ':isActive': true 
-      },
-      filterExpression: 'isActive = :isActive'
+      expressionAttributeValues,
+      ...(includeInactive ? {} : { filterExpression: 'isActive = :isActive' }),
     });
-    
+
     return result.items[0] || null;
   }
 
