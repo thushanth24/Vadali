@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/ui/Button';
 import { fetchCategories, createArticle, uploadFileToS3 } from '../../../services/api';
-import { Category, ArticleStatus } from '../../../types';
+import { Category, ArticleStatus, UserRole } from '../../../types';
 import { useAuth } from '../../../hooks/useAuth';
 import RichTextEditor from '../../../components/ui/RichTextEditor';
 
@@ -13,6 +13,7 @@ const CreateArticle: React.FC = () => {
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+    const dashboardPath = user?.role === UserRole.EDITOR ? '/dashboard/editor' : '/dashboard/author';
 
     useEffect(() => {
         fetchCategories().then(setCategories);
@@ -76,7 +77,7 @@ const CreateArticle: React.FC = () => {
             await createArticle(articleData);
 
             alert('Article submitted for review!');
-            navigate('/dashboard/author');
+            navigate(dashboardPath);
         } catch (error) {
             console.error('Failed to create article:', error);
             alert('An error occurred while submitting the article.');
@@ -120,7 +121,7 @@ const CreateArticle: React.FC = () => {
                     <input type="file" id="coverImage" name="coverImage" onChange={(e) => setCoverImageFile(e.target.files ? e.target.files[0] : null)} className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                 </div>
                 <div className="flex justify-end space-x-4">
-                    <Button type="button" variant="secondary" onClick={() => navigate('/dashboard/author')} disabled={isSubmitting}>Cancel</Button>
+                    <Button type="button" variant="secondary" onClick={() => navigate(dashboardPath)} disabled={isSubmitting}>Cancel</Button>
                     <Button type="button" variant="ghost" disabled={isSubmitting}>Save as Draft</Button>
                     <Button type="submit" variant="primary" disabled={isSubmitting}>
                         {isSubmitting ? 'Submitting...' : 'Submit for Review'}

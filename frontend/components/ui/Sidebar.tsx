@@ -34,6 +34,7 @@ const Sidebar: React.FC = () => {
   const editorLinks = [
     { to: '/dashboard/editor', icon: LayoutDashboard, text: 'Overview' },
     { to: '/dashboard/editor/articles', icon: Newspaper, text: 'Manage Articles' },
+    { to: '/dashboard/editor/create', icon: PenSquare, text: 'New Article' },
     { to: '/dashboard/editor/featured', icon: Star, text: 'Featured Manager' },
     { to: '/dashboard/editor/comments', icon: MessageSquare, text: 'Comments' },
   ];
