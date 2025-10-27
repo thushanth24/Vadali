@@ -56,7 +56,7 @@ const BreakingNewsTicker: React.FC<{ articles: Article[] }> = ({ articles }) => 
       <Link to={`/article/${a.slug}`} className="hover:text-gray-200 transition-colors">
         {a.title}
       </Link>
-      {i < 4 && <span className="mx-4 text-gray-300">â€¢</span>}
+      {i < 4 && <span className="mx-6 text-gray-300">#</span>}
     </React.Fragment>
   ));
   
@@ -81,7 +81,7 @@ const BreakingNewsTicker: React.FC<{ articles: Article[] }> = ({ articles }) => 
         }
         .animate-marquee {
           display: inline-block;
-          animation: marquee 10s linear infinite;
+          animation: marquee 18s linear infinite;
           padding-left: 100%;
         }
         .animate-marquee:hover {
@@ -439,3 +439,5 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
+
+

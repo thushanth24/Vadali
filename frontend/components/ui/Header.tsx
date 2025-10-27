@@ -11,6 +11,7 @@ import {
   Twitter,
   Youtube,
   Flame,
+  Home,
   Search,
 } from 'lucide-react';
 import Button from './Button';
@@ -269,6 +270,25 @@ const Header: React.FC = () => {
                 <Flame size={16} className="text-yellow-300 animate-pulse" />
                 Breaking News
               </Link>
+
+              {/* Home Link */}
+              <Link
+                to="/"
+                aria-current={location.pathname === '/' ? 'page' : undefined}
+                className={`group relative px-5 py-3.5 text-sm font-medium uppercase tracking-wider transition-all duration-200 ${
+                  location.pathname === '/' ? 'text-yellow-300 shadow-inner bg-blue-900/60' : 'text-white hover:text-yellow-200 hover:bg-blue-800/50'
+                }`}
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  <Home size={16} className="transition-transform duration-200 group-hover:scale-110" />
+                  Home
+                </span>
+                <span
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 transform transition-transform duration-300 ${
+                    location.pathname === '/' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                  }`}
+                ></span>
+              </Link>
               
               {/* Category Links */}
               <div className="flex items-center gap-1">
@@ -322,6 +342,19 @@ const Header: React.FC = () => {
             >
               <Flame size={16} className="text-yellow-300" />
               Breaking
+            </Link>
+            <Link
+              to="/"
+              onClick={() => setIsMenuOpen(false)}
+              aria-current={location.pathname === '/' ? 'page' : undefined}
+              className={`flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition ${
+                location.pathname === '/'
+                  ? 'border-blue-700 bg-blue-900/80 text-yellow-200 shadow'
+                  : 'border-gray-200 text-gray-700 hover:border-red-500 hover:text-red-600'
+              }`}
+            >
+              <Home size={16} className="text-yellow-300" />
+              Home
             </Link>
             {categories.map((category) => (
               <Link
