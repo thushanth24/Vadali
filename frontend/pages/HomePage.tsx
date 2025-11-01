@@ -228,154 +228,161 @@ const HomePage: React.FC = () => {
     return <LoadingSpinner label="Loading homepage..." fullScreen />;
   }
 
+  // Group articles by category
+  const articlesByCategory = categories.map(category => ({
+    ...category,
+    articles: articlesForFeed
+      .filter(article => article.categoryId === category.id)
+      .slice(0, 4) // Get latest 4 articles for each category
+  })).filter(category => category.articles.length > 0);
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <style>{`
-        @keyframes trending-slide-up {
-          0% {
-            transform: translateY(16px);
-            opacity: 0.35;
+        @keyframes slide-up {
+          from {
+            transform: translateY(20px);
+            opacity: 0;
           }
-          100% {
+          to {
             transform: translateY(0);
             opacity: 1;
           }
         }
 
-        @keyframes trending-slide-down {
-          0% {
-            transform: translateY(-16px);
-            opacity: 0.35;
+        @keyframes slide-down {
+          from {
+            transform: translateY(-20px);
+            opacity: 0;
           }
-          100% {
+          to {
             transform: translateY(0);
             opacity: 1;
           }
         }
 
         .animate-trending-up > * {
-          animation: trending-slide-up 0.45s ease both;
+          animation: slide-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
         }
 
         .animate-trending-down > * {
-          animation: trending-slide-down 0.45s ease both;
+          animation: slide-down 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
         }
+
+        /* Staggered animation for items */
+        .animate-trending-up > *:nth-child(1) { animation-delay: 0.05s; }
+        .animate-trending-up > *:nth-child(2) { animation-delay: 0.1s; }
+        .animate-trending-up > *:nth-child(3) { animation-delay: 0.15s; }
+        .animate-trending-up > *:nth-child(4) { animation-delay: 0.2s; }
+
+        .animate-trending-down > *:nth-child(1) { animation-delay: 0.05s; }
+        .animate-trending-down > *:nth-child(2) { animation-delay: 0.1s; }
+        .animate-trending-down > *:nth-child(3) { animation-delay: 0.15s; }
+        .animate-trending-down > *:nth-child(4) { animation-delay: 0.2s; }
       `}</style>
       <BreakingNewsTicker articles={articlesForFeed} />
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-10">
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            <aside className="lg:col-span-3 h-full">
-              <div className="bg-white border border-gray-200 shadow-sm rounded-2xl h-full flex flex-col">
-                <div className="p-6 flex-1 flex flex-col">
-                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-                    <div>
-                      <span className="block text-[11px] font-semibold uppercase tracking-[0.3em] text-gray-400">
-                        Trending
-                      </span>
-                      <h2 className="text-lg font-semibold text-gray-900 mt-2">
-                        Trending Now
-                      </h2>
-                    </div>
-                    <div className="flex items-center gap-1">
+            <aside className="lg:col-span-3 h-full space-y-6">
+              {/* Trending Now Section */}
+              <div className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
+                <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-white">
+                      Trending Now
+                    </h2>
+                    <div className="flex items-center space-x-2 bg-white/10 rounded-lg p-1">
                       <button
                         type="button"
                         onClick={() => handleTrendingStep('up')}
-                        className="p-2 rounded-md border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        aria-label="Show previous trending story"
+                        className="p-1.5 rounded-md bg-white text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="Previous story"
                         disabled={!canManuallyCycleTrending}
                       >
-                        <ChevronUp size={16} />
+                        <ChevronUp size={16} strokeWidth={2.5} />
                       </button>
+                      <div className="h-4 w-px bg-white/30"></div>
                       <button
                         type="button"
                         onClick={() => handleTrendingStep('down')}
-                        className="p-2 rounded-md border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        aria-label="Show next trending story"
+                        className="p-1.5 rounded-md bg-white text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="Next story"
                         disabled={!canManuallyCycleTrending}
                       >
                         <ChevronDown size={16} />
                       </button>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 uppercase tracking-[0.2em] mb-4">
-                    Updated every 5 seconds
-                  </p>
-                  <div className="relative flex-1 overflow-hidden">
-                    {visibleTrending.length === 0 ? (
-                      <p className="text-sm text-gray-500">No trending stories available.</p>
-                    ) : (
-                      <div className={`space-y-3 transition-all duration-500 ease-in-out ${trendingAnimationClass}`}>
-                        {visibleTrending.map((article, index) => {
-                          const total = trendingHighlights.length;
-                          const derivedIndex =
-                            total <= 4
-                              ? trendingHighlights.indexOf(article)
-                              : (trendingStartIndex + index) % total;
-                          const safeIndex = derivedIndex >= 0 ? derivedIndex : 0;
-                          const articleRank = safeIndex + 1;
-                          const formattedDate = formatArticleDate(article, {
-                            month: 'short',
-                            day: 'numeric',
-                          });
-                          const displayTitle =
-                            article.title.length > MAX_TRENDING_TITLE_LENGTH
-                              ? `${article.title.slice(0, MAX_TRENDING_TITLE_LENGTH - 3)}...`
-                              : article.title;
+                 
+                </div>
 
-                          return (
-                            <div
-                              key={article.id}
-                              className="group border border-gray-200 rounded-xl p-3 hover:border-gray-300 hover:shadow-sm transition-colors"
-                            >
-                              <div className="flex items-start gap-3">
-                                <span
-                                  className={`flex-shrink-0 w-8 h-8 rounded-full font-semibold text-sm flex items-center justify-center ${
-                                    articleRank <= 3
-                                      ? 'bg-gray-900 text-white'
-                                      : 'bg-gray-100 text-gray-600'
-                                  }`}
-                                >
-                                  {articleRank}
-                                </span>
+                <div className="p-4">
+                  {visibleTrending.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">No trending stories available.</p>
+                  ) : (
+                    <div 
+                      className={`space-y-4 ${trendingAnimationClass}`}
+                      style={{
+                        perspective: '1000px',
+                        transformStyle: 'preserve-3d'
+                      }}
+                    >
+                      {visibleTrending.map((article, index) => {
+                        const formattedDate = formatArticleDate(article, {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        });
+                        const displayTitle = article.title.length > MAX_TRENDING_TITLE_LENGTH
+                          ? `${article.title.slice(0, MAX_TRENDING_TITLE_LENGTH - 3)}...`
+                          : article.title;
+
+                        return (
+                          <article 
+                            key={article.id}
+                            className="group relative overflow-hidden rounded-lg bg-white hover:shadow-md transition-all duration-300 border border-gray-100 transform hover:-translate-y-0.5"
+                            style={{
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                              willChange: 'transform, box-shadow'
+                            }}
+                          >
+                            <Link to={`/article/${article.slug}`} className="block">
+                              <div className="flex items-start p-3">
                                 {article.coverImageUrl ? (
-                                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                                  <div className="w-20 h-16 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
                                     <img
                                       src={article.coverImageUrl}
                                       alt={article.title}
-                                      className="w-full h-full object-cover"
+                                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                      loading="lazy"
                                     />
                                   </div>
                                 ) : (
-                                  <div className="w-14 h-14 rounded-lg bg-gray-100 flex-shrink-0 flex items-center justify-center text-[11px] text-gray-400">
-                                    No image
+                                  <div className="w-20 h-16 flex-shrink-0 rounded-md bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                                    No Image
                                   </div>
                                 )}
-                                <div className="flex-1 border-l border-gray-200 pl-3">
-                                  <h3 className="text-sm font-semibold text-gray-900 leading-tight group-hover:text-gray-700 transition-colors line-clamp-2 min-h-[3.25rem]">
-                                    <Link to={`/article/${article.slug}`}>
-                                      {displayTitle}
-                                    </Link>
+                                <div className="ml-3 flex-1 min-w-0">
+                                  <h3 className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-red-600 transition-colors line-clamp-2">
+                                    {displayTitle}
                                   </h3>
                                   {formattedDate && (
-                                    <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
-                                      <span className="inline-flex items-center gap-1">
-                                        <Clock size={12} />
-                                        {formattedDate}
-                                      </span>
-                                      <span className="font-medium text-gray-500">
-                                        #{articleRank}
-                                      </span>
+                                    <div className="mt-1.5 flex items-center text-xs text-gray-500">
+                                      <Clock size={12} className="mr-1 flex-shrink-0" />
+                                      <span className="truncate">{formattedDate}</span>
                                     </div>
                                   )}
                                 </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
+                            </Link>
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-100 via-red-400 to-red-100 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             </aside>
@@ -448,93 +455,182 @@ const HomePage: React.FC = () => {
               )}
             </div>
 
-            <aside className="lg:col-span-3 h-full">
-              <div className="bg-white rounded-xl shadow-md overflow-hidden h-full flex flex-col">
-                <div className="p-6 flex-1 flex flex-col">
-                  <h2 className="text-lg font-bold text-gray-800 mb-5 pb-2 border-b border-gray-100 relative">
+            <aside className="lg:col-span-3 h-full space-y-6">
+              {/* Latest Updates Section */}
+              <div className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                  <h2 className="text-lg font-bold text-white">
                     Latest Updates
-                    <span className="absolute bottom-0 left-0 w-10 h-0.5 bg-gradient-to-r from-red-500 to-orange-500"></span>
                   </h2>
-                  <div className="space-y-4">
-                    {latestHighlights.map(article => {
-                      const formattedDate = formatArticleDate(article, {
-                        month: 'short',
-                        day: 'numeric',
-                      });
-                      const categoryName = categories.find(c => c.id === article.categoryId)?.name;
+                </div>
+                <div className="p-4">
+                  {latestHighlights.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">No latest updates available.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {latestHighlights.map((article) => {
+                        const formattedDate = formatArticleDate(article, {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        });
+                        const categoryName = categories.find(c => c.id === article.categoryId)?.name;
+                        const displayTitle = article.title.length > MAX_TRENDING_TITLE_LENGTH
+                          ? `${article.title.slice(0, MAX_TRENDING_TITLE_LENGTH - 3)}...`
+                          : article.title;
 
-                      return (
-                        <div key={article.id} className="flex items-start gap-3 group rounded-lg transition-colors hover:bg-gray-50 p-2">
-                          <span className="mt-2 h-2 w-2 rounded-full bg-red-500 group-hover:bg-red-600 transition-colors"></span>
-                          <div className="flex-1">
-                            <Link to={`/article/${article.slug}`} className="text-sm font-semibold text-gray-900 leading-tight group-hover:text-red-600 transition-colors line-clamp-2">
-                              {article.title}
+                        return (
+                          <article 
+                            key={article.id}
+                            className="group relative overflow-hidden rounded-lg bg-white hover:shadow-md transition-all duration-300 border border-gray-100 transform hover:-translate-y-0.5"
+                            style={{
+                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                              willChange: 'transform, box-shadow'
+                            }}
+                          >
+                            <Link to={`/article/${article.slug}`} className="block">
+                              <div className="flex items-start p-3">
+                                {article.coverImageUrl ? (
+                                  <div className="w-20 h-16 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+                                    <img
+                                      src={article.coverImageUrl}
+                                      alt={article.title}
+                                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                      loading="lazy"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="w-20 h-16 flex-shrink-0 rounded-md bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                                    No Image
+                                  </div>
+                                )}
+                                <div className="ml-3 flex-1 min-w-0">
+                                  <h3 className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors line-clamp-2">
+                                    {displayTitle}
+                                  </h3>
+                                  <div className="mt-1.5 flex items-center justify-between">
+                                    <div className="flex items-center text-xs text-gray-500">
+                                      <Clock size={12} className="mr-1 flex-shrink-0" />
+                                      <span className="truncate">{formattedDate}</span>
+                                    </div>
+                                    {categoryName && (
+                                      <span className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                                        {categoryName}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
                             </Link>
-                            <div className="flex items-center text-xs text-gray-500 mt-1 gap-2">
-                              {formattedDate && (
-                                <span className="flex items-center gap-1">
-                                  <Clock size={12} />
-                                  {formattedDate}
-                                </span>
-                              )}
-                              {categoryName && <span className="text-red-600 font-medium">{categoryName}</span>}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-100 via-blue-400 to-blue-100 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             </aside>
           </section>
 
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              {/* Latest News Section */}
-              <section className="bg-white rounded-xl shadow-md overflow-hidden">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800 relative">
-                      Latest News
-                      <span className="absolute bottom-0 left-0 w-12 h-1 bg-red-600 rounded-full"></span>
-                    </h2>
-                    <Link to="/trending" className="text-sm font-medium text-red-600 hover:underline flex items-center">
-                      View All
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {latestArticles.map(article => (
-                      <ArticleCardWrapper
-                        key={article.id}
-                        article={article}
-                        category={categories.find(c => c.id === article.categoryId)}
-                        className="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 h-full"
-                      />
-                    ))}
-                  </div>
+          <div className="space-y-8">
+            {/* Latest News Section */}
+            <section className="bg-white rounded-xl shadow-md overflow-hidden">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 relative">
+                    Latest News
+                    <span className="absolute bottom-0 left-0 w-12 h-1 bg-red-600 rounded-full"></span>
+                  </h2>
+                  <Link to="/trending" className="text-sm font-medium text-red-600 hover:underline flex items-center">
+                    View All
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
                 </div>
-              </section>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {latestArticles.map(article => (
+                    <ArticleCardWrapper
+                      key={article.id}
+                      article={article}
+                      category={categories.find(c => c.id === article.categoryId)}
+                      className="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 h-full"
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
 
-              {/* Advertisement Section */}
+            {/* Category-wise News Sections - Full Width */}
+            <div className="space-y-8">
+              {articlesByCategory.map(category => (
+                <section key={category.id} className="bg-white rounded-xl shadow-md overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-2xl font-bold text-gray-800 relative">
+                        {category.name}
+                        <span className="absolute bottom-0 left-0 w-12 h-1 bg-blue-600 rounded-full"></span>
+                      </h2>
+                      <Link 
+                        to={`/category/${category.slug}`}
+                        className="text-sm font-medium text-blue-600 hover:underline flex items-center"
+                      >
+                        View All
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                      {category.articles.map(article => (
+                        <ArticleCardWrapper
+                          key={article.id}
+                          article={article}
+                          category={category}
+                          className="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 h-full"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              ))}
+            </div>
+
+            {/* Full Width Sponsored Content Section */}
+            <div className="w-full">
               {topAdvertisements.length > 0 && (
-                <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl shadow-md overflow-hidden border border-amber-100">
+                <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl shadow-md overflow-hidden border border-amber-100 mb-8">
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-6">
                       <h2 className="text-2xl font-bold text-gray-800">Sponsored Content</h2>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">Advertisement</span>
+                      <div className="flex items-center space-x-4">
+                        <a 
+                          href="#" 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            alert('View All clicked! This will show all advertisements.');
+                            // TODO: Add navigation to advertisements page
+                          }}
+                          className="text-sm font-medium text-blue-600 hover:underline flex items-center cursor-pointer"
+                        >
+                          View All
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </a>
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">Advertisement</span>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {topAdvertisements.map((article, index) => (
+                    <div className="grid grid-cols-2 gap-6">
+                      {topAdvertisements.slice(0, 4).map((article) => (
                         <div
                           key={article.id}
-                          className={`bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 ${index === 0 ? 'md:col-span-2' : ''}`}
+                          className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
                         >
-                          <Link to={`/ads/${article.slug}`} className="block group">
-                            <div className="h-48 overflow-hidden">
+                          <Link to={`/ads/${article.slug}`} className="block group h-full flex flex-col">
+                            <div className="h-40 overflow-hidden">
                               {article.coverImageUrl?.trim() ? (
                                 <img
                                   src={article.coverImageUrl}
@@ -547,17 +643,21 @@ const HomePage: React.FC = () => {
                                 </div>
                               )}
                             </div>
-                            <div className="p-5">
+                            <div className="p-4 flex-1 flex flex-col">
                               <div className="flex items-center justify-between mb-2">
                                 <span className="text-xs uppercase tracking-wide text-amber-600 font-semibold">Sponsored</span>
-                                <span className="text-xs text-gray-400">{formatArticleDate(article, { month: 'short', day: 'numeric' })}</span>
+                                <span className="text-xs text-gray-400">
+                                  {formatArticleDate(article, { month: 'short', day: 'numeric' })}
+                                </span>
                               </div>
-                              <h3 className="text-lg font-semibold text-gray-800 group-hover:text-red-600 transition-colors">
+                              <h3 className="text-base font-semibold text-gray-800 group-hover:text-red-600 transition-colors line-clamp-2">
                                 {article.title}
                               </h3>
-                              <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                                {article.summary}
-                              </p>
+                              {article.summary && (
+                                <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                                  {article.summary}
+                                </p>
+                              )}
                             </div>
                           </Link>
                         </div>
@@ -568,68 +668,16 @@ const HomePage: React.FC = () => {
               )}
             </div>
 
-            <aside className="space-y-8">
-              {/* Categories */}
-              <div className="bg-white rounded-xl shadow-md overflow-hidden h-full flex flex-col">
-                <div className="p-6">
-                  <h2 className="text-xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-100 relative">
-                    Categories
-                    <span className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-600"></span>
-                  </h2>
-                  <div className="grid grid-cols-2 gap-3">
-                    {categories.map((category, index) => {
-                      const colors = [
-                        'bg-red-50 text-red-700 hover:bg-red-100',
-                        'bg-blue-50 text-blue-700 hover:bg-blue-100',
-                        'bg-green-50 text-green-700 hover:bg-green-100',
-                        'bg-yellow-50 text-yellow-700 hover:bg-yellow-100',
-                        'bg-purple-50 text-purple-700 hover:bg-purple-100',
-                        'bg-pink-50 text-pink-700 hover:bg-pink-100',
-                      ];
-                      const colorClass = colors[index % colors.length];
-
-                      return (
-                        <Link
-                          key={category.id}
-                          to={`/category/${category.slug}`}
-                          className={`${colorClass} text-sm font-medium px-4 py-3 rounded-lg transition-all flex items-center justify-between`}
-                        >
-                          <span>{category.name}</span>
-                          <span className="text-xs bg-white/50 rounded-full w-5 h-5 flex items-center justify-center">
-                            {articlesForFeed.filter(a => a.categoryId === category.id).length}
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
+            {/* Main Content and Sidebar */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
+              <div className="lg:col-span-8">
+                {/* Main content can go here */}
               </div>
-
-              {/* Newsletter */}
-              <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-lg overflow-hidden">
-                <div className="p-6 text-center">
-                  <div className="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">Stay Updated</h3>
-                  <p className="text-blue-100 text-sm mb-4">Subscribe to our newsletter for the latest news and updates.</p>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="email"
-                      placeholder="Your email address"
-                      className="flex-1 px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white/20 bg-white/10 text-white placeholder-blue-200"
-                    />
-                    <button className="bg-white text-blue-700 hover:bg-blue-50 font-medium px-4 py-2 rounded-lg text-sm transition-colors">
-                      Subscribe
-                    </button>
-                  </div>
-                  <p className="text-blue-200 text-xs mt-3">We respect your privacy. Unsubscribe at any time.</p>
-                </div>
-              </div>
-            </aside>
-          </section>
+              <aside className="lg:col-span-4 space-y-8">
+                {/* Sidebar content */}
+              </aside>
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -637,6 +685,3 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
-
-
-
