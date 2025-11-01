@@ -237,7 +237,7 @@ const HomePage: React.FC = () => {
   })).filter(category => category.articles.length > 0);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-150 min-h-screen">
       <style>{`
         @keyframes slide-up {
           from {
@@ -286,7 +286,7 @@ const HomePage: React.FC = () => {
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             <aside className="lg:col-span-3 h-full space-y-6">
               {/* Trending Now Section */}
-              <div className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
+              <div className="bg-gray-100 border border-gray-200 shadow-sm rounded-xl overflow-hidden">
                 <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-bold text-white">
@@ -342,7 +342,7 @@ const HomePage: React.FC = () => {
                         return (
                           <article 
                             key={article.id}
-                            className="group relative overflow-hidden rounded-lg bg-white hover:shadow-md transition-all duration-300 border border-gray-100 transform hover:-translate-y-0.5"
+                            className="group relative overflow-hidden rounded-lg bg-gray-50 hover:bg-white hover:shadow-md transition-all duration-300 border border-gray-100 transform hover:-translate-y-0.5"
                             style={{
                               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                               willChange: 'transform, box-shadow'
@@ -351,7 +351,7 @@ const HomePage: React.FC = () => {
                             <Link to={`/article/${article.slug}`} className="block">
                               <div className="flex items-start p-3">
                                 {article.coverImageUrl ? (
-                                  <div className="w-20 h-16 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+                                  <div className="w-20 h-16 flex-shrink-0 rounded-md overflow-hidden bg-white shadow-sm">
                                     <img
                                       src={article.coverImageUrl}
                                       alt={article.title}
@@ -360,7 +360,7 @@ const HomePage: React.FC = () => {
                                     />
                                   </div>
                                 ) : (
-                                  <div className="w-20 h-16 flex-shrink-0 rounded-md bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                                  <div className="w-20 h-16 flex-shrink-0 rounded-md bg-white shadow-sm flex items-center justify-center text-xs text-gray-400">
                                     No Image
                                   </div>
                                 )}
@@ -457,8 +457,8 @@ const HomePage: React.FC = () => {
 
             <aside className="lg:col-span-3 h-full space-y-6">
               {/* Latest Updates Section */}
-              <div className="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+              <div className="bg-gray-100 border border-gray-200 shadow-sm rounded-xl overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-700 to-blue-800 px-6 py-4 border-b border-blue-800">
                   <h2 className="text-lg font-bold text-white">
                     Latest Updates
                   </h2>
@@ -483,7 +483,7 @@ const HomePage: React.FC = () => {
                         return (
                           <article 
                             key={article.id}
-                            className="group relative overflow-hidden rounded-lg bg-white hover:shadow-md transition-all duration-300 border border-gray-100 transform hover:-translate-y-0.5"
+                            className="group relative overflow-hidden rounded-lg bg-gray-50 hover:bg-white hover:shadow-md transition-all duration-300 border border-gray-100 transform hover:-translate-y-0.5"
                             style={{
                               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                               willChange: 'transform, box-shadow'
@@ -492,7 +492,7 @@ const HomePage: React.FC = () => {
                             <Link to={`/article/${article.slug}`} className="block">
                               <div className="flex items-start p-3">
                                 {article.coverImageUrl ? (
-                                  <div className="w-20 h-16 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+                                  <div className="w-20 h-16 flex-shrink-0 rounded-md overflow-hidden bg-white shadow-sm">
                                     <img
                                       src={article.coverImageUrl}
                                       alt={article.title}
@@ -501,7 +501,7 @@ const HomePage: React.FC = () => {
                                     />
                                   </div>
                                 ) : (
-                                  <div className="w-20 h-16 flex-shrink-0 rounded-md bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                                  <div className="w-20 h-16 flex-shrink-0 rounded-md bg-white shadow-sm flex items-center justify-center text-xs text-gray-400">
                                     No Image
                                   </div>
                                 )}
@@ -534,30 +534,53 @@ const HomePage: React.FC = () => {
             </aside>
           </section>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Latest News Section */}
-            <section className="bg-white rounded-xl shadow-md overflow-hidden">
+            <section className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
               <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800 relative">
-                    Latest News
-                    <span className="absolute bottom-0 left-0 w-12 h-1 bg-red-600 rounded-full"></span>
-                  </h2>
-                  <Link to="/trending" className="text-sm font-medium text-red-600 hover:underline flex items-center">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 relative inline-block">
+                      Latest News
+                      <span className="absolute bottom-0 left-0 w-12 h-1 bg-gradient-to-r from-red-600 to-orange-500 rounded-full"></span>
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">Stay updated with the most recent stories</p>
+                  </div>
+                  <Link 
+                    to="/trending" 
+                    className="text-sm font-medium text-red-600 hover:text-red-700 hover:underline flex items-center transition-colors duration-200 group"
+                  >
                     View All
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-4 w-4 ml-1.5 transform group-hover:translate-x-1 transition-transform duration-200" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {latestArticles.map(article => (
-                    <ArticleCardWrapper
-                      key={article.id}
-                      article={article}
-                      category={categories.find(c => c.id === article.categoryId)}
-                      className="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 h-full"
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {latestArticles.map((article, index) => (
+                    <div 
+                      key={article.id} 
+                      className={`relative group ${index < 3 ? 'md:first:col-span-2 lg:first:col-span-1' : ''}`}
+                    >
+                      <ArticleCardWrapper
+                        article={article}
+                        category={categories.find(c => c.id === article.categoryId)}
+                        className={`bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-gray-200 transition-all duration-300 h-full flex flex-col group-hover:shadow-lg ${
+                          index < 3 ? 'md:first:flex-row md:first:h-64' : ''
+                        }`}
+                      />
+                      {index < 3 && (
+                        <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                          {index === 0 ? 'Latest' : `#${index + 1}`}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -598,14 +621,14 @@ const HomePage: React.FC = () => {
               ))}
             </div>
 
-            {/* Full Width Sponsored Content Section */}
+            {/* Full Width Sponsored Content Section - Responsive */}
             <div className="w-full">
               {topAdvertisements.length > 0 && (
                 <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl shadow-md overflow-hidden border border-amber-100 mb-8">
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold text-gray-800">Sponsored Content</h2>
-                      <div className="flex items-center space-x-4">
+                  <div className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
+                      <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Sponsored Content</h2>
+                      <div className="flex items-center flex-wrap gap-2 sm:gap-4">
                         <a 
                           href="#" 
                           onClick={(e) => {
@@ -613,7 +636,7 @@ const HomePage: React.FC = () => {
                             alert('View All clicked! This will show all advertisements.');
                             // TODO: Add navigation to advertisements page
                           }}
-                          className="text-sm font-medium text-blue-600 hover:underline flex items-center cursor-pointer"
+                          className="text-sm font-medium text-blue-600 hover:underline flex items-center cursor-pointer whitespace-nowrap"
                         >
                           View All
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -623,38 +646,39 @@ const HomePage: React.FC = () => {
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">Advertisement</span>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                       {topAdvertisements.slice(0, 4).map((article) => (
                         <div
                           key={article.id}
-                          className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+                          className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 h-full flex flex-col"
                         >
                           <Link to={`/ads/${article.slug}`} className="block group h-full flex flex-col">
-                            <div className="h-40 overflow-hidden">
+                            <div className="aspect-video overflow-hidden">
                               {article.coverImageUrl?.trim() ? (
                                 <img
                                   src={article.coverImageUrl}
                                   alt={article.title}
                                   className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+                                  loading="lazy"
                                 />
                               ) : (
-                                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+                                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm p-4">
                                   No image available
                                 </div>
                               )}
                             </div>
-                            <div className="p-4 flex-1 flex flex-col">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs uppercase tracking-wide text-amber-600 font-semibold">Sponsored</span>
-                                <span className="text-xs text-gray-400">
+                            <div className="p-3 sm:p-4 flex-1 flex flex-col">
+                              <div className="flex items-center justify-between mb-1 sm:mb-2 gap-2">
+                                <span className="text-[10px] xs:text-xs uppercase tracking-wide text-amber-600 font-semibold">Sponsored</span>
+                                <span className="text-[10px] xs:text-xs text-gray-400 whitespace-nowrap">
                                   {formatArticleDate(article, { month: 'short', day: 'numeric' })}
                                 </span>
                               </div>
-                              <h3 className="text-base font-semibold text-gray-800 group-hover:text-red-600 transition-colors line-clamp-2">
+                              <h3 className="text-sm sm:text-base font-semibold text-gray-800 group-hover:text-red-600 transition-colors line-clamp-2">
                                 {article.title}
                               </h3>
                               {article.summary && (
-                                <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                                <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2 line-clamp-2">
                                   {article.summary}
                                 </p>
                               )}
