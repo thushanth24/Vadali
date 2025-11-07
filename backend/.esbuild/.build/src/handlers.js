@@ -58585,6 +58585,7 @@ var CategoryRepository = class extends BaseRepository {
       slug: item.slug,
       description: item.description || "",
       showInHeader: item.showInHeader !== void 0 ? Boolean(item.showInHeader) : true,
+      parentCategoryId: item.parentCategoryId ?? null,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt
     };
@@ -58592,6 +58593,7 @@ var CategoryRepository = class extends BaseRepository {
   toDB(category) {
     return {
       ...category,
+      parentCategoryId: category.parentCategoryId ?? null,
       ...category.description === void 0 && { description: "" }
     };
   }
@@ -58812,6 +58814,33 @@ var categoryRepository = new CategoryRepository();
 var commentRepository = new CommentRepository();
 var notificationRepository = new NotificationRepository();
 var subscriberRepository = new SubscriberRepository();
+var normalizeParentCategoryId = (input) => {
+  if (input === void 0) {
+    return { provided: false, value: null };
+  }
+  if (input === null) {
+    return { provided: true, value: null };
+  }
+  if (typeof input === "string") {
+    const trimmed = input.trim();
+    return { provided: true, value: trimmed.length ? trimmed : null };
+  }
+  return { provided: false, value: null };
+};
+var buildCategoryLookup = (categories) => categories.reduce((acc, category) => {
+  acc[category.id] = category;
+  return acc;
+}, {});
+var createsCycle = (candidateParentId, categoryId, lookup) => {
+  let currentParentId = candidateParentId;
+  while (currentParentId) {
+    if (currentParentId === categoryId) {
+      return true;
+    }
+    currentParentId = lookup[currentParentId]?.parentCategoryId ?? null;
+  }
+  return false;
+};
 var login = async (event) => {
   const { email, password } = JSON.parse(event.body || "{}");
   if (!email || !password) {
@@ -59371,6 +59400,7 @@ var createCategory = async (event) => {
     const rawSlug = typeof payload2.slug === "string" ? payload2.slug.trim() : "";
     const description = typeof payload2.description === "string" ? payload2.description.trim() : void 0;
     let showInHeader = true;
+    const { provided: parentProvided, value: normalizedParentValue } = normalizeParentCategoryId(payload2.parentCategoryId);
     if (typeof payload2.showInHeader === "boolean") {
       showInHeader = payload2.showInHeader;
     } else if (typeof payload2.showInHeader === "string") {
@@ -59396,6 +59426,12 @@ var createCategory = async (event) => {
     if (existingBySlug) {
       return respond(409, { message: "A category with this slug already exists" });
     }
+    if (normalizedParentValue) {
+      const parentCategory = await categoryRepository.getById(normalizedParentValue);
+      if (!parentCategory) {
+        return respond(400, { message: "Parent category not found" });
+      }
+    }
     const timestamp = (/* @__PURE__ */ new Date()).toISOString();
     const newCategory = {
       id: v4_default(),
@@ -59403,6 +59439,7 @@ var createCategory = async (event) => {
       slug,
       description,
       showInHeader,
+      ...parentProvided ? { parentCategoryId: normalizedParentValue ?? null } : { parentCategoryId: null },
       createdAt: timestamp,
       updatedAt: timestamp
     };
@@ -59464,6 +59501,25 @@ var updateCategory = async (event) => {
         updates.showInHeader = false;
       }
     }
+    const parentNormalization = normalizeParentCategoryId(payload2.parentCategoryId);
+    if (parentNormalization.provided) {
+      const desiredParentId = parentNormalization.value;
+      if (desiredParentId === existingCategory.id) {
+        return respond(400, { message: "Category cannot be its own parent" });
+      }
+      if (desiredParentId) {
+        const parentCategory = await categoryRepository.getById(desiredParentId);
+        if (!parentCategory) {
+          return respond(400, { message: "Parent category not found" });
+        }
+        const { items: allCategories } = await categoryRepository.scan();
+        const lookup = buildCategoryLookup(allCategories);
+        if (createsCycle(desiredParentId, existingCategory.id, lookup)) {
+          return respond(400, { message: "Cannot assign a descendant category as the parent" });
+        }
+      }
+      updates.parentCategoryId = desiredParentId ?? null;
+    }
     if (Object.keys(updates).length === 0) {
       return respond(400, { message: "No valid category fields provided for update" });
     }
@@ -59494,6 +59550,14 @@ var deleteCategory = async (event) => {
     });
     if (linkedArticles.length > 0) {
       return respond(400, { message: "Category is in use by existing articles and cannot be deleted" });
+    }
+    const { items: childCategories } = await categoryRepository.scan({
+      filterExpression: "parentCategoryId = :parentId",
+      expressionAttributeValues: { ":parentId": id },
+      limit: 1
+    });
+    if (childCategories.length > 0) {
+      return respond(400, { message: "Category has nested categories. Reassign or remove them before deleting." });
     }
     const deleted = await categoryRepository.delete(id);
     if (!deleted) {

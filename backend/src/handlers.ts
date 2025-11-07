@@ -37,6 +37,42 @@ const commentRepository = new CommentRepository();
 const notificationRepository = new NotificationRepository();
 const subscriberRepository = new SubscriberRepository();
 
+const normalizeParentCategoryId = (input: unknown): { provided: boolean; value: string | null } => {
+    if (input === undefined) {
+        return { provided: false, value: null };
+    }
+
+    if (input === null) {
+        return { provided: true, value: null };
+    }
+
+    if (typeof input === 'string') {
+        const trimmed = input.trim();
+        return { provided: true, value: trimmed.length ? trimmed : null };
+    }
+
+    return { provided: false, value: null };
+};
+
+const buildCategoryLookup = (categories: Category[]): Record<string, Category> =>
+    categories.reduce<Record<string, Category>>((acc, category) => {
+        acc[category.id] = category;
+        return acc;
+    }, {});
+
+const createsCycle = (candidateParentId: string, categoryId: string, lookup: Record<string, Category>): boolean => {
+    let currentParentId: string | null | undefined = candidateParentId;
+
+    while (currentParentId) {
+        if (currentParentId === categoryId) {
+            return true;
+        }
+        currentParentId = lookup[currentParentId]?.parentCategoryId ?? null;
+    }
+
+    return false;
+};
+
 // --- USER & AUTH ---
 export const login: APIGatewayProxyHandlerV2 = async (event) => {
     const { email, password } = JSON.parse(event.body || '{}');
@@ -749,6 +785,7 @@ export const createCategory: APIGatewayProxyHandlerV2 = async (event) => {
             ? payload.description.trim()
             : undefined;
         let showInHeader = true;
+        const { provided: parentProvided, value: normalizedParentValue } = normalizeParentCategoryId(payload.parentCategoryId);
 
         if (typeof payload.showInHeader === 'boolean') {
             showInHeader = payload.showInHeader;
@@ -781,6 +818,13 @@ export const createCategory: APIGatewayProxyHandlerV2 = async (event) => {
             return respond(409, { message: 'A category with this slug already exists' });
         }
 
+        if (normalizedParentValue) {
+            const parentCategory = await categoryRepository.getById(normalizedParentValue);
+            if (!parentCategory) {
+                return respond(400, { message: 'Parent category not found' });
+            }
+        }
+
         const timestamp = new Date().toISOString();
         const newCategory: Category = {
             id: uuidv4(),
@@ -788,6 +832,7 @@ export const createCategory: APIGatewayProxyHandlerV2 = async (event) => {
             slug,
             description,
             showInHeader,
+            ...(parentProvided ? { parentCategoryId: normalizedParentValue ?? null } : { parentCategoryId: null }),
             createdAt: timestamp,
             updatedAt: timestamp,
         };
@@ -860,6 +905,31 @@ export const updateCategory: APIGatewayProxyHandlerV2 = async (event) => {
             }
         }
 
+        const parentNormalization = normalizeParentCategoryId(payload.parentCategoryId);
+        if (parentNormalization.provided) {
+            const desiredParentId = parentNormalization.value;
+
+            if (desiredParentId === existingCategory.id) {
+                return respond(400, { message: 'Category cannot be its own parent' });
+            }
+
+            if (desiredParentId) {
+                const parentCategory = await categoryRepository.getById(desiredParentId);
+                if (!parentCategory) {
+                    return respond(400, { message: 'Parent category not found' });
+                }
+
+                const { items: allCategories } = await categoryRepository.scan();
+                const lookup = buildCategoryLookup(allCategories);
+
+                if (createsCycle(desiredParentId, existingCategory.id, lookup)) {
+                    return respond(400, { message: 'Cannot assign a descendant category as the parent' });
+                }
+            }
+
+            updates.parentCategoryId = desiredParentId ?? null;
+        }
+
         if (Object.keys(updates).length === 0) {
             return respond(400, { message: 'No valid category fields provided for update' });
         }
@@ -896,6 +966,16 @@ export const deleteCategory: APIGatewayProxyHandlerV2 = async (event) => {
 
         if (linkedArticles.length > 0) {
             return respond(400, { message: 'Category is in use by existing articles and cannot be deleted' });
+        }
+
+        const { items: childCategories } = await categoryRepository.scan({
+            filterExpression: 'parentCategoryId = :parentId',
+            expressionAttributeValues: { ':parentId': id },
+            limit: 1,
+        });
+
+        if (childCategories.length > 0) {
+            return respond(400, { message: 'Category has nested categories. Reassign or remove them before deleting.' });
         }
 
         const deleted = await categoryRepository.delete(id);

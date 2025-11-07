@@ -11,6 +11,7 @@ export class CategoryRepository extends BaseRepository<Category> {
       slug: item.slug,
       description: item.description || '',
       showInHeader: item.showInHeader !== undefined ? Boolean(item.showInHeader) : true,
+      parentCategoryId: item.parentCategoryId ?? null,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt
     };
@@ -19,6 +20,7 @@ export class CategoryRepository extends BaseRepository<Category> {
   protected toDB(category: Category) {
     return {
       ...category,
+      parentCategoryId: category.parentCategoryId ?? null,
       ...(category.description === undefined && { description: '' })
     };
   }

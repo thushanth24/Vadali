@@ -1,10 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { fetchCategories, createCategory, updateCategory, deleteCategory, fetchArticles } from '../../../services/api';
 import { Category, Article } from '../../../types';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Edit, Trash2, PlusCircle } from 'lucide-react';
+
+const getDescendantIds = (rootId: string, allCategories: Category[]): Set<string> => {
+    const childrenByParent = allCategories.reduce<Record<string, string[]>>((acc, category) => {
+        const parentId = category.parentCategoryId ?? null;
+        if (parentId) {
+            acc[parentId] = acc[parentId] || [];
+            acc[parentId].push(category.id);
+        }
+        return acc;
+    }, {});
+
+    const stack = [...(childrenByParent[rootId] ?? [])];
+    const descendants = new Set<string>();
+
+    while (stack.length > 0) {
+        const current = stack.pop()!;
+        if (descendants.has(current)) continue;
+        descendants.add(current);
+        if (childrenByParent[current]) {
+            stack.push(...childrenByParent[current]);
+        }
+    }
+
+    return descendants;
+};
 
 const CategoryManagement: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -17,6 +42,7 @@ const CategoryManagement: React.FC = () => {
     const [name, setName] = useState('');
     const [slug, setSlug] = useState('');
     const [showInHeader, setShowInHeader] = useState(true);
+    const [parentCategoryId, setParentCategoryId] = useState<string | null>(null);
     const [headerSelections, setHeaderSelections] = useState<Record<string, boolean>>({});
     const [savingHeader, setSavingHeader] = useState(false);
 
@@ -50,10 +76,12 @@ const CategoryManagement: React.FC = () => {
             setName(category.name);
             setSlug(category.slug);
             setShowInHeader(category.showInHeader ?? true);
+            setParentCategoryId(category.parentCategoryId ?? null);
         } else {
             setName('');
             setSlug('');
             setShowInHeader(true);
+            setParentCategoryId(null);
         }
         setIsModalOpen(true);
     };
@@ -62,15 +90,16 @@ const CategoryManagement: React.FC = () => {
         setIsModalOpen(false);
         setEditingCategory(null);
         setShowInHeader(true);
+        setParentCategoryId(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             if (editingCategory) {
-                await updateCategory(editingCategory.id, { name, slug, showInHeader });
+                await updateCategory(editingCategory.id, { name, slug, showInHeader, parentCategoryId: parentCategoryId ?? null });
             } else {
-                await createCategory({ name, slug, showInHeader });
+                await createCategory({ name, slug, showInHeader, parentCategoryId: parentCategoryId ?? null });
             }
             handleCloseModal();
             await loadData(); // Refresh
@@ -102,6 +131,28 @@ const CategoryManagement: React.FC = () => {
         const current = headerSelections[category.id] ?? true;
         return original !== current;
     });
+
+    const parentLookup = useMemo(
+        () =>
+            categories.reduce<Record<string, Category>>((acc, category) => {
+                acc[category.id] = category;
+                return acc;
+            }, {}),
+        [categories]
+    );
+
+    const selectableParents = useMemo(() => {
+        if (!editingCategory) {
+            return [...categories].sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        const invalidIds = getDescendantIds(editingCategory.id, categories);
+        invalidIds.add(editingCategory.id);
+
+        return categories
+            .filter(category => !invalidIds.has(category.id))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [categories, editingCategory]);
 
     const handleSaveHeaderVisibility = async () => {
         if (!hasHeaderChanges) {
@@ -154,6 +205,7 @@ const CategoryManagement: React.FC = () => {
                         <tr>
                             <th className="p-4 font-semibold">Name</th>
                             <th className="p-4 font-semibold">Slug</th>
+                            <th className="p-4 font-semibold">Parent</th>
                             <th className="p-4 font-semibold">In Header</th>
                             <th className="p-4 font-semibold">Article Count</th>
                             <th className="p-4 font-semibold">Actions</th>
@@ -161,10 +213,10 @@ const CategoryManagement: React.FC = () => {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={5} className="p-8"><LoadingSpinner label="Loading categories..." className="py-0" /></td></tr>
+                            <tr><td colSpan={6} className="p-8"><LoadingSpinner label="Loading categories..." className="py-0" /></td></tr>
                         ) : categories.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="p-6 text-center text-gray-500">
+                                <td colSpan={6} className="p-6 text-center text-gray-500">
                                     No categories found. Create a category to get started.
                                 </td>
                             </tr>
@@ -172,6 +224,9 @@ const CategoryManagement: React.FC = () => {
                             <tr key={category.id} className="border-b hover:bg-gray-50">
                                 <td className="p-4 font-medium text-gray-800">{category.name}</td>
                                 <td className="p-4 text-gray-600">{category.slug}</td>
+                                <td className="p-4 text-gray-600">
+                                    {category.parentCategoryId ? parentLookup[category.parentCategoryId]?.name ?? 'Unknown' : 'Top level'}
+                                </td>
                                 <td className="p-4 text-gray-600">
                                     <label className="inline-flex items-center gap-3 text-sm font-medium text-gray-700">
                                         <input
@@ -212,6 +267,26 @@ const CategoryManagement: React.FC = () => {
                     <div>
                         <label htmlFor="cat-slug" className="block text-sm font-medium text-gray-700">Slug</label>
                         <input type="text" id="cat-slug" value={slug} onChange={e => setSlug(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+                    </div>
+                    <div>
+                        <label htmlFor="cat-parent" className="block text-sm font-medium text-gray-700">Parent Category</label>
+                        <select
+                            id="cat-parent"
+                            value={parentCategoryId ?? ''}
+                            onChange={e => setParentCategoryId(e.target.value ? e.target.value : null)}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="">No parent (top level)</option>
+                            {selectableParents.map(option => (
+                                <option key={option.id} value={option.id}>
+                                    {option.name}
+                                    {option.parentCategoryId ? ` (child of ${parentLookup[option.parentCategoryId]?.name ?? 'Top level'})` : ''}
+                                </option>
+                            ))}
+                        </select>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Assign a parent to show this category inside a dropdown in the site header navigation.
+                        </p>
                     </div>
                     <div className="flex items-start gap-3">
                         <input

@@ -66,6 +66,7 @@ export interface Category {
   slug: string;
   description?: string;
   showInHeader?: boolean;
+  parentCategoryId?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

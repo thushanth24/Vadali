@@ -473,7 +473,13 @@ export const fetchCategories = async (params?: { showInHeader?: boolean }): Prom
     return apiRequest<Category[]>(endpoint);
 };
 
-export const createCategory = async (catData: { name: string; slug: string; description?: string; showInHeader?: boolean }): Promise<Category> => {
+export const createCategory = async (catData: {
+    name: string;
+    slug: string;
+    description?: string;
+    showInHeader?: boolean;
+    parentCategoryId?: string | null;
+}): Promise<Category> => {
     return apiRequest<Category>('/categories', {
         method: 'POST',
         body: JSON.stringify(catData),
