@@ -92,11 +92,32 @@ const BreakingNewsTicker: React.FC<{ articles: Article[] }> = ({ articles }) => 
   );
 };
 
+const getArticlePublishedTimestamp = (article: Article): number => {
+  return article.publishedAt ? new Date(article.publishedAt).getTime() : 0;
+};
+
+const getArticleReleaseTimestamp = (article: Article): number => {
+  const dateString = article.createdAt || article.updatedAt;
+  return dateString ? new Date(dateString).getTime() : 0;
+};
+
+const dedupeArticlesById = (articles: Article[]): Article[] => {
+  const seen = new Set<string>();
+  return articles.filter(article => {
+    if (seen.has(article.id)) {
+      return false;
+    }
+    seen.add(article.id);
+    return true;
+  });
+};
+
 
 const HomePage: React.FC = () => {
   const [publishedArticles, setPublishedArticles] = useState<Article[]>([]);
   const [advertisements, setAdvertisements] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [releaseOrderedArticles, setReleaseOrderedArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [trendingStartIndex, setTrendingStartIndex] = useState(0);
   const [trendingDirection, setTrendingDirection] = useState<'up' | 'down'>('up');
@@ -124,6 +145,47 @@ const HomePage: React.FC = () => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const refreshLatestUpdates = async () => {
+      try {
+        const latest = await fetchArticles({
+          status: 'published',
+          limit: 25,
+          sortBy: 'publishedAt',
+          sortOrder: 'desc',
+        });
+        const sortedByReleaseTime = dedupeArticlesById(
+          latest
+            .filter(article => !article.isAdvertisement)
+            .sort(
+              (a, b) => {
+                const publishedDiff = getArticlePublishedTimestamp(b) - getArticlePublishedTimestamp(a);
+                if (publishedDiff !== 0) {
+                  return publishedDiff;
+                }
+                return getArticleReleaseTimestamp(b) - getArticleReleaseTimestamp(a);
+              }
+            )
+        );
+        if (isMounted) {
+          setReleaseOrderedArticles(sortedByReleaseTime);
+        }
+      } catch (error) {
+        console.error('Failed to refresh latest updates', error);
+      }
+    };
+
+    refreshLatestUpdates();
+    const intervalId = setInterval(refreshLatestUpdates, 60000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, []);
+
   const articlesForFeed = publishedArticles.filter(a => !a.isAdvertisement);
   const advertisementArticles = advertisements;
   const adsWithImages = advertisementArticles.filter(ad => ad.coverImageUrl?.trim());
@@ -134,10 +196,23 @@ const HomePage: React.FC = () => {
   const nonFeaturedArticles = articlesForFeed.filter(a => !a.isFeatured);
 
   const mainFeaturedArticle = featuredArticles[0] || nonFeaturedArticles[0];
-  const latestArticles = nonFeaturedArticles.slice(0, 6);
-  const trendingArticles = [...articlesForFeed].sort((a, b) => b.views - a.views).slice(0, 6);
+  const releaseSortedFeed = releaseOrderedArticles.length > 0
+    ? releaseOrderedArticles
+    : dedupeArticlesById(
+        [...articlesForFeed].sort(
+          (a, b) => {
+            const publishedDiff = getArticlePublishedTimestamp(b) - getArticlePublishedTimestamp(a);
+            if (publishedDiff !== 0) {
+              return publishedDiff;
+            }
+            return getArticleReleaseTimestamp(b) - getArticleReleaseTimestamp(a);
+          }
+        )
+      );
+  const latestArticles = releaseSortedFeed.filter(article => !article.isFeatured).slice(0, 6);
+  const trendingArticles = releaseSortedFeed.slice(0, 6);
   const trendingHighlights = trendingArticles.slice(0, 5);
-  const latestHighlights = latestArticles.slice(0, 5);
+  const sidebarLatestArticles = releaseSortedFeed.slice(0, 5);
   const canCycleTrending = trendingHighlights.length > 4;
   const canManuallyCycleTrending = trendingHighlights.length > 1;
 
@@ -464,11 +539,11 @@ const HomePage: React.FC = () => {
                   </h2>
                 </div>
                 <div className="p-4">
-                  {latestHighlights.length === 0 ? (
+                  {sidebarLatestArticles.length === 0 ? (
                     <p className="text-sm text-gray-500 text-center py-4">No latest updates available.</p>
                   ) : (
                     <div className="space-y-4">
-                      {latestHighlights.map((article) => {
+                      {sidebarLatestArticles.map((article) => {
                         const formattedDate = formatArticleDate(article, {
                           month: 'short',
                           day: 'numeric',

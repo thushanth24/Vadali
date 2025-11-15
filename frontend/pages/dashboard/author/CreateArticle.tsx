@@ -6,6 +6,44 @@ import { Category, ArticleStatus, UserRole } from '../../../types';
 import { useAuth } from '../../../hooks/useAuth';
 import RichTextEditor from '../../../components/ui/RichTextEditor';
 
+const buildContentWithGalleryMetadata = (html: string, galleryUrls: string[]): string => {
+    if (!html) {
+        html = '';
+    }
+
+    if (!galleryUrls.length) {
+        return html;
+    }
+
+    try {
+        if (typeof DOMParser !== 'undefined') {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            doc.querySelectorAll('[data-inline-gallery]').forEach(node => node.remove());
+
+            const container = doc.createElement('div');
+            container.setAttribute('data-inline-gallery', 'true');
+            container.setAttribute('style', 'display:none;');
+
+            galleryUrls.forEach(url => {
+                const span = doc.createElement('span');
+                span.setAttribute('data-gallery-url', url);
+                container.appendChild(span);
+            });
+
+            doc.body.appendChild(container);
+            return doc.body.innerHTML;
+        }
+    } catch (error) {
+        console.warn('Failed to embed gallery metadata into article content', error);
+    }
+
+    const fallbackMetadata = `<div data-inline-gallery style="display:none;">${galleryUrls
+        .map(url => `<span data-gallery-url="${url}"></span>`)
+        .join('')}</div>`;
+    return `${html}${fallbackMetadata}`;
+};
+
 const CreateArticle: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -14,6 +52,7 @@ const CreateArticle: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
     const dashboardPath = user?.role === UserRole.EDITOR ? '/dashboard/editor' : '/dashboard/author';
+    const [galleryImageFiles, setGalleryImageFiles] = useState<File[]>([]);
 
     useEffect(() => {
         fetchCategories().then(setCategories);
@@ -26,6 +65,7 @@ const CreateArticle: React.FC = () => {
         try {
             const formData = new FormData(e.currentTarget);
             let coverImageUrl = '';
+            let galleryImageUrls: string[] = [];
 
             console.log('Form data:', Object.fromEntries(formData.entries()));
             console.log('Cover image file:', coverImageFile);
@@ -57,16 +97,49 @@ const CreateArticle: React.FC = () => {
                 }
             }
 
+            if (galleryImageFiles.length > 0) {
+                try {
+                    alert(`Uploading ${galleryImageFiles.length} additional image${galleryImageFiles.length > 1 ? 's' : ''} to S3...`);
+                    galleryImageUrls = await Promise.all(
+                        galleryImageFiles.map(async (file) => {
+                            console.log('Uploading gallery image:', {
+                                name: file.name,
+                                type: file.type,
+                                size: file.size,
+                            });
+                            return uploadFileToS3(file);
+                        })
+                    );
+                    alert('Additional images uploaded successfully!');
+                } catch (error) {
+                    console.error('Error uploading gallery images:', {
+                        error,
+                        message: error.message,
+                        stack: error.stack,
+                        name: error.name,
+                    });
+                    alert('Failed to upload additional images. Please check console for details.');
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
             const articleData = {
                 title: formData.get('title') as string,
                 summary: formData.get('summary') as string,
-                content: content,
+                content: buildContentWithGalleryMetadata(content, galleryImageUrls),
                 categoryId: formData.get('category') as string,
                 tags: (formData.get('tags') as string).split(',').map(tag => tag.trim()),
                 authorId: user?.id || '',
                 status: ArticleStatus.PENDING_REVIEW,
                 coverImageUrl: coverImageUrl,
+                imageUrls: galleryImageUrls,
             };
+            console.log('[CreateArticle] Prepared article payload', {
+                coverImageUrl,
+                galleryImageUrls,
+                contentHasMetadata: articleData.content.includes('data-inline-gallery'),
+            });
             
             if (!articleData.title || !articleData.summary || !content) {
                 alert('Title, Summary, and Content are required.');
@@ -119,6 +192,22 @@ const CreateArticle: React.FC = () => {
                 <div>
                     <label htmlFor="coverImage" className="block text-sm font-medium text-gray-700">Cover Image</label>
                     <input type="file" id="coverImage" name="coverImage" onChange={(e) => setCoverImageFile(e.target.files ? e.target.files[0] : null)} className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                </div>
+                <div>
+                    <label htmlFor="galleryImages" className="block text-sm font-medium text-gray-700">Additional Images</label>
+                    <input
+                        type="file"
+                        id="galleryImages"
+                        name="galleryImages"
+                        multiple
+                        onChange={(e) => setGalleryImageFiles(e.target.files ? Array.from(e.target.files) : [])}
+                        className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    {galleryImageFiles.length > 0 && (
+                        <p className="mt-1 text-xs text-gray-500">
+                            Selected {galleryImageFiles.length} file{galleryImageFiles.length > 1 ? 's' : ''}: {galleryImageFiles.map(file => file.name).join(', ')}
+                        </p>
+                    )}
                 </div>
                 <div className="flex justify-end space-x-4">
                     <Button type="button" variant="secondary" onClick={() => navigate(dashboardPath)} disabled={isSubmitting}>Cancel</Button>

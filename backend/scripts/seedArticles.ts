@@ -10,6 +10,7 @@ interface SeedArticleInput {
   summary: string;
   content: string;
   coverImageUrl: string;
+  imageUrls?: string[];
   authorId: string;
   categoryId: string;
   tags: string[];
@@ -26,6 +27,7 @@ interface ArticleItem extends SeedArticleInput {
   rejectionReason?: string | null;
   createdAt: string;
   updatedAt: string;
+  imageUrls: string[];
 }
 
 const args = process.argv.slice(2);
@@ -66,6 +68,7 @@ const createArticleItem = (input: SeedArticleInput): ArticleItem => {
   const now = new Date().toISOString();
   return {
     ...input,
+    imageUrls: Array.isArray(input.imageUrls) ? input.imageUrls : [],
     id: `a_${uuidv4()}`,
     views: 0,
     videoUrl: input.videoUrl ?? null,

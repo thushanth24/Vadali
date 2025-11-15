@@ -12,6 +12,7 @@ export class ArticleRepository extends BaseRepository<Article> {
       summary: item.summary,
       content: item.content,
       coverImageUrl: item.coverImageUrl,
+      imageUrls: Array.isArray(item.imageUrls) ? item.imageUrls : [],
       authorId: item.authorId,
       categoryId: item.categoryId,
       tags: item.tags || [],
@@ -32,6 +33,7 @@ export class ArticleRepository extends BaseRepository<Article> {
       ...article,
       // Ensure we don't store undefined values
       ...(article.tags === undefined && { tags: [] }),
+      ...(article.imageUrls === undefined && { imageUrls: [] }),
       ...(article.views === undefined && { views: 0 }),
       ...(article.isAdvertisement === undefined && { isAdvertisement: false }),
       ...(article.isFeatured === undefined && { isFeatured: false }),

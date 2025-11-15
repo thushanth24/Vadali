@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { fetchArticleBySlug, fetchArticles, fetchUser, fetchCategories, postComment } from '../services/api';
 import { Article, User, Category, Comment } from '../types';
@@ -7,6 +7,39 @@ import { Calendar, User as UserIcon, MessageSquare, Tag, Facebook, Twitter, Link
 import Button from '../components/ui/Button';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { formatArticleDate } from '../lib/articleDate';
+
+const extractGalleryFromContent = (html: string) => {
+  if (!html) {
+    return { urls: [] as string[], sanitizedHtml: '' };
+  }
+
+  if (typeof DOMParser === 'undefined') {
+    return { urls: [] as string[], sanitizedHtml: html };
+  }
+
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const inlineGalleries = Array.from(doc.querySelectorAll('[data-inline-gallery]'));
+    const urls: string[] = [];
+
+    inlineGalleries.forEach((node) => {
+      const urlNodes = Array.from(node.querySelectorAll('[data-gallery-url]'));
+      urlNodes.forEach((urlNode) => {
+        const url = urlNode.getAttribute('data-gallery-url')?.trim();
+        if (url) {
+          urls.push(url);
+        }
+      });
+      node.remove();
+    });
+
+    return { urls, sanitizedHtml: doc.body.innerHTML };
+  } catch (error) {
+    console.error('Failed to parse inline gallery metadata', error);
+    return { urls: [] as string[], sanitizedHtml: html };
+  }
+};
 
 const ArticlePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -59,6 +92,36 @@ const ArticlePage: React.FC = () => {
   useEffect(() => {
     loadArticleData();
   }, [slug]);
+
+  const articleContent = article?.content ?? '';
+  const articleImageUrls = Array.isArray(article?.imageUrls) ? article.imageUrls : [];
+
+  const { urls: metadataGalleryUrls, sanitizedHtml: contentWithoutMetadata } = useMemo(
+    () => extractGalleryFromContent(articleContent),
+    [articleContent]
+  );
+
+  const galleryImages = useMemo(() => {
+    const combined = [...articleImageUrls, ...metadataGalleryUrls];
+    const normalized = combined
+      .map((url) => (typeof url === 'string' ? url.trim() : ''))
+      .filter((url): url is string => Boolean(url));
+
+    return Array.from(new Set(normalized));
+  }, [articleImageUrls, metadataGalleryUrls]);
+  
+  useEffect(() => {
+    if (article) {
+      console.log('[ArticlePage] Gallery debug', {
+        apiImageUrls: articleImageUrls,
+        inlineMetadataUrls: metadataGalleryUrls,
+        combinedGallery: galleryImages,
+        slug: article.slug,
+      });
+    } else {
+      console.log('[ArticlePage] No article yet, gallery data pending');
+    }
+  }, [article, articleImageUrls, metadataGalleryUrls, galleryImages]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +203,26 @@ const ArticlePage: React.FC = () => {
 
             <img src={article.coverImageUrl} alt={article.title} className="w-full mb-8 rounded-md" />
 
-            <div className="prose lg:prose-lg" dangerouslySetInnerHTML={{ __html: article.content }} />
+            <style>{`.article-content [data-inline-gallery]{display:none !important;}`}</style>
+            <div className="prose lg:prose-lg article-content" dangerouslySetInnerHTML={{ __html: contentWithoutMetadata }} />
+
+            {galleryImages.length > 0 && (
+              <div className="my-8">
+                <h3 className="text-2xl font-bold mb-4 border-b-2 border-[#d32f2f] pb-2">Gallery</h3>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {galleryImages.map((imageUrl, index) => (
+                    <figure key={`${imageUrl}-${index}`} className="overflow-hidden rounded-md bg-gray-50">
+                      <img
+                        src={imageUrl}
+                        alt={`${article.title} image ${index + 1}`}
+                        className="w-full h-64 object-cover hover:scale-105 transition-transform duration-200"
+                        loading="lazy"
+                      />
+                    </figure>
+                  ))}
+                </div>
+              </div>
+            )}
             
             <div className="mt-8 border-t pt-6 flex flex-wrap gap-2">
                 {article.tags.map(tag => (

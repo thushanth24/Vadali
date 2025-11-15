@@ -8,6 +8,7 @@ export interface Article {
   summary: string;
   content: string;
   coverImageUrl: string;
+  imageUrls: string[];
   authorId: string;
   categoryId: string;
   tags: string[];
@@ -26,6 +27,7 @@ export const createArticle = (articleData: Omit<Article, 'id' | 'createdAt' | 'u
   const now = new Date().toISOString();
   return {
     ...articleData,
+    imageUrls: articleData.imageUrls ?? [],
     id: `a_${uuidv4()}`,
     views: 0,
     createdAt: now,

@@ -58486,6 +58486,7 @@ var createArticle = (articleData) => {
   const now = (/* @__PURE__ */ new Date()).toISOString();
   return {
     ...articleData,
+    imageUrls: articleData.imageUrls ?? [],
     id: `a_${v4_default()}`,
     views: 0,
     createdAt: now,
@@ -58507,6 +58508,7 @@ var ArticleRepository = class extends BaseRepository {
       summary: item.summary,
       content: item.content,
       coverImageUrl: item.coverImageUrl,
+      imageUrls: Array.isArray(item.imageUrls) ? item.imageUrls : [],
       authorId: item.authorId,
       categoryId: item.categoryId,
       tags: item.tags || [],
@@ -58526,6 +58528,7 @@ var ArticleRepository = class extends BaseRepository {
       ...article,
       // Ensure we don't store undefined values
       ...article.tags === void 0 && { tags: [] },
+      ...article.imageUrls === void 0 && { imageUrls: [] },
       ...article.views === void 0 && { views: 0 },
       ...article.isAdvertisement === void 0 && { isAdvertisement: false },
       ...article.isFeatured === void 0 && { isFeatured: false },
@@ -59041,6 +59044,7 @@ var createArticle2 = async (event) => {
       suffix += 1;
     }
     const coverImageUrl = typeof payload2.coverImageUrl === "string" ? payload2.coverImageUrl.trim() : "";
+    const imageUrls = Array.isArray(payload2.imageUrls) ? payload2.imageUrls.map((url) => typeof url === "string" ? url.trim() : "").filter((url) => url.length > 0) : [];
     const publishedAt = status === "Published" /* PUBLISHED */ ? typeof payload2.publishedAt === "string" && payload2.publishedAt.trim().length > 0 ? payload2.publishedAt : (/* @__PURE__ */ new Date()).toISOString() : null;
     const isAdvertisement = typeof payload2.isAdvertisement === "boolean" ? payload2.isAdvertisement : false;
     const isFeatured = typeof payload2.isFeatured === "boolean" ? payload2.isFeatured : false;
@@ -59050,6 +59054,7 @@ var createArticle2 = async (event) => {
       summary,
       content,
       coverImageUrl,
+      imageUrls,
       authorId,
       categoryId,
       tags,

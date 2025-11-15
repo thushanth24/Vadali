@@ -184,6 +184,7 @@ const normalizeArticleStatus = (status: unknown): ArticleStatus => {
 const normalizeArticle = (article: ArticleApiResponse): Article => ({
   ...article,
   status: normalizeArticleStatus(article.status),
+  imageUrls: Array.isArray(article.imageUrls) ? article.imageUrls : [],
   comments: Array.isArray(article.comments) ? article.comments : [],
 });
 

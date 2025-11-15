@@ -346,6 +346,12 @@ export const createArticle: APIGatewayProxyHandlerV2 = async (event) => {
             ? payload.coverImageUrl.trim()
             : '';
 
+        const imageUrls: string[] = Array.isArray(payload.imageUrls)
+            ? payload.imageUrls
+                .map((url: unknown) => (typeof url === 'string' ? url.trim() : ''))
+                .filter((url: string) => url.length > 0)
+            : [];
+
         const publishedAt = status === ArticleStatus.PUBLISHED
             ? (typeof payload.publishedAt === 'string' && payload.publishedAt.trim().length > 0
                 ? payload.publishedAt
@@ -366,6 +372,7 @@ export const createArticle: APIGatewayProxyHandlerV2 = async (event) => {
             summary,
             content,
             coverImageUrl,
+            imageUrls,
             authorId,
             categoryId,
             tags,

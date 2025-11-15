@@ -78,6 +78,7 @@ export interface Article {
   summary: string;
   content: string;
   coverImageUrl: string;
+  imageUrls: string[];
   authorId: string;
   categoryId: string;
   tags: string[];
