@@ -36,6 +36,7 @@ provider:
     cors:
       allowedOrigins:
         - 'http://localhost:3000'
+        - 'https://vadali.netlify.app'
       allowedHeaders:
         - Content-Type
         - Authorization
@@ -280,4 +281,3 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
-
