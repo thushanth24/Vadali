@@ -37,6 +37,8 @@ provider:
       allowedOrigins:
         - 'http://localhost:3000'
         - 'https://vadali.netlify.app'
+        - 'https://vadalimedia.lk'
+        - 'https://www.vadalimedia.lk'
       allowedHeaders:
         - Content-Type
         - Authorization

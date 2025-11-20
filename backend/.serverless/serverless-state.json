@@ -50,7 +50,9 @@
         "cors": {
           "allowedOrigins": [
             "http://localhost:3000",
-            "https://vadali.netlify.app"
+            "https://vadali.netlify.app",
+            "https://vadalimedia.lk",
+            "https://www.vadalimedia.lk"
           ],
           "allowedHeaders": [
             "Content-Type",
@@ -427,7 +429,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.login",
               "Runtime": "nodejs20.x",
@@ -461,7 +463,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.register",
               "Runtime": "nodejs20.x",
@@ -495,7 +497,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.refreshToken",
               "Runtime": "nodejs20.x",
@@ -529,7 +531,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.logout",
               "Runtime": "nodejs20.x",
@@ -563,7 +565,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getUsers",
               "Runtime": "nodejs20.x",
@@ -597,7 +599,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getUser",
               "Runtime": "nodejs20.x",
@@ -631,7 +633,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.createUser",
               "Runtime": "nodejs20.x",
@@ -665,7 +667,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.updateUser",
               "Runtime": "nodejs20.x",
@@ -699,7 +701,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.deleteUser",
               "Runtime": "nodejs20.x",
@@ -733,7 +735,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getArticles",
               "Runtime": "nodejs20.x",
@@ -767,7 +769,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getArticleById",
               "Runtime": "nodejs20.x",
@@ -801,7 +803,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getArticleBySlug",
               "Runtime": "nodejs20.x",
@@ -835,7 +837,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.createArticle",
               "Runtime": "nodejs20.x",
@@ -869,7 +871,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.updateArticle",
               "Runtime": "nodejs20.x",
@@ -903,7 +905,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.deleteArticle",
               "Runtime": "nodejs20.x",
@@ -937,7 +939,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.updateArticleStatus",
               "Runtime": "nodejs20.x",
@@ -971,7 +973,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.updateFeaturedStatus",
               "Runtime": "nodejs20.x",
@@ -1005,7 +1007,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getCategories",
               "Runtime": "nodejs20.x",
@@ -1039,7 +1041,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.createCategory",
               "Runtime": "nodejs20.x",
@@ -1073,7 +1075,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.updateCategory",
               "Runtime": "nodejs20.x",
@@ -1107,7 +1109,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.deleteCategory",
               "Runtime": "nodejs20.x",
@@ -1141,7 +1143,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getPendingComments",
               "Runtime": "nodejs20.x",
@@ -1175,7 +1177,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.postComment",
               "Runtime": "nodejs20.x",
@@ -1209,7 +1211,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.updateCommentStatus",
               "Runtime": "nodejs20.x",
@@ -1243,7 +1245,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getNotificationsForUser",
               "Runtime": "nodejs20.x",
@@ -1277,7 +1279,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getAllTags",
               "Runtime": "nodejs20.x",
@@ -1311,7 +1313,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getSubscribers",
               "Runtime": "nodejs20.x",
@@ -1345,7 +1347,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.subscribe",
               "Runtime": "nodejs20.x",
@@ -1379,7 +1381,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.contact",
               "Runtime": "nodejs20.x",
@@ -1413,7 +1415,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z/vadali-media-backend.zip"
+                "S3Key": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z/vadali-media-backend.zip"
               },
               "Handler": "src/handlers.getUploadUrl",
               "Runtime": "nodejs20.x",
@@ -1765,7 +1767,9 @@
                 ],
                 "AllowOrigins": [
                   "http://localhost:3000",
-                  "https://vadali.netlify.app"
+                  "https://vadali.netlify.app",
+                  "https://vadalimedia.lk",
+                  "https://www.vadalimedia.lk"
                 ]
               }
             }
@@ -5121,7 +5125,7 @@
   },
   "package": {
     "individually": false,
-    "artifactDirectoryName": "serverless/vadali-media-backend/dev/1763190954548-2025-11-15T07:15:54.548Z",
+    "artifactDirectoryName": "serverless/vadali-media-backend/dev/1763645548174-2025-11-20T13:32:28.174Z",
     "artifact": "vadali-media-backend.zip"
   }
 }
