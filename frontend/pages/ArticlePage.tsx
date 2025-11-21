@@ -209,8 +209,8 @@ const ArticlePage: React.FC = () => {
   }
 
   const approvedComments = article.comments.filter(c => c.status === 'APPROVED');
-  const articleUrl = window.location.href;
-  const encodedUrl = encodeURIComponent(articleUrl);
+  const sharePreviewUrl = `${window.location.origin}/share/article/${article.slug}`;
+  const encodedUrl = encodeURIComponent(sharePreviewUrl);
   const encodedTitle = encodeURIComponent(article.title);
   const encodedSummary = encodeURIComponent(article.summary);
 
