@@ -1,0 +1,12 @@
+[redirects]
+
+[[redirects]]
+  from = "/share/article/*"
+  to = "https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
