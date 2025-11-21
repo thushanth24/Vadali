@@ -240,19 +240,39 @@ const ArticlePage: React.FC = () => {
             <div className="mt-8 border-t pt-6">
                 <h4 className="font-bold text-lg mb-4 text-gray-800">Share this article:</h4>
                 <div className="flex flex-wrap gap-3">
-                    <a href={shareLinks.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-2 rounded-md text-white font-semibold bg-[#1877F2] hover:bg-opacity-90 transition-all">
+                    <a
+                      href={shareLinks.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-md font-semibold text-[#1855bf] bg-white border border-[#1877F2] shadow-sm hover:bg-[#1877F2]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#1877F2] transition-colors"
+                    >
                         <Facebook size={18} />
                         <span>Facebook</span>
                     </a>
-                    <a href={shareLinks.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-2 rounded-md text-white font-semibold bg-[#1DA1F2] hover:bg-opacity-90 transition-all">
+                    <a
+                      href={shareLinks.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-md font-semibold text-[#0f8cd4] bg-white border border-[#1DA1F2] shadow-sm hover:bg-[#1DA1F2]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#1DA1F2] transition-colors"
+                    >
                         <Twitter size={18} />
                         <span>Twitter</span>
                     </a>
-                    <a href={shareLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-2 rounded-md text-white font-semibold bg-[#0A66C2] hover:bg-opacity-90 transition-all">
+                    <a
+                      href={shareLinks.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-md font-semibold text-[#0a57a5] bg-white border border-[#0A66C2] shadow-sm hover:bg-[#0A66C2]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A66C2] transition-colors"
+                    >
                         <Linkedin size={18} />
                         <span>LinkedIn</span>
                     </a>
-                    <a href={shareLinks.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-2 rounded-md text-white font-semibold bg-[#25D366] hover:bg-opacity-90 transition-all">
+                    <a
+                      href={shareLinks.whatsapp}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-md font-semibold text-[#1ca851] bg-white border border-[#25D366] shadow-sm hover:bg-[#25D366]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#25D366] transition-colors"
+                    >
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
                         <span>WhatsApp</span>
                     </a>
