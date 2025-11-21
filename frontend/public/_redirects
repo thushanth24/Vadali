@@ -1,9 +1,3 @@
-/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200  User-Agent=~*facebookexternalhit*
-/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200  User-Agent=~*facebot*
-/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200  User-Agent=~*twitterbot*
-/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200  User-Agent=~*linkedinbot*
-/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200  User-Agent=~*slackbot*
-/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200  User-Agent=~*whatsapp*
-/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200  User-Agent=~*bot*
+/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200!  User-Agent=~*facebookexternalhit|facebot|twitterbot|linkedinbot|slackbot|whatsapp|bot
 /share/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200
 /*    /index.html   200
