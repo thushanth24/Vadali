@@ -3,7 +3,8 @@
   to = "https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat"
   status = 200
   force = true
-  conditions = { UserAgent = ["*WhatsApp*", "*facebookexternalhit*", "*TwitterBot*", "*Slackbot*", "*LinkedInBot*", "*facebot*", "*bot*"] }
+  # Send known crawlers to the server-rendered OG page; humans stay on the SPA
+  conditions = { UserAgent = ["~*facebookexternalhit|facebot|twitterbot|linkedinbot|slackbot|whatsapp|bot"] }
 
 [[redirects]]
   from = "/share/article/*"
