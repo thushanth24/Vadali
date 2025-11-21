@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { fetchArticles, fetchCategories } from '../services/api';
 import ArticleCard from '../components/ui/ArticleCard';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { Article, Category } from '../types';
 
 const CategoryPage: React.FC = () => {
@@ -11,6 +10,7 @@ const CategoryPage: React.FC = () => {
   const [category, setCategory] = useState<Category | null | undefined>(undefined);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const BASE_TITLE = 'Vadali Media';
   
   useEffect(() => {
     const loadData = async () => {
@@ -38,13 +38,26 @@ const CategoryPage: React.FC = () => {
     };
     loadData();
   }, [slug]);
-  
-  if (loading) {
-    return <LoadingSpinner label="Loading category..." className="container mx-auto px-4 py-16" />;
-  }
-  
+
+  useEffect(() => {
+    if (loading) {
+      document.title = `⏳ ${BASE_TITLE}`;
+      return;
+    }
+
+    if (category) {
+      document.title = `${category.name} | ${BASE_TITLE}`;
+    } else {
+      document.title = BASE_TITLE;
+    }
+
+    return () => {
+      document.title = BASE_TITLE;
+    };
+  }, [loading, category, BASE_TITLE]);
+
   if (!category) {
-    return <Navigate to="/" replace />;
+    return loading ? null : <Navigate to="/" replace />;
   }
 
   return (

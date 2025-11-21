@@ -5,7 +5,6 @@ import { Article, User, Category, Comment } from '../types';
 import { ArticleStatus } from '../types';
 import { Calendar, User as UserIcon, MessageSquare, Tag, Facebook, Twitter, Linkedin } from 'lucide-react';
 import Button from '../components/ui/Button';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { formatArticleDate } from '../lib/articleDate';
 
 const extractGalleryFromContent = (html: string) => {
@@ -70,6 +69,7 @@ const ArticlePage: React.FC = () => {
   const [category, setCategory] = useState<Category | undefined>(undefined);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const BASE_TITLE = 'Vadali Media';
   
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -153,7 +153,6 @@ const ArticlePage: React.FC = () => {
     const description = article.summary || article.title;
     const imageUrl = shareImage;
 
-    document.title = `${article.title} | Vadali Media`;
     setMetaTag('property', 'og:title', article.title);
     setMetaTag('property', 'og:description', description);
     setMetaTag('property', 'og:url', pageUrl);
@@ -169,6 +168,23 @@ const ArticlePage: React.FC = () => {
     }
     setCanonicalLink(pageUrl);
   }, [article, shareImage]);
+
+  useEffect(() => {
+    if (loading) {
+      document.title = `⏳ ${BASE_TITLE}`;
+      return;
+    }
+
+    if (article) {
+      document.title = `${article.title} | ${BASE_TITLE}`;
+    } else {
+      document.title = BASE_TITLE;
+    }
+
+    return () => {
+      document.title = BASE_TITLE;
+    };
+  }, [loading, article, BASE_TITLE]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,12 +204,8 @@ const ArticlePage: React.FC = () => {
   };
 
 
-  if (loading) {
-    return <LoadingSpinner label="Loading article..." className="container mx-auto px-4" />;
-  }
-  
   if (!article) {
-    return <Navigate to="/" replace />;
+    return loading ? null : <Navigate to="/" replace />;
   }
 
   const approvedComments = article.comments.filter(c => c.status === 'APPROVED');

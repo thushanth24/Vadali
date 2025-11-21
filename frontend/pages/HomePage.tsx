@@ -5,7 +5,6 @@ import ArticleCard, { ArticleCardProps } from '../components/ui/ArticleCard';
 import { fetchArticles, fetchCategories } from '../services/api';
 import { Article, Category } from '../types';
 import { Clock, ChevronUp, ChevronDown } from 'lucide-react';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { formatArticleDate } from '../lib/articleDate';
 
 // Extended ArticleCard component with additional props
@@ -123,6 +122,7 @@ const HomePage: React.FC = () => {
   const [trendingDirection, setTrendingDirection] = useState<'up' | 'down'>('up');
   const [isTrendingAnimating, setIsTrendingAnimating] = useState(false);
   const trendingAnimationTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const BASE_TITLE = 'Vadali Media';
 
   useEffect(() => {
     const loadData = async () => {
@@ -185,6 +185,13 @@ const HomePage: React.FC = () => {
       clearInterval(intervalId);
     };
   }, []);
+
+  useEffect(() => {
+    document.title = loading ? `⏳ ${BASE_TITLE}` : BASE_TITLE;
+    return () => {
+      document.title = BASE_TITLE;
+    };
+  }, [loading]);
 
   const articlesForFeed = publishedArticles.filter(a => !a.isAdvertisement);
   const advertisementArticles = advertisements;
@@ -298,10 +305,6 @@ const HomePage: React.FC = () => {
       : 'animate-trending-down'
     : '';
   const MAX_TRENDING_TITLE_LENGTH = 60;
-
-  if (loading) {
-    return <LoadingSpinner label="Loading homepage..." fullScreen />;
-  }
 
   // Group articles by category
   const articlesByCategory = categories.map(category => ({
