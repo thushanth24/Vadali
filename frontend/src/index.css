@@ -38,3 +38,21 @@
     transform: rotate(1turn);
   }
 }
+
+/* Prevent article content from causing horizontal scroll on narrow screens */
+.article-content {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.article-content img,
+.article-content iframe,
+.article-content table,
+.article-content pre {
+  max-width: 100%;
+}
+
+.article-content pre,
+.article-content code {
+  white-space: pre-wrap;
+}

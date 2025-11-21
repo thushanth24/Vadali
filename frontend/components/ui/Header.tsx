@@ -61,6 +61,7 @@ const Header: React.FC = () => {
   const [visible, setVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [expandedMobileIds, setExpandedMobileIds] = useState<string[]>([]);
   const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
   const visibleRootCategories = useMemo(
     () => categoryTree.filter((category) => category.showInHeader ?? true),
@@ -210,25 +211,37 @@ const Header: React.FC = () => {
       );
     });
 
+  const toggleMobileCategory = (categoryId: string) => {
+    setExpandedMobileIds((prev) =>
+      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
+    );
+  };
+
   const renderMobileCategories = (nodes: CategoryNode[], depth = 0): React.ReactNode =>
     nodes.map((node) => {
       const isActive = location.pathname.startsWith(`/category/${node.slug}`);
       const hasChildren = node.children.length > 0;
       const spacing = { marginLeft: depth * 12 };
+      const isExpanded = expandedMobileIds.includes(node.id);
 
       if (hasChildren) {
         return (
           <div key={node.id} className="flex flex-col gap-2">
             <button
               type="button"
-              className={`rounded-lg border px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.2em] transition ${
-                'border-gray-200 text-gray-700'
-              }`}
+              className="rounded-lg border px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.2em] transition border-blue-300/40 text-blue-50 bg-blue-900/40 hover:bg-blue-800/60"
               style={spacing}
+              onClick={() => toggleMobileCategory(node.id)}
+              aria-expanded={isExpanded}
             >
-              {node.name}
+              <span className="flex items-center justify-between">
+                {node.name}
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                />
+              </span>
             </button>
-            {renderMobileCategories(node.children, depth + 1)}
+            {isExpanded && renderMobileCategories(node.children, depth + 1)}
           </div>
         );
       }
@@ -241,8 +254,8 @@ const Header: React.FC = () => {
           aria-current={isActive ? 'page' : undefined}
           className={`rounded-lg border px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition ${
             isActive
-              ? 'border-blue-700 bg-blue-900/80 text-yellow-200 shadow'
-              : 'border-gray-200 text-gray-700 hover:border-red-500 hover:text-red-600'
+              ? 'border-yellow-300 bg-blue-900/50 text-yellow-200 shadow'
+              : 'border-blue-300/30 text-blue-50 hover:border-yellow-200 hover:text-yellow-100 hover:bg-blue-900/40'
           }`}
           style={spacing}
         >
@@ -407,7 +420,7 @@ const Header: React.FC = () => {
               >
                 <span className="relative z-10 flex items-center gap-2">
                   <Home size={16} className="transition-transform duration-200 group-hover:scale-110" />
-                  Home
+                  முகப்பு
                 </span>
                 <span
                   className={`absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-400 transform transition-transform duration-300 ${
@@ -497,10 +510,10 @@ const Header: React.FC = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="container mx-auto px-4 py-8 md:hidden">
+        <div className="container mx-auto px-4 py-8 md:hidden bg-blue-900 text-white rounded-2xl shadow-xl">
          
 
-          <nav className="flex flex-col gap-2 pb-4">
+          <nav className="flex flex-col gap-2 pb-4 bg-blue-800/80 border border-blue-500/25 rounded-xl p-4 shadow-inner">
             <Link
               to="/trending"
               onClick={() => setIsMenuOpen(false)}
@@ -508,7 +521,7 @@ const Header: React.FC = () => {
               className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition ${
                 location.pathname.startsWith('/trending')
                   ? 'bg-blue-900 text-yellow-200 shadow'
-                  : 'bg-[#112b6f] text-white hover:bg-[#0c1a3a]'
+                  : 'bg-blue-800 text-white hover:bg-blue-900'
               }`}
             >
               <Flame size={16} className="text-yellow-300" />
@@ -520,8 +533,8 @@ const Header: React.FC = () => {
               aria-current={location.pathname === '/' ? 'page' : undefined}
               className={`flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition ${
                 location.pathname === '/'
-                  ? 'border-blue-700 bg-blue-900/80 text-yellow-200 shadow'
-                  : 'border-gray-200 text-gray-700 hover:border-red-500 hover:text-red-600'
+                  ? 'border-yellow-400 bg-blue-900/80 text-yellow-200 shadow'
+                  : 'border-blue-500/50 text-blue-50 hover:border-yellow-300 hover:text-yellow-100 hover:bg-blue-900/40'
               }`}
             >
               <Home size={16} className="text-yellow-300" />

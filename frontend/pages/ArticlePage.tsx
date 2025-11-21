@@ -41,6 +41,28 @@ const extractGalleryFromContent = (html: string) => {
   }
 };
 
+const setMetaTag = (attribute: 'name' | 'property', key: string, value: string) => {
+  if (typeof document === 'undefined') return;
+  let tag = document.head.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute(attribute, key);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', value);
+};
+
+const setCanonicalLink = (url: string) => {
+  if (typeof document === 'undefined') return;
+  let link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'canonical';
+    document.head.appendChild(link);
+  }
+  link.href = url;
+};
+
 const ArticlePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [article, setArticle] = useState<Article | null | undefined>(undefined);
@@ -123,6 +145,31 @@ const ArticlePage: React.FC = () => {
     }
   }, [article, articleImageUrls, metadataGalleryUrls, galleryImages]);
 
+  const shareImage = article?.coverImageUrl || galleryImages[0] || '';
+
+  useEffect(() => {
+    if (!article) return;
+    const pageUrl = window.location.href;
+    const description = article.summary || article.title;
+    const imageUrl = shareImage;
+
+    document.title = `${article.title} | Vadali Media`;
+    setMetaTag('property', 'og:title', article.title);
+    setMetaTag('property', 'og:description', description);
+    setMetaTag('property', 'og:url', pageUrl);
+    if (imageUrl) {
+      setMetaTag('property', 'og:image', imageUrl);
+    }
+    setMetaTag('name', 'description', description);
+    setMetaTag('name', 'twitter:card', 'summary_large_image');
+    setMetaTag('name', 'twitter:title', article.title);
+    setMetaTag('name', 'twitter:description', description);
+    if (imageUrl) {
+      setMetaTag('name', 'twitter:image', imageUrl);
+    }
+    setCanonicalLink(pageUrl);
+  }, [article, shareImage]);
+
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim() || !article) return;
@@ -165,7 +212,7 @@ const ArticlePage: React.FC = () => {
   const publishedDateLabel = formatArticleDate(article, { dateStyle: 'long' });
 
   return (
-    <div className="bg-gray-100 py-8">
+    <div className="bg-gray-100 py-8 overflow-x-hidden">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Content */}
@@ -175,7 +222,7 @@ const ArticlePage: React.FC = () => {
                 {category.name}
               </Link>
             )}
-            <h1 className="text-3xl md:text-4xl font-bold my-4 text-gray-800 leading-tight">
+            <h1 className="text-xl md:text-2xl font-bold my-4 text-gray-800 leading-tight break-words">
               {article.title}
             </h1>
             
@@ -199,7 +246,7 @@ const ArticlePage: React.FC = () => {
               </div>
             </div>
             
-             <p className="text-lg text-gray-600 mb-8">{article.summary}</p>
+             <p className="text-lg text-gray-600 mb-8 break-words">{article.summary}</p>
 
             <img src={article.coverImageUrl} alt={article.title} className="w-full mb-8 rounded-md" />
 
