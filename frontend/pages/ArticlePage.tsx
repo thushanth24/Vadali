@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { fetchArticleBySlug, fetchArticles, fetchUser, fetchCategories, postComment } from '../services/api';
+import { API_BASE, fetchArticleBySlug, fetchArticles, fetchUser, fetchCategories, postComment } from '../services/api';
 import { Article, User, Category, Comment } from '../types';
 import { ArticleStatus } from '../types';
 import { Calendar, User as UserIcon, MessageSquare, Tag, Facebook, Twitter, Linkedin } from 'lucide-react';
@@ -209,7 +209,8 @@ const ArticlePage: React.FC = () => {
   }
 
   const approvedComments = article.comments.filter(c => c.status === 'APPROVED');
-  const sharePreviewUrl = `${window.location.origin}/share/article/${article.slug}`;
+  const sharePreviewBase = API_BASE || window.location.origin;
+  const sharePreviewUrl = `${sharePreviewBase}/share/article/${article.slug}`;
   const encodedUrl = encodeURIComponent(sharePreviewUrl);
   const encodedTitle = encodeURIComponent(article.title);
   const encodedSummary = encodeURIComponent(article.summary);

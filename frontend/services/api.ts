@@ -4,7 +4,7 @@ import { User, Category, Article, Notification, Subscriber, UserRole, ArticleSta
 // THIS IS THE LIVE API LAYER. IT MAKES REQUESTS TO THE BACKEND.
 // =================================================================
 
-const API_BASE = 'https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com'; // From your curl command
+export const API_BASE = 'https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com'; // From your curl command
 
 // Get auth token from localStorage
 const getAuthToken = (): string | null => {
