@@ -209,8 +209,7 @@ const ArticlePage: React.FC = () => {
   }
 
   const approvedComments = article.comments.filter(c => c.status === 'APPROVED');
-  const sharePreviewBase = API_BASE || window.location.origin;
-  const sharePreviewUrl = `${sharePreviewBase}/share/article/${article.slug}`;
+  const sharePreviewUrl = `https://vadalimedia.lk/share/article/${article.slug}`;
   const encodedUrl = encodeURIComponent(sharePreviewUrl);
   const encodedTitle = encodeURIComponent(article.title);
   const encodedSummary = encodeURIComponent(article.summary);
