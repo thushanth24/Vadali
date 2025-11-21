@@ -1,3 +1,2 @@
-/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200!  User-Agent=~*facebookexternalhit|facebot|twitterbot|linkedinbot|slackbot|whatsapp|bot
 /share/article/*  https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat  200
 /*    /index.html   200
