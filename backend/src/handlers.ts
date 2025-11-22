@@ -29,6 +29,38 @@ const slugify = (value: string) => {
         .replace(/-+/g, '-');
 };
 
+const escapeHtml = (value: string) =>
+    value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+const toPlainText = (html: string | undefined, fallback: string): string => {
+    if (!html) return fallback;
+    const stripped = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    return stripped || fallback;
+};
+
+const getSiteOrigin = (): string => {
+    const origin =
+        process.env.SHARE_SITE_ORIGIN ||
+        process.env.FRONTEND_ORIGIN ||
+        process.env.ALLOWED_ORIGIN ||
+        'https://vadalimedia.lk';
+
+    return origin.replace(/\/+$/, '');
+};
+
+const toAbsoluteUrl = (value: string | undefined, siteOrigin: string): string => {
+    if (!value) return '';
+    if (/^https?:\/\//i.test(value)) return value;
+    if (value.startsWith('//')) return `https:${value}`;
+    if (value.startsWith('/')) return `${siteOrigin}${value}`;
+    return `${siteOrigin}/${value}`;
+};
+
 // Initialize repositories
 const userRepository = new UserRepository();
 const articleRepository = new ArticleRepository();
@@ -609,6 +641,94 @@ export const getArticleBySlug: APIGatewayProxyHandlerV2 = async (event) => {
     } catch (error) {
         console.error('Error getting article by slug:', error);
         return respond(500, { message: 'Internal server error' });
+    }
+};
+
+export const getArticleSharePreview: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const slug = event.pathParameters?.slug;
+        if (!slug) {
+            return {
+                statusCode: 400,
+                headers: { 'Content-Type': 'text/html; charset=utf-8' },
+                body: '<!doctype html><html><body>Missing slug</body></html>',
+            };
+        }
+
+        const article = await articleRepository.findBySlug(slug);
+
+        if (!article || article.status !== ArticleStatus.PUBLISHED) {
+            return {
+                statusCode: 404,
+                headers: { 'Content-Type': 'text/html; charset=utf-8' },
+                body: '<!doctype html><html><body>Article not found</body></html>',
+            };
+        }
+
+        const siteOrigin = getSiteOrigin();
+        const articleUrl = `${siteOrigin}/article/${article.slug}`;
+        const shareUrl = `${siteOrigin}/share/article/${article.slug}`;
+        const previewImage = toAbsoluteUrl(article.coverImageUrl || article.imageUrls?.[0], siteOrigin);
+        const descriptionSource = article.summary || toPlainText(article.content, article.title);
+        const description = descriptionSource.slice(0, 240);
+        const userAgent = event.headers?.['user-agent'] || event.headers?.['User-Agent'] || '';
+        const isCrawler = /facebookexternalhit|facebot|slackbot|twitterbot|whatsapp|LinkedInBot|crawler|bot/i.test(userAgent);
+        // Keep OG tags static; only redirect humans so crawlers don't miss meta tags.
+        const metaRefresh = isCrawler ? '' : `<meta http-equiv="refresh" content="0;url=${escapeHtml(articleUrl)}" />`;
+        const scriptRedirect = isCrawler ? '' : `  <script>
+    try { window.location.replace("${escapeHtml(articleUrl)}"); } catch (e) {}
+  </script>`;
+
+        const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${escapeHtml(article.title)}</title>
+  <meta name="description" content="${escapeHtml(description)}" />
+  <link rel="canonical" href="${escapeHtml(shareUrl)}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="${escapeHtml(article.title)}" />
+  <meta property="og:description" content="${escapeHtml(description)}" />
+  <meta property="og:url" content="${escapeHtml(shareUrl)}" />
+  ${previewImage ? `<meta property="og:image" content="${escapeHtml(previewImage)}" />` : ''}
+  ${previewImage ? `<meta property="og:image:secure_url" content="${escapeHtml(previewImage)}" />` : ''}
+  <meta property="og:site_name" content="Vadali Media" />
+  <meta name="twitter:card" content="${previewImage ? 'summary_large_image' : 'summary'}" />
+  <meta name="twitter:title" content="${escapeHtml(article.title)}" />
+  <meta name="twitter:description" content="${escapeHtml(description)}" />
+  ${previewImage ? `<meta name="twitter:image" content="${escapeHtml(previewImage)}" />` : ''}
+  ${metaRefresh}
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #111; }
+    .container { max-width: 640px; margin: 0 auto; text-align: center; }
+    a { color: #1a237e; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Continue to article</h1>
+    <p><a href="${escapeHtml(articleUrl)}">Open the full article</a></p>
+  </div>
+  ${scriptRedirect}
+</body>
+</html>`;
+
+        return {
+            statusCode: 200,
+            headers: {
+                'Content-Type': 'text/html; charset=utf-8',
+                'Cache-Control': 'public, max-age=300',
+            },
+            body: html,
+        };
+    } catch (error) {
+        console.error('Error generating share preview:', error);
+        return {
+            statusCode: 500,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+            body: '<!doctype html><html><body>Failed to generate share preview</body></html>',
+        };
     }
 };
 
@@ -1249,3 +1369,4 @@ export const getUploadUrl: APIGatewayProxyHandlerV2 = async (event) => {
         return respond(500, { message: 'Error generating upload URL' });
     }
 };
+

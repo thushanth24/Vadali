@@ -61,6 +61,7 @@ provider:
     CATEGORIES_TABLE: vadali-media-categories-${self:provider.stage}
     S3_BUCKET_NAME: 'vadaliarticles'
     ALLOWED_ORIGIN: ${env:FRONTEND_ORIGIN, 'http://localhost:3000'}
+    SHARE_SITE_ORIGIN: ${env:SHARE_SITE_ORIGIN, 'https://vadalimedia.lk'}
 
 functions:
   # Auth
@@ -117,6 +118,10 @@ functions:
     handler: src/handlers.getArticleBySlug
     events:
       - httpApi: 'GET /articles/slug/{slug}'
+  getArticleSharePreview:
+    handler: src/handlers.getArticleSharePreview
+    events:
+      - httpApi: 'GET /share/article/{slug}'
   createArticle:
     handler: src/handlers.createArticle
     events:
