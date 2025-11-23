@@ -110,6 +110,7 @@ const App: React.FC = () => {
             <Route index element={<EditorDashboard />} />
             <Route path="articles" element={<ArticleManagement />} />
             <Route path="create" element={<CreateArticle />} />
+            <Route path="edit/:id" element={<AdminEditArticle />} />
             <Route path="review/:id" element={<ReviewArticle />} />
             <Route path="schedule/:id" element={<ScheduleArticle />} />
             <Route path="featured" element={<FeaturedManager />} />

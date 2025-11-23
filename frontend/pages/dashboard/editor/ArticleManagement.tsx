@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Article, ArticleStatus } from '../../../types';
 import { fetchArticles, updateArticleStatus } from '../../../services/api';
@@ -256,6 +256,12 @@ export default function ArticleManagement() {
                         </div>
                       </div>
                       <div className="mt-2 flex justify-end space-x-2">
+                        <Link
+                          to={`/dashboard/editor/edit/${article.id}`}
+                          className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-5 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                        >
+                          Edit
+                        </Link>
                         <a
                           href={`/article/${article.slug}`}
                           target="_blank"
