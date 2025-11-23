@@ -3,19 +3,20 @@
   command = "npm install && npm run build"
   publish = "dist"
 
-[[redirects]]
-  from = "/article/*"
-  to = "https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat"
-  status = 200
-  force = true
-  conditions = {User-Agent = ["(?i)facebookexternalhit|facebot|twitterbot|linkedinbot|slackbot|whatsapp|bot"]}
-
+# 1. Keep /share/article/* → API Gateway (this is your Lambda)
 [[redirects]]
   from = "/share/article/*"
   to = "https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat"
   status = 200
   force = true
 
+# 2. Edge Function for /article/* that ONLY runs for bots
+#    (humans will skip this and hit the SPA)
+[[edge_functions]]
+  function = "prerender-article"
+  path = "/article/*"
+
+# 3. SPA catch-all (React router)
 [[redirects]]
   from = "/*"
   to = "/index.html"
