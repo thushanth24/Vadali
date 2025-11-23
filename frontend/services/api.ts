@@ -6,6 +6,38 @@ import { User, Category, Article, Notification, Subscriber, UserRole, ArticleSta
 
 export const API_BASE = 'https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com'; // From your curl command
 
+const CACHEABLE_METHODS = new Set(['GET', 'HEAD']);
+const DEFAULT_CACHE_TTL = 30_000; // 30s in-memory cache to avoid refetching unchanged data
+
+interface ApiRequestOptions extends RequestInit {
+  cacheTtlMs?: number;
+  skipCache?: boolean;
+  cacheKey?: string;
+}
+
+const responseCache = new Map<string, { data: unknown; expiresAt: number }>();
+const inflightRequests = new Map<string, Promise<unknown>>();
+
+const cloneData = <T>(data: T): T => {
+  if (data === null || data === undefined) return data;
+  try {
+    if (typeof structuredClone === 'function') {
+      return structuredClone(data);
+    }
+  } catch {
+    // Fall back to JSON below
+  }
+
+  try {
+    return JSON.parse(JSON.stringify(data));
+  } catch {
+    return data;
+  }
+};
+
+const buildCacheKey = (method: string, endpoint: string, token: string | null, customKey?: string) =>
+  [method.toUpperCase(), endpoint, customKey ?? '', token ?? ''].join('::');
+
 // Get auth token from localStorage
 const getAuthToken = (): string | null => {
   const tokens = localStorage.getItem('authTokens');
@@ -23,9 +55,29 @@ const getAuthToken = (): string | null => {
 // Wrapper for fetch that handles auth and common error cases
 const apiRequest = async <T = void>(
   endpoint: string, 
-  options: RequestInit = {}
+  options: ApiRequestOptions = {}
 ): Promise<T> => {
   const token = getAuthToken();
+  const method = (options.method ?? 'GET').toUpperCase();
+  const isMutation = !CACHEABLE_METHODS.has(method);
+  const isCacheable = CACHEABLE_METHODS.has(method) && !options.skipCache;
+  const cacheKey = isCacheable ? buildCacheKey(method, endpoint, token, options.cacheKey) : null;
+  const now = Date.now();
+
+  if (cacheKey) {
+    const cached = responseCache.get(cacheKey);
+    if (cached && cached.expiresAt > now) {
+      return cloneData(cached.data as T);
+    }
+    if (cached) {
+      responseCache.delete(cacheKey);
+    }
+
+    const pending = inflightRequests.get(cacheKey) as Promise<T> | undefined;
+    if (pending) {
+      return pending;
+    }
+  }
   
   // Set up headers
   const headers: HeadersInit = {
@@ -42,94 +94,122 @@ const apiRequest = async <T = void>(
   let response: Response;
   let responseText: string | undefined;
 
-  try {
-    response = await fetch(url, {
-      ...options,
-      headers,
-      credentials: 'include',
-    });
-    
-    // Get response text for error handling
-    responseText = await response.text().catch(() => '');
-    
-    // Handle 401 Unauthorized (token expired or invalid)
-    if (response.status === 401) {
-      // Try to refresh token if this wasn't a refresh request
-      if (!endpoint.includes('/auth/refresh')) {
-        try {
-          const newToken = await refreshToken();
-          if (newToken) {
-            // Retry the original request with new token
-            return apiRequest<T>(endpoint, {
-              ...options,
-              headers: {
-                ...headers,
-                'Authorization': `Bearer ${newToken}`,
-              },
-            });
-          }
-        } catch (error) {
-          console.error('Token refresh failed', error);
-          // Clear auth and redirect to login
-          localStorage.removeItem('authTokens');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
-          throw new Error('Session expired. Please log in again.');
-        }
-      }
-      throw new Error('Session expired. Please log in again.');
-    }
-
-    // Handle other error statuses
-    if (!response.ok) {
-      console.error('API Request Failed:', {
-        url,
-        status: response.status,
-        statusText: response.statusText,
-        response: responseText,
+  const executeRequest = async (): Promise<T> => {
+    try {
+      response = await fetch(url, {
+        ...options,
+        method,
+        headers,
+        credentials: 'include',
       });
       
-      let errorMessage = response.statusText;
-      try {
-        const errorData = responseText ? JSON.parse(responseText) : {};
-        errorMessage = errorData.message || errorMessage;
-      } catch (e) {
-        // If we can't parse JSON, use the raw text
-        errorMessage = responseText || errorMessage;
-      }
+      // Get response text for error handling
+      responseText = await response.text().catch(() => '');
       
-      const error = new Error(errorMessage);
-      (error as any).status = response.status;
+      // Handle 401 Unauthorized (token expired or invalid)
+      if (response.status === 401) {
+        // Try to refresh token if this wasn't a refresh request
+        if (!endpoint.includes('/auth/refresh')) {
+          try {
+            const newToken = await refreshToken();
+            if (newToken) {
+              // Retry the original request with new token
+              return apiRequest<T>(endpoint, {
+                ...options,
+                headers: {
+                  ...headers,
+                  'Authorization': `Bearer ${newToken}`,
+                },
+              });
+            }
+          } catch (error) {
+            console.error('Token refresh failed', error);
+            // Clear auth and redirect to login
+            localStorage.removeItem('authTokens');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+            throw new Error('Session expired. Please log in again.');
+          }
+        }
+        throw new Error('Session expired. Please log in again.');
+      }
+
+      // Handle other error statuses
+      if (!response.ok) {
+        console.error('API Request Failed:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          response: responseText,
+        });
+        
+        let errorMessage = response.statusText;
+        try {
+          const errorData = responseText ? JSON.parse(responseText) : {};
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If we can't parse JSON, use the raw text
+          errorMessage = responseText || errorMessage;
+        }
+        
+        const error = new Error(errorMessage);
+        (error as any).status = response.status;
+        throw error;
+      }
+
+      // Handle empty responses (like 204 No Content)
+      if (response.status === 204) {
+        // For 204 No Content, return undefined if there's no content
+        // This is type-safe because T defaults to void
+        if (!responseText) {
+          return undefined as unknown as T;
+        }
+        
+        // If there is content, try to parse it as JSON
+        try {
+          return JSON.parse(responseText) as T;
+        } catch {
+          throw new Error('Received invalid JSON in 204 response');
+        }
+      }
+
+      if (!responseText) {
+        throw new Error('Received empty response when JSON was expected');
+      }
+      return JSON.parse(responseText) as T;
+    } catch (error) {
+      console.error('API Request Error:', {
+        url,
+        error,
+        responseText,
+      });
       throw error;
     }
+  };
 
-    // Handle empty responses (like 204 No Content)
-    if (response.status === 204) {
-      // For 204 No Content, return undefined if there's no content
-      // This is type-safe because T defaults to void
-      if (!responseText) {
-        return undefined as unknown as T;
+  const requestPromise = executeRequest();
+
+  if (cacheKey) {
+    inflightRequests.set(cacheKey, requestPromise);
+  }
+
+  try {
+    const result = await requestPromise;
+
+    if (cacheKey) {
+      const ttl = typeof options.cacheTtlMs === 'number' ? options.cacheTtlMs : DEFAULT_CACHE_TTL;
+      if (ttl > 0) {
+        responseCache.set(cacheKey, { data: cloneData(result), expiresAt: Date.now() + ttl });
       }
-      
-      // If there is content, try to parse it as JSON
-      try {
-        return JSON.parse(responseText) as T;
-      } catch {
-        throw new Error('Received invalid JSON in 204 response');
-      }
+    } else if (isMutation) {
+      responseCache.clear(); // Mutations invalidate cached GETs
     }
 
-    if (!responseText) {
-      throw new Error('Received empty response when JSON was expected');
+    return result;
+  } finally {
+    if (cacheKey) {
+      inflightRequests.delete(cacheKey);
     }
-    return JSON.parse(responseText) as T;
-  } catch (error) {
-    console.error('API Request Error:', {
-      url,
-      error,
-      responseText,
-    });
-    throw error;
   }
 };
 
