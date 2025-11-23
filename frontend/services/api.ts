@@ -145,6 +145,13 @@ type ArticlesResponse = {
   hasMore?: boolean;
 };
 
+export interface ArticlesWithMeta {
+  items: Article[];
+  total: number;
+  lastEvaluatedKey?: string;
+  hasMore?: boolean;
+}
+
 const normalizeArticleStatus = (status: unknown): ArticleStatus => {
   if (typeof status !== 'string') {
     return ArticleStatus.PENDING_REVIEW;
@@ -334,27 +341,37 @@ interface FetchArticlesParams {
     authorId?: string;
     status?: ArticleStatus | 'published' | 'draft' | 'archived' | 'ALL' | 'all'; // Support both enum and string literals
     featured?: boolean;
-    isAdvertisement?: boolean;
-    limit?: number | string;
-    offset?: number | string;
-    page?: number | string;
-    pageSize?: number | string;
-    sortBy?: 'createdAt' | 'updatedAt' | 'publishedAt' | 'title';
-    sortOrder?: 'asc' | 'desc';
-    query?: string;
+  isAdvertisement?: boolean;
+  limit?: number | string;
+  offset?: number | string;
+  page?: number | string;
+  pageSize?: number | string;
+  lastEvaluatedKey?: string;
+  sortBy?: 'createdAt' | 'updatedAt' | 'publishedAt' | 'title';
+  sortOrder?: 'asc' | 'desc';
+  query?: string;
 }
 
+export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): Promise<ArticlesWithMeta> => {
+  try {
+    const url = buildArticlesUrl(params);
+    const response = await apiRequest<ArticlesResponse>(url);
+
+    return {
+      items: normalizeArticles(response.items ?? []),
+      total: response.total ?? (response.items?.length ?? 0),
+      lastEvaluatedKey: response.lastEvaluatedKey,
+      hasMore: response.hasMore ?? Boolean(response.lastEvaluatedKey),
+    };
+  } catch (error) {
+    console.error('Failed to fetch articles:', error);
+    throw error;
+  }
+};
+
 export const fetchArticles = async (params: FetchArticlesParams = {}): Promise<Article[]> => {
-    try {
-        const url = buildArticlesUrl(params);
-        const response = await apiRequest<ArticlesResponse>(url);
-        // Backend returns { items: Article[], total: number }, but we just need the items array
-        return normalizeArticles(response.items ?? []);
-    } catch (error) {
-        console.error('Failed to fetch articles:', error);
-        // You could add error handling logic here, e.g., show a toast notification
-        throw error;
-    }
+  const { items } = await fetchArticlesWithMeta(params);
+  return items;
 };
 
 /**
@@ -398,19 +415,23 @@ function buildArticlesUrl(params: FetchArticlesParams): string {
         searchParams.append('pageSize', String(params.pageSize));
     }
 
-    if (params.page !== undefined) {
-        searchParams.append('page', String(params.page));
-    }
+  if (params.page !== undefined) {
+    searchParams.append('page', String(params.page));
+  }
 
-    if (params.offset !== undefined) {
-        searchParams.append('offset', String(params.offset));
-    }
+  if (params.offset !== undefined) {
+    searchParams.append('offset', String(params.offset));
+  }
 
+  if (params.lastEvaluatedKey) {
+    searchParams.append('lastEvaluatedKey', params.lastEvaluatedKey);
+  }
+ 
     
-    // Handle sorting
-    if (params.sortBy) {
-        const order = params.sortOrder === 'desc' ? '-' : '';
-        searchParams.append('sort', `${order}${params.sortBy}`);
+  // Handle sorting
+  if (params.sortBy) {
+    const order = params.sortOrder === 'desc' ? '-' : '';
+    searchParams.append('sort', `${order}${params.sortBy}`);
     }
     
     // Only append search params if there are any

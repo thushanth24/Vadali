@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchArticles, fetchUsers, fetchCategories, deleteArticle } from '../../../services/api';
+import { fetchArticlesWithMeta, fetchUsers, fetchCategories, deleteArticle } from '../../../services/api';
 import { Article, ArticleStatus, User, Category } from '../../../types';
 import Button from '../../../components/ui/Button';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
@@ -11,30 +11,23 @@ const AllArticles: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [articlesLoading, setArticlesLoading] = useState(true);
+    const [metaLoading, setMetaLoading] = useState(true);
+    const [pageTokens, setPageTokens] = useState<Record<number, string | undefined>>({ 1: undefined });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+    const [hasMore, setHasMore] = useState(false);
 
-    const loadData = () => {
-        setLoading(true);
-        Promise.all([
-            fetchArticles({ status: 'ALL' }),
-            fetchUsers(),
-            fetchCategories()
-        ]).then(([articleData, userData, categoryData]) => {
-            setArticles(articleData);
-            setUsers(userData);
-            setCategories(categoryData);
-        }).finally(() => setLoading(false));
-    };
-
-    useEffect(() => {
-        loadData();
-    }, []);
+    const isLoading = articlesLoading || metaLoading;
 
     const handleDelete = async (articleId: string) => {
         if (window.confirm('Are you sure you want to permanently delete this article?')) {
             try {
                 await deleteArticle(articleId);
-                setArticles(prev => prev.filter(a => a.id !== articleId));
+                const refreshedArticles = await loadArticles(currentPage);
+                if (refreshedArticles.length === 0 && currentPage > 1) {
+                    setCurrentPage(prev => Math.max(1, prev - 1));
+                }
                 alert('Article deleted successfully.');
             } catch {
                 alert('Failed to delete article.');
@@ -50,6 +43,80 @@ const AllArticles: React.FC = () => {
             [ArticleStatus.REJECTED]: 'bg-red-100 text-red-800',
         };
         return <span className={`px-3 py-1 text-xs font-semibold rounded-full ${styles[status]}`}>{status}</span>;
+    };
+
+    const loadMetaData = async () => {
+        try {
+            const [userData, categoryData] = await Promise.all([
+                fetchUsers(),
+                fetchCategories()
+            ]);
+            setUsers(userData);
+            setCategories(categoryData);
+        } finally {
+            setMetaLoading(false);
+        }
+    };
+
+    const loadArticles = async (pageToLoad: number): Promise<Article[]> => {
+        setArticlesLoading(true);
+        try {
+            const startKey = pageTokens[pageToLoad];
+            const { items, lastEvaluatedKey, hasMore: moreAvailable } = await fetchArticlesWithMeta({
+                status: 'ALL',
+                limit: pageSize,
+                pageSize,
+                lastEvaluatedKey: startKey
+            });
+
+            setArticles(items);
+            setHasMore(Boolean(lastEvaluatedKey) || Boolean(moreAvailable));
+            setPageTokens(prev => {
+                const updated = { ...prev };
+                if (lastEvaluatedKey) {
+                    updated[pageToLoad + 1] = lastEvaluatedKey;
+                } else {
+                    delete updated[pageToLoad + 1];
+                }
+                return updated;
+            });
+
+            return items;
+        } catch (error) {
+            console.error('Failed to load articles for page', pageToLoad, error);
+            setHasMore(false);
+            return [];
+        } finally {
+            setArticlesLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadMetaData();
+    }, []);
+
+    useEffect(() => {
+        loadArticles(currentPage);
+    }, [currentPage, pageSize]);
+
+    const canGoPrevious = currentPage > 1 && !isLoading;
+    const canGoNext = !isLoading && (hasMore || Boolean(pageTokens[currentPage + 1]));
+
+    const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const nextSize = Number(event.target.value);
+        if (Number.isNaN(nextSize) || nextSize <= 0) return;
+        setPageTokens({ 1: undefined });
+        setCurrentPage(1);
+        setPageSize(nextSize);
+    };
+
+    const handlePageChange = (direction: 'prev' | 'next') => {
+        if (direction === 'prev' && canGoPrevious) {
+            setCurrentPage(prev => Math.max(1, prev - 1));
+        }
+        if (direction === 'next' && canGoNext) {
+            setCurrentPage(prev => prev + 1);
+        }
     };
     
     return (
@@ -71,8 +138,10 @@ const AllArticles: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                       {loading ? (
+                       {isLoading ? (
                            <tr><td colSpan={6} className="p-8"><LoadingSpinner label="Loading articles..." className="py-0" /></td></tr>
+                         ) : articles.length === 0 ? (
+                             <tr><td colSpan={6} className="p-6 text-center text-gray-500">No articles found.</td></tr>
                          ) : articles.map(article => {
                               const author = users.find(u => u.id === article.authorId);
                               const category = categories.find(c => c.id === article.categoryId);
@@ -108,6 +177,33 @@ const AllArticles: React.FC = () => {
                         })}
                     </tbody>
                 </table>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white rounded-lg shadow-sm mt-4 px-4 py-3 border border-gray-100">
+                <div className="text-sm text-gray-700 mb-2 sm:mb-0">
+                    Page {currentPage} {isLoading ? '(loading...)' : ''}
+                </div>
+                <div className="flex items-center space-x-3">
+                    <label className="text-sm text-gray-700 flex items-center space-x-2">
+                        <span>Per page</span>
+                        <select
+                            value={pageSize}
+                            onChange={handlePageSizeChange}
+                            className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            {[10, 20, 30, 50].map(size => (
+                                <option key={size} value={size}>{size}</option>
+                            ))}
+                        </select>
+                    </label>
+                    <div className="flex items-center space-x-2">
+                        <Button size="sm" variant="secondary" disabled={!canGoPrevious} onClick={() => handlePageChange('prev')}>
+                            Previous
+                        </Button>
+                        <Button size="sm" variant="secondary" disabled={!canGoNext} onClick={() => handlePageChange('next')}>
+                            Next
+                        </Button>
+                    </div>
+                </div>
             </div>
         </div>
     );
