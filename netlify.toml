@@ -1,9 +1,14 @@
+[build]
+  base = "frontend"
+  command = "npm install && npm run build"
+  publish = "dist"
+
 [[redirects]]
   from = "/article/*"
   to = "https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat"
   status = 200
   force = true
-  conditions = {User-Agent = ["(?i)facebookexternalhit|facebot|twitterbot|linkedinbot|slackbot|whatsapp|bot"] }
+  conditions = {User-Agent = ["(?i)facebookexternalhit|facebot|twitterbot|linkedinbot|slackbot|whatsapp|bot"]}
 
 [[redirects]]
   from = "/share/article/*"
