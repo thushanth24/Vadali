@@ -1,22 +1,27 @@
 [build]
   base = "frontend"
-  command = "npm install && npm run build"
+  command = "npm run build"
   publish = "dist"
 
+# Edge function for /article/* – only for bot user agents
+[[edge_functions]]
+  function = "prerender-article"
+  path = "/article/*"
+
+  [edge_functions.header]
+  # NO (?i) here – just a plain JS regex source string
+  user-agent = "facebookexternalhit|facebot|Twitterbot|linkedinbot|Slackbot|WhatsApp|bot"
+
+# Route /share/article/* to your AWS API Gateway Lambda
 [[redirects]]
   from = "/share/article/*"
   to = "https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/:splat"
   status = 200
   force = true
 
-[[edge_functions]]
-  function = "prerender-article"
-  path = "/article/*"
-
-  [edge_functions.header]
-  user-agent = "(?i)(facebookexternalhit|facebot|twitterbot|linkedinbot|slackbot|whatsapp|bot)"
-
+# SPA fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
