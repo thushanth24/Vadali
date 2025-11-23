@@ -6,6 +6,7 @@ import { fetchArticles, fetchCategories } from '../services/api';
 import { Article, Category } from '../types';
 import { Clock, ChevronUp, ChevronDown } from 'lucide-react';
 import { formatArticleDate } from '../lib/articleDate';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 // Extended ArticleCard component with additional props
 interface ExtendedArticleCardProps extends Omit<ArticleCardProps, 'className'> {
@@ -118,6 +119,7 @@ const HomePage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [releaseOrderedArticles, setReleaseOrderedArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const [trendingStartIndex, setTrendingStartIndex] = useState(0);
   const [trendingDirection, setTrendingDirection] = useState<'up' | 'down'>('up');
   const [isTrendingAnimating, setIsTrendingAnimating] = useState(false);
@@ -140,6 +142,7 @@ const HomePage: React.FC = () => {
         console.error("Failed to load homepage data", error);
       } finally {
         setLoading(false);
+        setInitialized(true);
       }
     };
     loadData();
@@ -313,6 +316,10 @@ const HomePage: React.FC = () => {
       .filter(article => article.categoryId === category.id)
       .slice(0, 4) // Get latest 4 articles for each category
   })).filter(category => category.articles.length > 0);
+
+  if (!initialized && loading) {
+    return <LoadingSpinner fullScreen label="Loading latest news..." />;
+  }
 
   return (
     <div className="bg-gray-150 min-h-screen">
