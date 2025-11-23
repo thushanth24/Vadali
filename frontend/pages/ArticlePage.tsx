@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Helmet } from 'react-helmet';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { API_BASE, fetchArticleBySlug, fetchArticles, fetchUser, fetchCategories, postComment } from '../services/api';
 import { Article, User, Category, Comment } from '../types';
@@ -38,28 +39,6 @@ const extractGalleryFromContent = (html: string) => {
     console.error('Failed to parse inline gallery metadata', error);
     return { urls: [] as string[], sanitizedHtml: html };
   }
-};
-
-const setMetaTag = (attribute: 'name' | 'property', key: string, value: string) => {
-  if (typeof document === 'undefined') return;
-  let tag = document.head.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`);
-  if (!tag) {
-    tag = document.createElement('meta');
-    tag.setAttribute(attribute, key);
-    document.head.appendChild(tag);
-  }
-  tag.setAttribute('content', value);
-};
-
-const setCanonicalLink = (url: string) => {
-  if (typeof document === 'undefined') return;
-  let link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-  if (!link) {
-    link = document.createElement('link');
-    link.rel = 'canonical';
-    document.head.appendChild(link);
-  }
-  link.href = url;
 };
 
 const ArticlePage: React.FC = () => {
@@ -147,44 +126,29 @@ const ArticlePage: React.FC = () => {
 
   const shareImage = article?.coverImageUrl || galleryImages[0] || '';
 
-  useEffect(() => {
-    if (!article) return;
-    const pageUrl = window.location.href;
-    const description = article.summary || article.title;
-    const imageUrl = shareImage;
+  const resolvedLocation = typeof window !== 'undefined' ? window.location.href : '';
+  const canonicalUrl = article ? `https://vadalimedia.lk/article/${article.slug}` : resolvedLocation || 'https://vadalimedia.lk/';
+  const metaDescription = article?.summary || article?.title || 'Latest stories from Vadali Media.';
+  const helmetTitle = article ? `${article.title} | ${BASE_TITLE}` : BASE_TITLE;
+  const twitterCard = shareImage ? 'summary_large_image' : 'summary';
 
-    setMetaTag('property', 'og:title', article.title);
-    setMetaTag('property', 'og:description', description);
-    setMetaTag('property', 'og:url', pageUrl);
-    if (imageUrl) {
-      setMetaTag('property', 'og:image', imageUrl);
-    }
-    setMetaTag('name', 'description', description);
-    setMetaTag('name', 'twitter:card', 'summary_large_image');
-    setMetaTag('name', 'twitter:title', article.title);
-    setMetaTag('name', 'twitter:description', description);
-    if (imageUrl) {
-      setMetaTag('name', 'twitter:image', imageUrl);
-    }
-    setCanonicalLink(pageUrl);
-  }, [article, shareImage]);
-
-  useEffect(() => {
-    if (loading) {
-      document.title = `⏳ ${BASE_TITLE}`;
-      return;
-    }
-
-    if (article) {
-      document.title = `${article.title} | ${BASE_TITLE}`;
-    } else {
-      document.title = BASE_TITLE;
-    }
-
-    return () => {
-      document.title = BASE_TITLE;
-    };
-  }, [loading, article, BASE_TITLE]);
+  const helmetMarkup = (
+    <Helmet>
+      <title>{helmetTitle}</title>
+      <meta name="description" content={metaDescription} />
+      <link rel="canonical" href={canonicalUrl} />
+      <meta property="og:type" content="article" />
+      <meta property="og:title" content={article?.title || BASE_TITLE} />
+      <meta property="og:description" content={metaDescription} />
+      <meta property="og:url" content={canonicalUrl} />
+      {shareImage && <meta property="og:image" content={shareImage} />}
+      <meta property="og:site_name" content="Vadali Media" />
+      <meta name="twitter:card" content={twitterCard} />
+      <meta name="twitter:title" content={article?.title || BASE_TITLE} />
+      <meta name="twitter:description" content={metaDescription} />
+      {shareImage && <meta name="twitter:image" content={shareImage} />}
+    </Helmet>
+  );
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,7 +169,7 @@ const ArticlePage: React.FC = () => {
 
 
   if (!article) {
-    return loading ? null : <Navigate to="/" replace />;
+    return loading ? <>{helmetMarkup}</> : <Navigate to="/" replace />;
   }
 
   const approvedComments = article.comments.filter(c => c.status === 'APPROVED');
@@ -225,6 +189,7 @@ const ArticlePage: React.FC = () => {
 
   return (
     <div className="bg-gray-100 py-8 overflow-x-hidden">
+      {helmetMarkup}
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Content */}
@@ -418,3 +383,4 @@ const ArticlePage: React.FC = () => {
 };
 
 export default ArticlePage;
+
