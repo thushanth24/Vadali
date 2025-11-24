@@ -53,6 +53,21 @@ const AdminDashboard: React.FC = () => {
                 <StatCard icon={BarChart2} title="Total Views" value={totalViews} color="bg-purple-500" />
             </div>
 
+            <div className="bg-white p-4 rounded-lg shadow-md mb-8">
+                <h3 className="font-bold text-base mb-3">Audience Insights (Looker Studio)</h3>
+                <div className="w-full h-[680px]">
+                    <iframe
+                        title="Looker Studio Dashboard"
+                        src="https://lookerstudio.google.com/embed/reporting/68dc7c3d-8181-4c4b-859c-51e860368226/page/SqcgF"
+                        className="w-full h-full rounded-md"
+                        frameBorder="0"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                    />
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-lg shadow-md">
                     <h3 className="font-bold text-base mb-4">Recent Articles</h3>
