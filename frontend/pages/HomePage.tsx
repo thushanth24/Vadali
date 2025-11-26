@@ -155,7 +155,6 @@ const HomePage: React.FC = () => {
       try {
         const latest = await fetchArticles({
           status: 'published',
-          limit: 25,
           sortBy: 'publishedAt',
           sortOrder: 'desc',
         });
@@ -312,7 +311,8 @@ const HomePage: React.FC = () => {
   // Group articles by category
   const articlesByCategory = categories.map(category => ({
     ...category,
-    articles: articlesForFeed
+    // Use the release-sorted feed so each category shows the newest items first
+    articles: releaseSortedFeed
       .filter(article => article.categoryId === category.id)
       .slice(0, 4) // Get latest 4 articles for each category
   })).filter(category => category.articles.length > 0);
