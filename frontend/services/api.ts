@@ -435,14 +435,60 @@ interface FetchArticlesParams {
 
 export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): Promise<ArticlesWithMeta> => {
   try {
-    const url = buildArticlesUrl(params);
-    const response = await apiRequest<ArticlesResponse>(url);
+    // If no pagination hints were provided, fetch all pages until exhaustion.
+    const fetchAll =
+      params.limit === undefined &&
+      params.page === undefined &&
+      params.pageSize === undefined &&
+      params.offset === undefined &&
+      params.lastEvaluatedKey === undefined;
+
+    if (!fetchAll) {
+      const url = buildArticlesUrl(params);
+      const response = await apiRequest<ArticlesResponse>(url);
+
+      return {
+        items: normalizeArticles(response.items ?? []),
+        total: response.total ?? (response.items?.length ?? 0),
+        lastEvaluatedKey: response.lastEvaluatedKey,
+        hasMore: response.hasMore ?? Boolean(response.lastEvaluatedKey),
+      };
+    }
+
+    const allItems: Article[] = [];
+    let lastEvaluatedKey: string | undefined = undefined;
+    let hasMore = true;
+    let total: number | undefined;
+
+    while (hasMore) {
+      const url = buildArticlesUrl({
+        ...params,
+        lastEvaluatedKey,
+      });
+      const response = await apiRequest<ArticlesResponse>(url);
+
+      const pageItems = response.items ?? [];
+      allItems.push(...pageItems);
+
+      // Track total from API if provided; otherwise fall back later to collected length.
+      if (response.total !== undefined) {
+        total = response.total;
+      }
+
+      lastEvaluatedKey = response.lastEvaluatedKey;
+      hasMore = response.hasMore ?? Boolean(response.lastEvaluatedKey);
+
+      // Safety: break if API does not signal continuation but also does not give a key.
+      if (!hasMore || (!lastEvaluatedKey && pageItems.length === 0)) {
+        hasMore = false;
+      }
+    }
 
     return {
-      items: normalizeArticles(response.items ?? []),
-      total: response.total ?? (response.items?.length ?? 0),
-      lastEvaluatedKey: response.lastEvaluatedKey,
-      hasMore: response.hasMore ?? Boolean(response.lastEvaluatedKey),
+      items: normalizeArticles(allItems),
+      total: total ?? allItems.length,
+      lastEvaluatedKey: undefined,
+      hasMore: false,
     };
   } catch (error) {
     console.error('Failed to fetch articles:', error);

@@ -56,8 +56,11 @@ const CategoryPage: React.FC = () => {
     };
   }, [loading, category, BASE_TITLE]);
 
+  // While loading, don't render the empty state to avoid flicker; defer rendering until data arrives
+  if (loading) return null;
+
   if (!category) {
-    return loading ? null : <Navigate to="/" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (
