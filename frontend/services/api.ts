@@ -489,8 +489,11 @@ function buildArticlesUrl(params: FetchArticlesParams): string {
     }
 
     // Handle both limit/offset and page/pageSize pagination
-    const resolvedLimit = params.limit ?? params.pageSize ?? 10;
-    searchParams.append('limit', String(resolvedLimit));
+    // Only send a limit when the caller specifies one; otherwise let the API return all available
+    const resolvedLimit = params.limit ?? params.pageSize;
+    if (resolvedLimit !== undefined) {
+        searchParams.append('limit', String(resolvedLimit));
+    }
 
     if (params.pageSize !== undefined) {
         searchParams.append('pageSize', String(params.pageSize));
