@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { fetchArticles, updateFeaturedStatus } from '../../../services/api';
+import { fetchArticlesWithMeta, updateFeaturedStatus } from '../../../services/api';
 import { Article, ArticleStatus } from '../../../types';
 import Button from '../../../components/ui/Button';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
@@ -17,14 +17,35 @@ const FeaturedManager: React.FC = () => {
     const [available, setAvailable] = useState<Article[]>([]);
     
     useEffect(() => {
-        fetchArticles({ status: 'ALL' }) // Fetch published only
-            .then(articles => {
-                const published = articles.filter(a => a.status === ArticleStatus.PUBLISHED);
+        const loadAllArticles = async () => {
+            try {
+                let lastEvaluatedKey: string | undefined;
+                const collected: Article[] = [];
+
+                // Fetch every page so we don't stop at the default 10 item limit
+                do {
+                    const { items, lastEvaluatedKey: nextKey } = await fetchArticlesWithMeta({
+                        status: 'ALL',
+                        limit: 100,
+                        pageSize: 100,
+                        lastEvaluatedKey,
+                    });
+                    collected.push(...items);
+                    lastEvaluatedKey = nextKey;
+                } while (lastEvaluatedKey);
+
+                const published = collected.filter(a => a.status === ArticleStatus.PUBLISHED);
                 setAllArticles(published);
                 setFeatured(published.filter(a => a.isFeatured));
                 setAvailable(published.filter(a => !a.isFeatured));
-            })
-            .finally(() => setLoading(false));
+            } catch (error) {
+                console.error('Failed to load articles for Featured Manager', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadAllArticles();
     }, []);
 
     const addToFeatured = (article: Article) => {
