@@ -62,6 +62,8 @@ provider:
     S3_BUCKET_NAME: 'vadaliarticles'
     ALLOWED_ORIGIN: ${env:FRONTEND_ORIGIN, 'http://localhost:3000'}
     SHARE_SITE_ORIGIN: ${env:SHARE_SITE_ORIGIN, 'https://vadalimedia.lk'}
+    JWT_EXPIRES_IN: ${env:JWT_EXPIRES_IN, '10h'}
+    JWT_SECRET: ${env:JWT_SECRET, 'change-me-in-prod'}
 
 functions:
   # Auth

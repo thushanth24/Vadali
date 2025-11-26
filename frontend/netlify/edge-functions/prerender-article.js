@@ -8,7 +8,7 @@ export default async (request, context) => {
   if (!slugMatch || !slugMatch[1]) return context.next();
 
   const slug = decodeURIComponent(slugMatch[1]).replace(/\/+$/, '');
-  const apiUrl = `https://9zogdsw6a4.execute-api.us-east-1.amazonaws.com/share/article/${slug}`;
+  const apiUrl = `https://5wur3kz8w0.execute-api.us-east-1.amazonaws.com/share/article/${slug}`;
 
   try {
     const response = await fetch(apiUrl);

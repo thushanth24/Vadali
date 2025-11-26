@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 import { Article, ArticleStatus, Category, Comment, Notification, Subscriber, User, UserRole } from './types';
-import { comparePasswords, createAuthResponse } from './auth';
+import { comparePasswords, createAuthResponse, generateRefreshToken, generateToken } from './auth';
 import { generateUploadUrl } from './utils/s3';
 import { UserRepository } from './repositories/UserRepository';
 import { ArticleRepository } from './repositories/ArticleRepository';
@@ -316,6 +316,41 @@ export const register: APIGatewayProxyHandlerV2 = async (event) => {
     } catch (error) {
         console.error('Registration error:', error);
         return respond(500, { message: 'Failed to register user' });
+    }
+};
+
+export const refreshToken: APIGatewayProxyHandlerV2 = async (event) => {
+    try {
+        const { refreshToken: providedRefreshToken } = JSON.parse(event.body || '{}');
+        if (!providedRefreshToken) {
+            return respond(400, { message: 'Refresh token is required' });
+        }
+
+        const user = await userRepository.findByRefreshToken(providedRefreshToken);
+        if (!user) {
+            return respond(401, { message: 'Invalid refresh token' });
+        }
+
+        // Rotate refresh token
+        const newRefreshToken = generateRefreshToken();
+        const newAccessToken = generateToken(user.id, user.email, user.role);
+
+        await userRepository.updateRefreshToken(user.id, newRefreshToken);
+
+        return respond(200, {
+            user: {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                name: user.name || '',
+                avatarUrl: user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}`,
+            },
+            token: newAccessToken,
+            refreshToken: newRefreshToken,
+        });
+    } catch (error) {
+        console.error('Error refreshing token:', error);
+        return respond(500, { message: 'Failed to refresh token' });
     }
 };
 

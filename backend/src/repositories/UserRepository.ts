@@ -68,6 +68,17 @@ export class UserRepository extends BaseRepository<User> {
     return result.Item ? this.toDomain(result.Item as any) : null;
   }
 
+  async findByRefreshToken(refreshToken: string): Promise<User | null> {
+    if (!refreshToken) return null;
+    // Scan since refreshToken is not indexed; acceptable because refresh is rare
+    const result = await this.scan({
+      filterExpression: 'refreshToken = :rt',
+      expressionAttributeValues: { ':rt': refreshToken },
+      limit: 1,
+    });
+    return result.items[0] || null;
+  }
+
   async deleteUser(userId: string): Promise<boolean> {
     const command = new DeleteCommand({
       TableName: this.tableName,

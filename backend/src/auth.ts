@@ -3,7 +3,8 @@ import { compare, hash } from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = '15m';
+// Allow overriding via env; default to 1 hour to reduce frequent logouts
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 const REFRESH_TOKEN_EXPIRES_IN = '7d';
 
 export interface TokenPayload extends JwtPayload {
