@@ -18,7 +18,8 @@ const SearchPage: React.FC = () => {
     if (query) {
       setLoading(true);
       Promise.all([
-        fetchArticles({ query }),
+        // Limit results so we don't trigger the fetch-all path
+        fetchArticles({ query, limit: 24, pageSize: 24 }),
         fetchCategories()
       ]).then(([articleData, categoryData]) => {
         setSearchResults(articleData);

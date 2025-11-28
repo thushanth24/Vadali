@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import ArticleCard, { ArticleCardProps } from '../components/ui/ArticleCard';
 import { fetchArticles, fetchCategories } from '../services/api';
@@ -131,7 +131,13 @@ const HomePage: React.FC = () => {
       try {
         setLoading(true);
         const [articlesData, categoriesData, advertisementsData] = await Promise.all([
-            fetchArticles(),
+            fetchArticles({
+              status: 'published',
+              sortBy: 'publishedAt',
+              sortOrder: 'desc',
+              // Keep the payload bounded so we don't trigger the fetch-all loop
+              limit: 50,
+            }),
             fetchCategories(),
             fetchArticles({ isAdvertisement: true, limit: 12 })
         ]);
@@ -157,6 +163,7 @@ const HomePage: React.FC = () => {
           status: 'published',
           sortBy: 'publishedAt',
           sortOrder: 'desc',
+          limit: 50,
         });
         const sortedByReleaseTime = dedupeArticlesById(
           latest
@@ -195,33 +202,70 @@ const HomePage: React.FC = () => {
     };
   }, [loading]);
 
-  const articlesForFeed = publishedArticles.filter(a => !a.isAdvertisement);
-  const advertisementArticles = advertisements;
-  const adsWithImages = advertisementArticles.filter(ad => ad.coverImageUrl?.trim());
-  const adsWithoutImages = advertisementArticles.filter(ad => !ad.coverImageUrl?.trim());
-  const topAdvertisements = [...adsWithImages, ...adsWithoutImages].slice(0, 2);
-  
-  const featuredArticles = articlesForFeed.filter(a => a.isFeatured);
-  const nonFeaturedArticles = articlesForFeed.filter(a => !a.isFeatured);
+  const articlesForFeed = useMemo(
+    () => publishedArticles.filter(a => !a.isAdvertisement),
+    [publishedArticles]
+  );
 
-  const mainFeaturedArticle = featuredArticles[0] || nonFeaturedArticles[0];
-  const releaseSortedFeed = releaseOrderedArticles.length > 0
-    ? releaseOrderedArticles
-    : dedupeArticlesById(
-        [...articlesForFeed].sort(
-          (a, b) => {
-            const publishedDiff = getArticlePublishedTimestamp(b) - getArticlePublishedTimestamp(a);
-            if (publishedDiff !== 0) {
-              return publishedDiff;
-            }
-            return getArticleReleaseTimestamp(b) - getArticleReleaseTimestamp(a);
-          }
-        )
-      );
-  const latestArticles = releaseSortedFeed.filter(article => !article.isFeatured).slice(0, 6);
-  const trendingArticles = releaseSortedFeed.slice(0, 6);
-  const trendingHighlights = trendingArticles.slice(0, 5);
-  const sidebarLatestArticles = releaseSortedFeed.slice(0, 5);
+  const advertisementArticles = useMemo(() => advertisements, [advertisements]);
+  const adsWithImages = useMemo(
+    () => advertisementArticles.filter(ad => ad.coverImageUrl?.trim()),
+    [advertisementArticles]
+  );
+  const adsWithoutImages = useMemo(
+    () => advertisementArticles.filter(ad => !ad.coverImageUrl?.trim()),
+    [advertisementArticles]
+  );
+  const topAdvertisements = useMemo(
+    () => [...adsWithImages, ...adsWithoutImages].slice(0, 2),
+    [adsWithImages, adsWithoutImages]
+  );
+  
+  const featuredArticles = useMemo(
+    () => articlesForFeed.filter(a => a.isFeatured),
+    [articlesForFeed]
+  );
+  const nonFeaturedArticles = useMemo(
+    () => articlesForFeed.filter(a => !a.isFeatured),
+    [articlesForFeed]
+  );
+
+  const mainFeaturedArticle = useMemo(
+    () => featuredArticles[0] || nonFeaturedArticles[0],
+    [featuredArticles, nonFeaturedArticles]
+  );
+
+  const releaseSortedFeed = useMemo(() => {
+    if (releaseOrderedArticles.length > 0) {
+      return releaseOrderedArticles;
+    }
+    return dedupeArticlesById(
+      [...articlesForFeed].sort((a, b) => {
+        const publishedDiff = getArticlePublishedTimestamp(b) - getArticlePublishedTimestamp(a);
+        if (publishedDiff !== 0) {
+          return publishedDiff;
+        }
+        return getArticleReleaseTimestamp(b) - getArticleReleaseTimestamp(a);
+      })
+    );
+  }, [articlesForFeed, releaseOrderedArticles]);
+
+  const latestArticles = useMemo(
+    () => releaseSortedFeed.filter(article => !article.isFeatured).slice(0, 5),
+    [releaseSortedFeed]
+  );
+  const trendingArticles = useMemo(
+    () => releaseSortedFeed.slice(0, 5),
+    [releaseSortedFeed]
+  );
+  const trendingHighlights = useMemo(
+    () => trendingArticles.slice(0, 5),
+    [trendingArticles]
+  );
+  const sidebarLatestArticles = useMemo(
+    () => releaseSortedFeed.slice(0, 5),
+    [releaseSortedFeed]
+  );
   const canCycleTrending = trendingHighlights.length > 4;
   const canManuallyCycleTrending = trendingHighlights.length > 1;
 
@@ -308,14 +352,19 @@ const HomePage: React.FC = () => {
     : '';
   const MAX_TRENDING_TITLE_LENGTH = 60;
 
-  // Group articles by category
-  const articlesByCategory = categories.map(category => ({
-    ...category,
-    // Use the release-sorted feed so each category shows the newest items first
-    articles: releaseSortedFeed
-      .filter(article => article.categoryId === category.id)
-      .slice(0, 4) // Get latest 4 articles for each category
-  })).filter(category => category.articles.length > 0);
+  // Group articles by category (memoized to avoid rework on each render)
+  const articlesByCategory = useMemo(
+    () =>
+      categories
+        .map(category => ({
+          ...category,
+          articles: releaseSortedFeed
+            .filter(article => article.categoryId === category.id)
+            .slice(0, 4),
+        }))
+        .filter(category => category.articles.length > 0),
+    [categories, releaseSortedFeed]
+  );
 
   if (!initialized && loading) {
     return <LoadingSpinner fullScreen label="Loading latest news..." />;

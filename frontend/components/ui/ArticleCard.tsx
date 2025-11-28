@@ -38,7 +38,14 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
       {!hideImage && (
         <div className="overflow-hidden">
             <Link to={targetPath}>
-                <img src={article.coverImageUrl} alt={article.title} className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300" />
+                <img
+                  src={article.coverImageUrl}
+                  alt={article.title}
+                  loading="lazy"
+                  decoding="async"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300 bg-gray-100"
+                />
             </Link>
         </div>
       )}
@@ -64,4 +71,4 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
   );
 };
 
-export default ArticleCard;
+export default React.memo(ArticleCard);
