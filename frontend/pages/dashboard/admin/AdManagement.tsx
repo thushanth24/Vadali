@@ -47,7 +47,7 @@ const AdManagement: React.FC = () => {
     const loadAds = async () => {
         setLoading(true);
         try {
-            const fetched = await fetchArticles({ isAdvertisement: true, status: 'ALL' });
+            const fetched = await fetchArticles({ isAdvertisement: true, status: 'ALL', limit: 80 });
             setAds(fetched.filter(article => article.isAdvertisement));
         } catch (error) {
             console.error('Failed to load advertisements:', error);

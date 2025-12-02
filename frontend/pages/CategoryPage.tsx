@@ -1,21 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import { fetchArticles, fetchCategories } from '../services/api';
+import { fetchArticlesWithMeta, fetchCategories } from '../services/api';
 import ArticleCard from '../components/ui/ArticleCard';
 import { Article, Category } from '../types';
-
-const getArticleUpdatedTimestamp = (article: Article): number => {
-  if (article.updatedAt) return new Date(article.updatedAt).getTime();
-  if (article.createdAt) return new Date(article.createdAt).getTime();
-  return 0;
-};
 
 const CategoryPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [category, setCategory] = useState<Category | null | undefined>(undefined);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextKey, setNextKey] = useState<string | undefined>(undefined);
   const BASE_TITLE = 'Vadali Media';
   
   useEffect(() => {
@@ -32,23 +28,14 @@ const CategoryPage: React.FC = () => {
         setCategory(currentCategory);
 
         if (currentCategory) {
-          const articlesData = await fetchArticles({
+          const { items, lastEvaluatedKey, hasMore } = await fetchArticlesWithMeta({
             categoryId: currentCategory.id,
-            sortBy: 'updatedAt',
+            sortBy: 'createdAt',
             sortOrder: 'desc',
+            limit: 20,
           });
-
-          const sortedByUpdate = [...articlesData].sort((a, b) => {
-            const updatedDiff = getArticleUpdatedTimestamp(b) - getArticleUpdatedTimestamp(a);
-            if (updatedDiff !== 0) {
-              return updatedDiff;
-            }
-            const publishedA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-            const publishedB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-            return publishedB - publishedA;
-          });
-
-          setArticles(sortedByUpdate);
+          setArticles(items);
+          setNextKey(hasMore && lastEvaluatedKey ? lastEvaluatedKey : undefined);
         }
       } catch (error) {
         console.error("Failed to load category data", error);
@@ -59,6 +46,26 @@ const CategoryPage: React.FC = () => {
     };
     loadData();
   }, [slug]);
+
+  const loadMore = async () => {
+    if (!category || !nextKey) return;
+    try {
+      setLoadingMore(true);
+      const { items, lastEvaluatedKey, hasMore } = await fetchArticlesWithMeta({
+        categoryId: category.id,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        limit: 20,
+        lastEvaluatedKey: nextKey,
+      });
+      setArticles(prev => [...prev, ...items]);
+      setNextKey(hasMore && lastEvaluatedKey ? lastEvaluatedKey : undefined);
+    } catch (error) {
+      console.error('Failed to load more category articles', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   useEffect(() => {
     if (loading) {
@@ -92,15 +99,29 @@ const CategoryPage: React.FC = () => {
       </div>
       
       {articles.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {articles.map(article => (
-            <ArticleCard 
-              key={article.id}
-              article={article}
-              category={category}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {articles.map(article => (
+              <ArticleCard 
+                key={article.id}
+                article={article}
+                category={category}
+              />
+            ))}
+          </div>
+          {nextKey && (
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {loadingMore ? 'Loading...' : 'Load more'}
+              </button>
+            </div>
+          )}
+        </>
       ) : (
         <div className="text-center py-16">
           <h2 className="text-2xl font-semibold text-gray-700">No Articles Found</h2>

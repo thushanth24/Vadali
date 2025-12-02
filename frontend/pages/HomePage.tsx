@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import ArticleCard, { ArticleCardProps } from '../components/ui/ArticleCard';
-import { fetchArticles, fetchCategories } from '../services/api';
+import { fetchArticles, fetchArticlesWithMeta, fetchCategories } from '../services/api';
 import { Article, Category } from '../types';
 import { Clock, ChevronUp, ChevronDown } from 'lucide-react';
 import { formatArticleDate } from '../lib/articleDate';
@@ -157,13 +157,12 @@ const HomePage: React.FC = () => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [articlesData, categoriesData, advertisementsData] = await Promise.all([
-            fetchArticles({
+        const [{ items: articlesData }, categoriesData, advertisementsData] = await Promise.all([
+            fetchArticlesWithMeta({
               status: 'published',
-              sortBy: 'publishedAt',
+              sortBy: 'createdAt',
               sortOrder: 'desc',
-              // Keep the payload bounded so we don't trigger the fetch-all loop
-              limit: 300,
+              limit: 20,
             }),
             fetchCategories(),
             fetchArticles({ isAdvertisement: true, limit: 12 })
@@ -186,17 +185,12 @@ const HomePage: React.FC = () => {
 
     const refreshLatestUpdates = async () => {
       try {
-        const latest = await fetchArticles({
+        const { items: latest } = await fetchArticlesWithMeta({
           status: 'published',
-          sortBy: 'updatedAt',
+          sortBy: 'createdAt',
           sortOrder: 'desc',
-          limit: 300,
         });
-        const sortedByReleaseTime = dedupeArticlesById(
-          latest
-            .filter(article => !article.isAdvertisement)
-            .sort(compareByLatestUpdate)
-        );
+        const sortedByReleaseTime = dedupeArticlesById(latest.filter(article => !article.isAdvertisement).sort(compareByLatestUpdate));
         if (isMounted) {
           setReleaseOrderedArticles(sortedByReleaseTime);
         }
@@ -262,14 +256,9 @@ const HomePage: React.FC = () => {
     return dedupeArticlesById([...baseArticles].sort(compareByLatestUpdate));
   }, [articlesForFeed, releaseOrderedArticles]);
 
-  const publishedSortedFeed = useMemo(
-    () => dedupeArticlesById([...articlesForFeed].sort(compareByPublishedDate)),
-    [articlesForFeed]
-  );
-
   const latestArticles = useMemo(
-    () => publishedSortedFeed.filter(article => !article.isFeatured).slice(0, 5),
-    [publishedSortedFeed]
+    () => releaseSortedFeed.filter(article => !article.isFeatured).slice(0, 5),
+    [releaseSortedFeed]
   );
   const trendingArticles = useMemo(
     () => releaseSortedFeed.slice(0, 5),
@@ -280,8 +269,8 @@ const HomePage: React.FC = () => {
     [trendingArticles]
   );
   const sidebarLatestArticles = useMemo(
-    () => publishedSortedFeed.slice(0, 5),
-    [publishedSortedFeed]
+    () => releaseSortedFeed.slice(0, 5),
+    [releaseSortedFeed]
   );
   const canCycleTrending = trendingHighlights.length > 4;
   const canManuallyCycleTrending = trendingHighlights.length > 1;

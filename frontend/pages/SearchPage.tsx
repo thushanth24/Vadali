@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { fetchArticles, fetchCategories } from '../services/api';
+import { fetchArticlesWithMeta, fetchCategories } from '../services/api';
 import ArticleCard from '../components/ui/ArticleCard';
 import { Article, Category } from '../types';
 import { Search } from 'lucide-react';
@@ -13,22 +13,43 @@ const SearchPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [nextKey, setNextKey] = useState<string | undefined>(undefined);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     if (query) {
       setLoading(true);
       Promise.all([
-        // Limit results so we don't trigger the fetch-all path
-        fetchArticles({ query, limit: 24, pageSize: 24 }),
+        fetchArticlesWithMeta({ query, sortBy: 'createdAt', sortOrder: 'desc', limit: 20 }),
         fetchCategories()
       ]).then(([articleData, categoryData]) => {
-        setSearchResults(articleData);
+        setSearchResults(articleData.items);
+        setNextKey(articleData.hasMore && articleData.lastEvaluatedKey ? articleData.lastEvaluatedKey : undefined);
         setCategories(categoryData);
       }).finally(() => setLoading(false));
     } else {
       setSearchResults([]);
+      setNextKey(undefined);
     }
   }, [query]);
+
+  const loadMore = async () => {
+    if (!query || !nextKey) return;
+    try {
+      setLoadingMore(true);
+      const { items, hasMore, lastEvaluatedKey } = await fetchArticlesWithMeta({
+        query,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        limit: 20,
+        lastEvaluatedKey: nextKey,
+      });
+      setSearchResults(prev => [...prev, ...items]);
+      setNextKey(hasMore && lastEvaluatedKey ? lastEvaluatedKey : undefined);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -44,15 +65,29 @@ const SearchPage: React.FC = () => {
         <LoadingSpinner label="Searching articles..." className="py-16" />
       ) : query ? (
         searchResults.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {searchResults.map(article => (
-              <ArticleCard 
-                key={article.id}
-                article={article}
-                category={categories.find(c => c.id === article.categoryId)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {searchResults.map(article => (
+                <ArticleCard 
+                  key={article.id}
+                  article={article}
+                  category={categories.find(c => c.id === article.categoryId)}
+                />
+              ))}
+            </div>
+            {nextKey && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {loadingMore ? 'Loading...' : 'Load more'}
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-16">
             <h2 className="text-2xl font-semibold text-gray-700">No Results Found</h2>

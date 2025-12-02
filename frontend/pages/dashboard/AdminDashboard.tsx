@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Article, User, Category, ArticleStatus, UserRole } from '../../types';
-import { fetchArticles, fetchUsers, fetchCategories } from '../../services/api';
+import { fetchArticlesWithMeta, fetchUsers, fetchCategories } from '../../services/api';
 import { Users, Newspaper, Tag, BarChart2 } from 'lucide-react';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
@@ -26,12 +26,11 @@ const AdminDashboard: React.FC = () => {
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            // Fetch all articles by not passing a status filter
-            fetchArticles({}),
+            fetchArticlesWithMeta({ sortBy: 'createdAt', sortOrder: 'desc', status: 'ALL', limit: 20 }),
             fetchUsers(),
             fetchCategories()
         ]).then(([articleData, userData, categoryData]) => {
-            setArticles(articleData);
+            setArticles(articleData.items);
             setUsers(userData);
             setCategories(categoryData);
         }).finally(() => setLoading(false));

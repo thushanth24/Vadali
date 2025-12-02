@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchArticles, fetchUsers, fetchCategories } from '../../services/api';
+import { fetchArticlesWithMeta, fetchUsers, fetchCategories } from '../../services/api';
 import { Article, ArticleStatus, User, Category } from '../../types';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -51,11 +51,11 @@ const EditorDashboard: React.FC = () => {
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            fetchArticles({}), // Fetch all articles without status filter
+            fetchArticlesWithMeta({ sortBy: 'createdAt', sortOrder: 'desc', status: 'ALL', limit: 20 }),
             fetchUsers(),
             fetchCategories()
         ]).then(([articleData, userData, categoryData]) => {
-            setArticles(articleData);
+            setArticles(articleData.items);
             setUsers(userData);
             setCategories(categoryData);
         }).finally(() => setLoading(false));

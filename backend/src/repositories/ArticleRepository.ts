@@ -1,8 +1,17 @@
+import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { Article, createArticle } from '../models/Article';
 import { BaseRepository } from './BaseRepository';
+import { ArticleStatus } from '../types';
 
 export class ArticleRepository extends BaseRepository<Article> {
   protected tableName = process.env.ARTICLES_TABLE || 'Articles';
+  private readonly DEFAULT_LIMIT = 20;
+  private readonly MAX_LIMIT = 20;
+
+  private clampLimit(limit?: number): number {
+    if (typeof limit !== 'number' || limit <= 0) return this.DEFAULT_LIMIT;
+    return Math.min(limit, this.MAX_LIMIT);
+  }
 
   protected toDomain(item: any): Article {
     return {
@@ -87,4 +96,31 @@ export class ArticleRepository extends BaseRepository<Article> {
 
     await this.docClient.send(command);
   }
+
+  async queryByPublished(params: { status?: string; limit?: number; lastKey?: Record<string, any> }) {
+    const statusValue = params.status ?? ArticleStatus.PUBLISHED;
+    return this.query({
+      indexName: 'publishedAt-index',
+      keyConditionExpression: '#status = :status',
+      expressionAttributeNames: { '#status': 'status' },
+      expressionAttributeValues: { ':status': statusValue },
+      limit: this.clampLimit(params.limit),
+      lastEvaluatedKey: params.lastKey,
+      scanIndexForward: false, // newest first
+    });
+  }
+
+  async queryByCreated(params: { status?: string; limit?: number; lastKey?: Record<string, any> }) {
+    const statusValue = params.status ?? ArticleStatus.PUBLISHED;
+    return this.query({
+      indexName: 'createdAt-index',
+      keyConditionExpression: '#status = :status',
+      expressionAttributeNames: { '#status': 'status' },
+      expressionAttributeValues: { ':status': statusValue },
+      limit: this.clampLimit(params.limit),
+      lastEvaluatedKey: params.lastKey,
+      scanIndexForward: false, // newest first
+    });
+  }
+
 }

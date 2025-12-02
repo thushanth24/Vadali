@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { fetchArticles, fetchUser, fetchCategories } from '../services/api';
+import { fetchArticlesWithMeta, fetchUser, fetchCategories } from '../services/api';
 import { Article, User, Category } from '../types';
 import ArticleCard from '../components/ui/ArticleCard';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -11,17 +11,20 @@ const AuthorPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextKey, setNextKey] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (slug) {
       setLoading(true);
       Promise.all([
         fetchUser(slug),
-        fetchArticles({ author: slug }),  // Changed from authorId to author
+        fetchArticlesWithMeta({ author: slug, sortBy: 'createdAt', sortOrder: 'desc', limit: 20 }),
         fetchCategories()
       ]).then(([authorData, articlesData, categoriesData]) => {
         setAuthor(authorData);
-        setArticles(articlesData);
+        setArticles(articlesData.items);
+        setNextKey(articlesData.hasMore && articlesData.lastEvaluatedKey ? articlesData.lastEvaluatedKey : undefined);
         setCategories(categoriesData);
       }).catch(() => {
         setAuthor(null);
@@ -30,6 +33,26 @@ const AuthorPage: React.FC = () => {
       });
     }
   }, [slug]);
+
+  const loadMore = async () => {
+    if (!slug || !nextKey) return;
+    try {
+      setLoadingMore(true);
+      const { items, hasMore, lastEvaluatedKey } = await fetchArticlesWithMeta({
+        author: slug,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        limit: 20,
+        lastEvaluatedKey: nextKey,
+      });
+      setArticles(prev => [...prev, ...items]);
+      setNextKey(hasMore && lastEvaluatedKey ? lastEvaluatedKey : undefined);
+    } catch (error) {
+      console.error('Failed to load more author articles', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   if (loading) {
     return <LoadingSpinner label="Loading author profile..." className="container mx-auto px-4" />;
@@ -56,15 +79,29 @@ const AuthorPage: React.FC = () => {
         </h2>
 
         {articles.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles.map(article => (
-              <ArticleCard 
-                key={article.id}
-                article={article}
-                category={categories.find(c => c.id === article.categoryId)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {articles.map(article => (
+                <ArticleCard 
+                  key={article.id}
+                  article={article}
+                  category={categories.find(c => c.id === article.categoryId)}
+                />
+              ))}
+            </div>
+            {nextKey && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {loadingMore ? 'Loading...' : 'Load more'}
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-16 bg-white rounded-lg shadow-md">
             <h3 className="text-xl font-semibold text-gray-700">{author.name} has not published any articles yet.</h3>

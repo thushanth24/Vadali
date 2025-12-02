@@ -14,7 +14,7 @@ const AdvertisementsPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const ads = await fetchArticles({ isAdvertisement: true, status: 'ALL' });
+        const ads = await fetchArticles({ isAdvertisement: true, status: 'ALL', limit: 40 });
         setAdvertisements(ads.filter(ad => ad.isAdvertisement));
       } catch (err) {
         console.error('Failed to load advertisements:', err);

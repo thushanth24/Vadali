@@ -433,6 +433,9 @@ interface FetchArticlesParams {
   query?: string;
 }
 
+const DEFAULT_ARTICLE_LIMIT = 20;
+const MAX_FETCH_ALL_ITEMS = 400;
+
 export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): Promise<ArticlesWithMeta> => {
   try {
     // If no pagination hints were provided, fetch all pages until exhaustion.
@@ -459,16 +462,23 @@ export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): P
     let lastEvaluatedKey: string | undefined = undefined;
     let hasMore = true;
     let total: number | undefined;
+    const pageLimit = params.pageSize ?? params.limit ?? DEFAULT_ARTICLE_LIMIT;
 
     while (hasMore) {
       const url = buildArticlesUrl({
         ...params,
+        limit: pageLimit,
         lastEvaluatedKey,
       });
       const response = await apiRequest<ArticlesResponse>(url);
 
       const pageItems = response.items ?? [];
       allItems.push(...pageItems);
+
+      if (allItems.length >= MAX_FETCH_ALL_ITEMS) {
+        hasMore = false;
+        break;
+      }
 
       // Track total from API if provided; otherwise fall back later to collected length.
       if (response.total !== undefined) {
@@ -484,6 +494,34 @@ export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): P
       }
     }
 
+    // Stable client-side sort when we had to fetch-all (Dynamo scans are unsorted)
+    if (fetchAll && params.sortBy) {
+      const direction = params.sortOrder === 'asc' ? 1 : -1;
+      const toTs = (value?: string | null) => {
+        if (!value) return 0;
+        const ts = Date.parse(value);
+        return Number.isFinite(ts) ? ts : 0;
+      };
+
+      allItems.sort((a, b) => {
+        switch (params.sortBy) {
+          case 'createdAt':
+            return (toTs(a.createdAt) - toTs(b.createdAt)) * direction;
+          case 'updatedAt':
+            return (toTs(a.updatedAt) - toTs(b.updatedAt)) * direction;
+          case 'publishedAt':
+            return (toTs(a.publishedAt) - toTs(b.publishedAt)) * direction;
+          case 'title': {
+            const aTitle = (a.title || '').toLowerCase();
+            const bTitle = (b.title || '').toLowerCase();
+            return aTitle.localeCompare(bTitle) * direction;
+          }
+          default:
+            return 0;
+        }
+      });
+    }
+
     return {
       items: normalizeArticles(allItems),
       total: total ?? allItems.length,
@@ -497,7 +535,18 @@ export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): P
 };
 
 export const fetchArticles = async (params: FetchArticlesParams = {}): Promise<Article[]> => {
-  const { items } = await fetchArticlesWithMeta(params);
+  const shouldAddDefaultLimit =
+    params.limit === undefined &&
+    params.pageSize === undefined &&
+    params.page === undefined &&
+    params.offset === undefined &&
+    params.lastEvaluatedKey === undefined;
+
+  const normalizedParams = shouldAddDefaultLimit
+    ? { ...params, limit: 50 }
+    : params;
+
+  const { items } = await fetchArticlesWithMeta(normalizedParams);
   return items;
 };
 

@@ -48,7 +48,7 @@ const ReportsAnalytics: React.FC = () => {
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            fetchArticles({ status: 'ALL' }),
+            fetchArticles({ status: 'ALL', limit: 100 }),
             fetchCategories(),
             fetchUsers()
         ]).then(([articleData, categoryData, userData]) => {

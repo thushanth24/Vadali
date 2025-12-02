@@ -479,6 +479,7 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         const lastEvaluatedKey = queryParams.lastEvaluatedKey;
         const hasIsAdvertisementParam = Object.prototype.hasOwnProperty.call(queryParams, 'isAdvertisement');
         const rawIsAdvertisement = queryParams.isAdvertisement;
+        const sortBy = (queryParams.sortBy || '').toLowerCase();
 
         const parseBooleanQueryParam = (value: string | undefined): boolean => {
             if (!value) {
@@ -572,6 +573,34 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         };
 
         const { values: resolvedStatuses, applyFilter: shouldFilterByStatus } = resolveStatusFilter(rawStatusParam);
+
+        const canUseCreatedIndex =
+            sortBy === 'createdat' &&
+            !categoryId &&
+            !tag &&
+            !authorId &&
+            !isFeatured &&
+            !hasIsAdvertisementParam &&
+            resolvedStatuses.length === 1;
+
+        if (canUseCreatedIndex) {
+            const statusValue = resolvedStatuses[0];
+            const decodedKey = lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
+            const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.queryByCreated({
+                status: statusValue,
+                limit,
+                lastKey: decodedKey,
+            });
+
+            return respond(200, {
+                items,
+                total: items.length,
+                lastEvaluatedKey: newLastEvaluatedKey
+                    ? encodeURIComponent(JSON.stringify(newLastEvaluatedKey))
+                    : undefined,
+                hasMore: Boolean(newLastEvaluatedKey),
+            });
+        }
 
         if (shouldFilterByStatus && resolvedStatuses.length > 0) {
             expressionAttributeNames['#status'] = 'status';
@@ -861,28 +890,30 @@ export const updateArticleStatus: APIGatewayProxyHandlerV2 = async (event) => {
         if (!id) return respond(400, { message: 'Article ID is required' });
         
         const { status, reason } = JSON.parse(event.body || '{}');
-        
+        const allowedStatuses = new Set(Object.values(ArticleStatus));
+        if (!status || !allowedStatuses.has(status)) {
+            return respond(400, { message: 'Invalid status value' });
+        }
+
+        const existing = await articleRepository.getById(id);
+        if (!existing) return respond(404, { message: 'Article not found' });
+
+        const nowIso = new Date().toISOString();
         const updates: Partial<Article> = {
             status,
-            updatedAt: new Date().toISOString()
+            updatedAt: nowIso,
+            // Ensure createdAt is always populated for the createdAt-index
+            createdAt: existing.createdAt || nowIso,
         };
-        
-        if (status === ArticleStatus.REJECTED) {
-            const { items: recentArticles } = await articleRepository.scan({
-                filterExpression: '#status = :status',
-                expressionAttributeNames: { '#status': 'status' },
-                expressionAttributeValues: { ':status': 'PUBLISHED' },
-                limit: 5
-            });
-            
-            // Sort by publishedAt date
-            recentArticles.sort((a, b) => {
-                const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-                const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-                return dateB - dateA;
-            });
+
+        if (status === ArticleStatus.PUBLISHED && !existing.publishedAt) {
+            updates.publishedAt = nowIso;
         }
-        
+
+        if (status === ArticleStatus.REJECTED && typeof reason === 'string' && reason.trim().length > 0) {
+            updates.rejectionReason = reason.trim();
+        }
+
         const updatedArticle = await articleRepository.update(id, updates);
         if (!updatedArticle) return respond(404, { message: 'Article not found' });
         

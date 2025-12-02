@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchArticles } from '../../services/api';
+import { fetchArticlesWithMeta } from '../../services/api';
 import { Article, ArticleStatus } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import Button from '../../components/ui/Button';
@@ -17,8 +17,8 @@ const AuthorDashboard: React.FC = () => {
     useEffect(() => {
         if (user) {
             setLoading(true);
-            fetchArticles({ authorId: user.id, status: 'ALL' })
-                .then(setMyArticles)
+            fetchArticlesWithMeta({ authorId: user.id, status: 'ALL', sortBy: 'createdAt', sortOrder: 'desc', limit: 20 })
+                .then(({ items }) => setMyArticles(items))
                 .finally(() => setLoading(false));
         }
     }, [user]);

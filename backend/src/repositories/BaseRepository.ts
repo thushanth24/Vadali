@@ -69,6 +69,7 @@ export abstract class BaseRepository<T> {
     expressionAttributeNames?: Record<string, string>;
     limit?: number;
     lastEvaluatedKey?: Record<string, any>;
+    scanIndexForward?: boolean;
   }): Promise<{ items: T[]; lastEvaluatedKey?: Record<string, any> }> {
     const command = new QueryCommand({
       TableName: this.tableName,
@@ -78,7 +79,8 @@ export abstract class BaseRepository<T> {
       FilterExpression: params.filterExpression,
       ExpressionAttributeNames: params.expressionAttributeNames,
       Limit: params.limit,
-      ExclusiveStartKey: params.lastEvaluatedKey
+      ExclusiveStartKey: params.lastEvaluatedKey,
+      ...(params.scanIndexForward !== undefined ? { ScanIndexForward: params.scanIndexForward } : {}),
     });
 
     const result = await this.docClient.send(command);

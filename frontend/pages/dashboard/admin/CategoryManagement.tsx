@@ -48,7 +48,7 @@ const CategoryManagement: React.FC = () => {
 
     const loadData = () => {
         setLoading(true);
-        return Promise.all([fetchCategories(), fetchArticles({ status: 'ALL' })])
+        return Promise.all([fetchCategories(), fetchArticles({ status: 'ALL', limit: 100 })])
             .then(([catData, articleData]) => {
                 setCategories(catData);
                 setArticles(articleData);

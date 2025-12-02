@@ -15,7 +15,7 @@ const HomepageConfiguration: React.FC = () => {
     const [initialFeaturedIds, setInitialFeaturedIds] = useState(new Set<string>());
 
     useEffect(() => {
-        fetchArticles({ status: ArticleStatus.PUBLISHED })
+        fetchArticles({ status: ArticleStatus.PUBLISHED, limit: 80 })
             .then(articles => {
                 setAllArticles(articles);
                 setFeatured(articles.filter(a => a.isFeatured));

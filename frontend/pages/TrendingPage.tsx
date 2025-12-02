@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchArticles, fetchCategories } from '../services/api';
+import { fetchArticlesWithMeta, fetchCategories } from '../services/api';
 import { Article, Category } from '../types';
 import { Eye, Flame } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -13,11 +13,11 @@ const TrendingPage: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetchArticles(), // The backend will sort by views by default or with a param
+      fetchArticlesWithMeta({ sortBy: 'views', sortOrder: 'desc' }), // Fetch-all capped, then client sorts
       fetchCategories()
     ]).then(([articleData, categoryData]) => {
       // Manual sort on client as mock backend doesn't support it yet
-      const sorted = [...articleData].sort((a,b) => b.views - a.views);
+      const sorted = [...articleData.items].sort((a,b) => b.views - a.views);
       setTrendingArticles(sorted);
       setCategories(categoryData);
     }).finally(() => setLoading(false));
