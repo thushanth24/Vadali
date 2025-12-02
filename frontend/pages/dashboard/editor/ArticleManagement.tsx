@@ -68,9 +68,19 @@ export default function ArticleManagement() {
   const [pageSize, setPageSize] = useState(10);
   const [hasMore, setHasMore] = useState(false);
 
-  const getUploadedTimestamp = (article: ArticleWithAuthor) => {
-    const dateString = article.createdAt || article.publishedAt || article.updatedAt;
-    return dateString ? new Date(dateString).getTime() : 0;
+  const getUpdatedTimestamp = (article: ArticleWithAuthor) => {
+    const toTs = (value?: string | null) => {
+      if (!value) return 0;
+      const ts = Date.parse(value);
+      return Number.isFinite(ts) ? ts : 0;
+    };
+
+    return (
+      toTs(article.updatedAt) ||
+      toTs(article.createdAt) ||
+      toTs(article.publishedAt) ||
+      0
+    );
   };
 
   useEffect(() => {
@@ -107,14 +117,18 @@ export default function ArticleManagement() {
       const statusParam = statusFilter === 'ALL' ? 'all' : statusFilter;
       const startKey = pageTokens[pageToLoad];
 
+      // When filtering by status or using smaller page sizes, fetch a larger slice and paginate client-side
+      const fetchAllForStatus = statusFilter !== 'ALL' || pageSize < 50;
+      const effectiveLimit = fetchAllForStatus ? 300 : pageSize;
+
       const { items, lastEvaluatedKey, hasMore: moreAvailable } = await fetchArticlesWithMeta({
-        limit: pageSize,
-        pageSize,
-        sortBy: 'createdAt',
+        limit: effectiveLimit,
+        pageSize: effectiveLimit,
+        sortBy: 'updatedAt',
         sortOrder: 'desc',
         status: statusParam,
         query: searchQuery || undefined,
-        lastEvaluatedKey: startKey,
+        lastEvaluatedKey: fetchAllForStatus ? undefined : startKey,
       });
 
       const normalizedArticles: ArticleWithAuthor[] = Array.isArray(items)
@@ -133,21 +147,36 @@ export default function ArticleManagement() {
           })
         : [];
 
-      const sortedArticles = [...normalizedArticles].sort(
-        (a, b) => getUploadedTimestamp(b) - getUploadedTimestamp(a)
+      const filteredArticles =
+        statusFilter === 'ALL'
+          ? normalizedArticles
+          : normalizedArticles.filter(
+              (article) => normalizeStatus(article.status) === statusFilter
+            );
+
+      const sortedByUpdate = [...filteredArticles].sort(
+        (a, b) => getUpdatedTimestamp(b) - getUpdatedTimestamp(a)
       );
 
-      setArticles(sortedArticles);
-      setHasMore(Boolean(lastEvaluatedKey) || Boolean(moreAvailable));
-      setPageTokens((prev) => {
-        const updated = { ...prev };
-        if (lastEvaluatedKey) {
-          updated[pageToLoad + 1] = lastEvaluatedKey;
-        } else {
-          delete updated[pageToLoad + 1];
-        }
-        return updated;
-      });
+      if (fetchAllForStatus) {
+        const startIndex = (pageToLoad - 1) * pageSize;
+        const paginated = sortedByUpdate.slice(startIndex, startIndex + pageSize);
+        setArticles(paginated);
+        setHasMore(sortedByUpdate.length > startIndex + pageSize);
+        setPageTokens({ 1: undefined });
+      } else {
+        setArticles(sortedByUpdate);
+        setHasMore(Boolean(lastEvaluatedKey) || Boolean(moreAvailable));
+        setPageTokens((prev) => {
+          const updated = { ...prev };
+          if (lastEvaluatedKey) {
+            updated[pageToLoad + 1] = lastEvaluatedKey;
+          } else {
+            delete updated[pageToLoad + 1];
+          }
+          return updated;
+        });
+      }
     } catch (error) {
       console.error('Error loading articles:', error);
       setArticles([]);

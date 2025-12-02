@@ -96,6 +96,13 @@ const getArticlePublishedTimestamp = (article: Article): number => {
   return article.publishedAt ? new Date(article.publishedAt).getTime() : 0;
 };
 
+const getArticleUpdatedTimestamp = (article: Article): number => {
+  if (article.updatedAt) {
+    return new Date(article.updatedAt).getTime();
+  }
+  return article.createdAt ? new Date(article.createdAt).getTime() : 0;
+};
+
 const getArticleReleaseTimestamp = (article: Article): number => {
   const dateString = article.createdAt || article.updatedAt;
   return dateString ? new Date(dateString).getTime() : 0;
@@ -110,6 +117,26 @@ const dedupeArticlesById = (articles: Article[]): Article[] => {
     seen.add(article.id);
     return true;
   });
+};
+
+const compareByLatestUpdate = (a: Article, b: Article): number => {
+  const updatedDiff = getArticleUpdatedTimestamp(b) - getArticleUpdatedTimestamp(a);
+  if (updatedDiff !== 0) {
+    return updatedDiff;
+  }
+  const publishedDiff = getArticlePublishedTimestamp(b) - getArticlePublishedTimestamp(a);
+  if (publishedDiff !== 0) {
+    return publishedDiff;
+  }
+  return getArticleReleaseTimestamp(b) - getArticleReleaseTimestamp(a);
+};
+
+const compareByPublishedDate = (a: Article, b: Article): number => {
+  const publishedDiff = getArticlePublishedTimestamp(b) - getArticlePublishedTimestamp(a);
+  if (publishedDiff !== 0) {
+    return publishedDiff;
+  }
+  return getArticleReleaseTimestamp(b) - getArticleReleaseTimestamp(a);
 };
 
 
@@ -136,7 +163,7 @@ const HomePage: React.FC = () => {
               sortBy: 'publishedAt',
               sortOrder: 'desc',
               // Keep the payload bounded so we don't trigger the fetch-all loop
-              limit: 50,
+              limit: 300,
             }),
             fetchCategories(),
             fetchArticles({ isAdvertisement: true, limit: 12 })
@@ -161,22 +188,14 @@ const HomePage: React.FC = () => {
       try {
         const latest = await fetchArticles({
           status: 'published',
-          sortBy: 'publishedAt',
+          sortBy: 'updatedAt',
           sortOrder: 'desc',
-          limit: 50,
+          limit: 300,
         });
         const sortedByReleaseTime = dedupeArticlesById(
           latest
             .filter(article => !article.isAdvertisement)
-            .sort(
-              (a, b) => {
-                const publishedDiff = getArticlePublishedTimestamp(b) - getArticlePublishedTimestamp(a);
-                if (publishedDiff !== 0) {
-                  return publishedDiff;
-                }
-                return getArticleReleaseTimestamp(b) - getArticleReleaseTimestamp(a);
-              }
-            )
+            .sort(compareByLatestUpdate)
         );
         if (isMounted) {
           setReleaseOrderedArticles(sortedByReleaseTime);
@@ -236,23 +255,21 @@ const HomePage: React.FC = () => {
   );
 
   const releaseSortedFeed = useMemo(() => {
-    if (releaseOrderedArticles.length > 0) {
-      return releaseOrderedArticles;
-    }
-    return dedupeArticlesById(
-      [...articlesForFeed].sort((a, b) => {
-        const publishedDiff = getArticlePublishedTimestamp(b) - getArticlePublishedTimestamp(a);
-        if (publishedDiff !== 0) {
-          return publishedDiff;
-        }
-        return getArticleReleaseTimestamp(b) - getArticleReleaseTimestamp(a);
-      })
-    );
+    const baseArticles = releaseOrderedArticles.length > 0
+      ? releaseOrderedArticles
+      : articlesForFeed;
+
+    return dedupeArticlesById([...baseArticles].sort(compareByLatestUpdate));
   }, [articlesForFeed, releaseOrderedArticles]);
 
+  const publishedSortedFeed = useMemo(
+    () => dedupeArticlesById([...articlesForFeed].sort(compareByPublishedDate)),
+    [articlesForFeed]
+  );
+
   const latestArticles = useMemo(
-    () => releaseSortedFeed.filter(article => !article.isFeatured).slice(0, 5),
-    [releaseSortedFeed]
+    () => publishedSortedFeed.filter(article => !article.isFeatured).slice(0, 5),
+    [publishedSortedFeed]
   );
   const trendingArticles = useMemo(
     () => releaseSortedFeed.slice(0, 5),
@@ -263,8 +280,8 @@ const HomePage: React.FC = () => {
     [trendingArticles]
   );
   const sidebarLatestArticles = useMemo(
-    () => releaseSortedFeed.slice(0, 5),
-    [releaseSortedFeed]
+    () => publishedSortedFeed.slice(0, 5),
+    [publishedSortedFeed]
   );
   const canCycleTrending = trendingHighlights.length > 4;
   const canManuallyCycleTrending = trendingHighlights.length > 1;
@@ -360,6 +377,7 @@ const HomePage: React.FC = () => {
           ...category,
           articles: releaseSortedFeed
             .filter(article => article.categoryId === category.id)
+            .sort(compareByLatestUpdate)
             .slice(0, 4),
         }))
         .filter(category => category.articles.length > 0),

@@ -5,6 +5,12 @@ import { fetchArticles, fetchCategories } from '../services/api';
 import ArticleCard from '../components/ui/ArticleCard';
 import { Article, Category } from '../types';
 
+const getArticleUpdatedTimestamp = (article: Article): number => {
+  if (article.updatedAt) return new Date(article.updatedAt).getTime();
+  if (article.createdAt) return new Date(article.createdAt).getTime();
+  return 0;
+};
+
 const CategoryPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [category, setCategory] = useState<Category | null | undefined>(undefined);
@@ -26,8 +32,23 @@ const CategoryPage: React.FC = () => {
         setCategory(currentCategory);
 
         if (currentCategory) {
-          const articlesData = await fetchArticles({ categoryId: currentCategory.id });
-          setArticles(articlesData);
+          const articlesData = await fetchArticles({
+            categoryId: currentCategory.id,
+            sortBy: 'updatedAt',
+            sortOrder: 'desc',
+          });
+
+          const sortedByUpdate = [...articlesData].sort((a, b) => {
+            const updatedDiff = getArticleUpdatedTimestamp(b) - getArticleUpdatedTimestamp(a);
+            if (updatedDiff !== 0) {
+              return updatedDiff;
+            }
+            const publishedA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+            const publishedB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+            return publishedB - publishedA;
+          });
+
+          setArticles(sortedByUpdate);
         }
       } catch (error) {
         console.error("Failed to load category data", error);
