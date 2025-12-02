@@ -1,8 +1,8 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Article, ArticleStatus } from '../../../types';
-import { fetchArticles, updateArticleStatus } from '../../../services/api';
+import { fetchArticlesWithMeta, updateArticleStatus } from '../../../services/api';
 import { format } from 'date-fns';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { getArticleDateString } from '../../../lib/articleDate';
@@ -63,6 +63,15 @@ export default function ArticleManagement() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<ArticleStatus | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [pageTokens, setPageTokens] = useState<Record<number, string | undefined>>({ 1: undefined });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [hasMore, setHasMore] = useState(false);
+
+  const getUploadedTimestamp = (article: ArticleWithAuthor) => {
+    const dateString = article.createdAt || article.publishedAt || article.updatedAt;
+    return dateString ? new Date(dateString).getTime() : 0;
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -83,29 +92,33 @@ export default function ArticleManagement() {
   }, [location.search]);
 
   useEffect(() => {
-    loadArticles();
+    setCurrentPage(1);
+    setPageTokens({ 1: undefined });
   }, [statusFilter, searchQuery]);
 
-  const loadArticles = async () => {
+  useEffect(() => {
+    loadArticles(currentPage);
+  }, [statusFilter, searchQuery, currentPage, pageSize]);
+
+  const loadArticles = async (pageToLoad: number) => {
     try {
       setLoading(true);
-      
-      // Fetch all articles regardless of status
-      const filters: any = {
-        limit: 100,
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-      };
 
       const statusParam = statusFilter === 'ALL' ? 'all' : statusFilter;
-      if (statusParam) {
-        filters.status = statusParam;
-      }
-      
-      let data = await fetchArticles(filters);
+      const startKey = pageTokens[pageToLoad];
 
-      const normalizedArticles: ArticleWithAuthor[] = Array.isArray(data)
-        ? data.map((article) => {
+      const { items, lastEvaluatedKey, hasMore: moreAvailable } = await fetchArticlesWithMeta({
+        limit: pageSize,
+        pageSize,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        status: statusParam,
+        query: searchQuery || undefined,
+        lastEvaluatedKey: startKey,
+      });
+
+      const normalizedArticles: ArticleWithAuthor[] = Array.isArray(items)
+        ? items.map((article) => {
             const normalizedStatus = normalizeStatus(article.status);
             const rawStatusValue =
               typeof article.status === 'string'
@@ -119,25 +132,22 @@ export default function ArticleManagement() {
             };
           })
         : [];
-      
-      // If we have a status filter, filter the results
-      let filteredArticles = normalizedArticles;
-      if (statusFilter !== 'ALL') {
-        filteredArticles = filteredArticles.filter(article => article.status === statusFilter);
-      }
-      
-      // If we have a search query, filter the results
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        filteredArticles = filteredArticles.filter(article => 
-          article.title.toLowerCase().includes(query) || 
-          (article.summary?.toLowerCase() || '').includes(query) ||
-          (article.content?.toLowerCase() || '').includes(query)
-        );
-      }
-      
-      setArticles(filteredArticles);
-      
+
+      const sortedArticles = [...normalizedArticles].sort(
+        (a, b) => getUploadedTimestamp(b) - getUploadedTimestamp(a)
+      );
+
+      setArticles(sortedArticles);
+      setHasMore(Boolean(lastEvaluatedKey) || Boolean(moreAvailable));
+      setPageTokens((prev) => {
+        const updated = { ...prev };
+        if (lastEvaluatedKey) {
+          updated[pageToLoad + 1] = lastEvaluatedKey;
+        } else {
+          delete updated[pageToLoad + 1];
+        }
+        return updated;
+      });
     } catch (error) {
       console.error('Error loading articles:', error);
       setArticles([]);
@@ -146,10 +156,31 @@ export default function ArticleManagement() {
     }
   };
 
+  const handlePageSizeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextSize = Number(event.target.value);
+    if (Number.isNaN(nextSize) || nextSize <= 0) return;
+    setPageTokens({ 1: undefined });
+    setCurrentPage(1);
+    setPageSize(nextSize);
+  };
+
+  const handlePageChange = (direction: 'prev' | 'next') => {
+    const canGoPrevious = currentPage > 1 && !loading;
+    const canGoNext = !loading && (hasMore || Boolean(pageTokens[currentPage + 1]));
+
+    if (direction === 'prev' && canGoPrevious) {
+      setCurrentPage((prev) => Math.max(1, prev - 1));
+    }
+
+    if (direction === 'next' && canGoNext) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
   const handleStatusChange = async (articleId: string, newStatus: ArticleStatus, rejectionReason?: string) => {
     try {
       await updateArticleStatus(articleId, newStatus, rejectionReason);
-      loadArticles();
+      loadArticles(currentPage);
     } catch (error) {
       console.error('Error updating article status:', error);
     }
@@ -320,6 +351,45 @@ export default function ArticleManagement() {
           </ul>
         </div>
       )}
+
+      <div className="mt-4 bg-white shadow-sm border border-gray-100 rounded-lg px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm text-gray-700 mb-2 sm:mb-0">
+          Page {currentPage} {loading ? '(loading...)' : ''}
+        </div>
+        <div className="flex items-center space-x-3">
+          <label className="text-sm text-gray-700 flex items-center space-x-2">
+            <span>Per page</span>
+            <select
+              value={pageSize}
+              onChange={handlePageSizeChange}
+              className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
+            >
+              {[10, 20, 30, 50].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handlePageChange('prev')}
+              disabled={currentPage === 1 || loading}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md bg-white text-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => handlePageChange('next')}
+              disabled={loading || (!hasMore && !pageTokens[currentPage + 1])}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md bg-white text-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

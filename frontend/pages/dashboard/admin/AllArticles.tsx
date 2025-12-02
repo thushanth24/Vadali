@@ -19,6 +19,10 @@ const AllArticles: React.FC = () => {
     const [hasMore, setHasMore] = useState(false);
 
     const isLoading = articlesLoading || metaLoading;
+    const getUploadTimestamp = (article: Article) => {
+        const dateString = article.createdAt || article.publishedAt || article.updatedAt;
+        return dateString ? new Date(dateString).getTime() : 0;
+    };
 
     const handleDelete = async (articleId: string) => {
         if (window.confirm('Are you sure you want to permanently delete this article?')) {
@@ -66,10 +70,16 @@ const AllArticles: React.FC = () => {
                 status: 'ALL',
                 limit: pageSize,
                 pageSize,
-                lastEvaluatedKey: startKey
+                lastEvaluatedKey: startKey,
+                sortBy: 'createdAt',
+                sortOrder: 'desc'
             });
 
-            setArticles(items);
+            const orderedItems = [...items].sort(
+                (a, b) => getUploadTimestamp(b) - getUploadTimestamp(a)
+            );
+
+            setArticles(orderedItems);
             setHasMore(Boolean(lastEvaluatedKey) || Boolean(moreAvailable));
             setPageTokens(prev => {
                 const updated = { ...prev };
