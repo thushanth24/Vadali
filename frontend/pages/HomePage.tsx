@@ -144,6 +144,8 @@ const HomePage: React.FC = () => {
   const [advertisements, setAdvertisements] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [releaseOrderedArticles, setReleaseOrderedArticles] = useState<Article[]>([]);
+  const [isLoadingHome, setIsLoadingHome] = useState(true);
+  const [isRefreshingLatest, setIsRefreshingLatest] = useState(false);
   const [trendingStartIndex, setTrendingStartIndex] = useState(0);
   const [trendingDirection, setTrendingDirection] = useState<'up' | 'down'>('up');
   const [isTrendingAnimating, setIsTrendingAnimating] = useState(false);
@@ -151,9 +153,16 @@ const HomePage: React.FC = () => {
   const BASE_TITLE = 'Vadali Media';
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadData = async () => {
       try {
-        const [{ items: articlesData }, categoriesData, advertisementsData] = await Promise.all([
+        setIsLoadingHome(true);
+        const [
+          { items: articlesData = [] } = { items: [] },
+          categoriesData = [],
+          advertisementsData = [],
+        ] = await Promise.all([
             fetchArticlesWithMeta({
               status: 'published',
               sortBy: 'createdAt',
@@ -163,14 +172,30 @@ const HomePage: React.FC = () => {
             fetchCategories(),
             fetchArticles({ isAdvertisement: true, limit: 12 })
         ]);
+        if (!isMounted) return;
+
+        const initialOrdered = dedupeArticlesById(
+          articlesData
+            .filter(article => !article.isAdvertisement)
+            .sort(compareByLatestUpdate)
+        );
+
         setPublishedArticles(articlesData);
+        setReleaseOrderedArticles(initialOrdered);
         setCategories(categoriesData);
         setAdvertisements(advertisementsData.filter(article => article.isAdvertisement));
       } catch (error) {
         console.error("Failed to load homepage data", error);
+      } finally {
+        if (isMounted) {
+          setIsLoadingHome(false);
+        }
       }
     };
     loadData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -178,7 +203,8 @@ const HomePage: React.FC = () => {
 
     const refreshLatestUpdates = async () => {
       try {
-        const { items: latest } = await fetchArticlesWithMeta({
+        setIsRefreshingLatest(true);
+        const { items: latest = [] } = await fetchArticlesWithMeta({
           status: 'published',
           sortBy: 'createdAt',
           sortOrder: 'desc',
@@ -189,6 +215,10 @@ const HomePage: React.FC = () => {
         }
       } catch (error) {
         console.error('Failed to refresh latest updates', error);
+      } finally {
+        if (isMounted) {
+          setIsRefreshingLatest(false);
+        }
       }
     };
 
@@ -366,6 +396,63 @@ const HomePage: React.FC = () => {
     [categories, releaseSortedFeed]
   );
 
+  const isInitialLoading = isLoadingHome && releaseSortedFeed.length === 0 && publishedArticles.length === 0;
+  const showLoadingShell = isInitialLoading || (isRefreshingLatest && releaseSortedFeed.length === 0);
+
+  const renderListSkeleton = (count: number) => (
+    <div className="space-y-4">
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className="flex items-start space-x-3 p-3 border border-gray-100 rounded-lg bg-white shadow-sm animate-pulse"
+        >
+          <div className="w-20 h-16 bg-gray-200 rounded-md" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-5/6" />
+            <div className="h-3 bg-gray-200 rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderCardSkeletonGrid = (count: number, className: string) => (
+    <div className={className}>
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden animate-pulse h-full flex flex-col"
+        >
+          <div className="aspect-video bg-gray-200" />
+          <div className="p-4 space-y-3">
+            <div className="h-4 bg-gray-200 rounded w-3/4" />
+            <div className="h-3 bg-gray-200 rounded w-1/2" />
+            <div className="h-3 bg-gray-200 rounded w-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const heroSkeleton = (
+    <div className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse h-full flex flex-col">
+      <div className="h-80 md:h-96 bg-gray-200" />
+      <div className="p-6 space-y-4">
+        <div className="inline-block bg-gray-200 h-6 w-20 rounded-full" />
+        <div className="h-10 bg-gray-200 rounded w-5/6" />
+        <div className="flex items-center space-x-2">
+          <div className="h-4 w-4 bg-gray-200 rounded-full" />
+          <div className="h-4 bg-gray-200 rounded w-32" />
+        </div>
+        <div className="space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-full" />
+          <div className="h-4 bg-gray-200 rounded w-4/5" />
+          <div className="h-4 bg-gray-200 rounded w-3/5" />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="bg-gray-150 min-h-screen">
       <style>{`
@@ -448,7 +535,9 @@ const HomePage: React.FC = () => {
                 </div>
 
                 <div className="p-4">
-                  {visibleTrending.length === 0 ? (
+                  {visibleTrending.length === 0 && showLoadingShell ? (
+                    renderListSkeleton(4)
+                  ) : visibleTrending.length === 0 ? (
                     <p className="text-sm text-gray-500 text-center py-4">No trending stories available.</p>
                   ) : (
                     <div 
@@ -518,7 +607,7 @@ const HomePage: React.FC = () => {
             </aside>
 
             <div className="lg:col-span-6 h-full">
-              {mainFeaturedArticle && (
+              {mainFeaturedArticle ? (
                 <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg h-full flex flex-col">
                   <div className="group relative">
                     <div className="overflow-hidden h-80 md:h-96">
@@ -582,7 +671,9 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              )}
+              ) : showLoadingShell ? (
+                heroSkeleton
+              ) : null}
             </div>
 
             <aside className="lg:col-span-3 h-full space-y-6">
@@ -594,7 +685,9 @@ const HomePage: React.FC = () => {
                   </h2>
                 </div>
                 <div className="p-4">
-                  {sidebarLatestArticles.length === 0 ? (
+                  {sidebarLatestArticles.length === 0 && showLoadingShell ? (
+                    renderListSkeleton(4)
+                  ) : sidebarLatestArticles.length === 0 ? (
                     <p className="text-sm text-gray-500 text-center py-4">No latest updates available.</p>
                   ) : (
                     <div className="space-y-4">
@@ -692,68 +785,96 @@ const HomePage: React.FC = () => {
                     </svg>
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {latestArticles.map((article, index) => (
-                    <div 
-                      key={article.id} 
-                      className={`relative group ${index < 3 ? 'md:first:col-span-2 lg:first:col-span-1' : ''}`}
-                    >
-                      <ArticleCardWrapper
-                        article={article}
-                        category={categories.find(c => c.id === article.categoryId)}
-                        className={`bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-gray-200 transition-all duration-300 h-full flex flex-col group-hover:shadow-lg ${
-                          index < 3 ? 'md:first:flex-row md:first:h-64' : ''
-                        }`}
-                      />
-                      {index < 3 && (
-                        <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                          {index === 0 ? 'Latest' : `#${index + 1}`}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                {showLoadingShell && latestArticles.length === 0 ? (
+                  renderCardSkeletonGrid(6, "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6")
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {latestArticles.map((article, index) => (
+                      <div 
+                        key={article.id} 
+                        className={`relative group ${index < 3 ? 'md:first:col-span-2 lg:first:col-span-1' : ''}`}
+                      >
+                        <ArticleCardWrapper
+                          article={article}
+                          category={categories.find(c => c.id === article.categoryId)}
+                          className={`bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-gray-200 transition-all duration-300 h-full flex flex-col group-hover:shadow-lg ${
+                            index < 3 ? 'md:first:flex-row md:first:h-64' : ''
+                          }`}
+                        />
+                        {index < 3 && (
+                          <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                            {index === 0 ? 'Latest' : `#${index + 1}`}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
 
             {/* Category-wise News Sections - Full Width */}
             <div className="space-y-8">
-              {articlesByCategory.map(category => (
-                <section key={category.id} className="bg-white rounded-xl shadow-md overflow-hidden">
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold text-gray-800 relative">
-                        {category.name}
-                        <span className="absolute bottom-0 left-0 w-12 h-1 bg-blue-600 rounded-full"></span>
-                      </h2>
-                      <Link 
-                        to={`/category/${category.slug}`}
-                        className="text-sm font-medium text-blue-600 hover:underline flex items-center"
-                      >
-                        View All
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
+              {articlesByCategory.length === 0 && showLoadingShell ? (
+                Array.from({ length: 2 }).map((_, sectionIndex) => (
+                  <section key={`category-skeleton-${sectionIndex}`} className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div className="p-6 space-y-4 animate-pulse">
+                      <div className="h-6 bg-gray-200 rounded w-32" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        {Array.from({ length: 4 }).map((_, cardIndex) => (
+                          <div
+                            key={cardIndex}
+                            className="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm h-full"
+                          >
+                            <div className="aspect-video bg-gray-200 rounded-t-2xl" />
+                            <div className="p-4 space-y-2">
+                              <div className="h-4 bg-gray-200 rounded w-5/6" />
+                              <div className="h-3 bg-gray-200 rounded w-2/3" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                      {category.articles.map(article => (
-                        <ArticleCardWrapper
-                          key={article.id}
-                          article={article}
-                          category={category}
-                          className="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 h-full"
-                        />
-                      ))}
+                  </section>
+                ))
+              ) : (
+                articlesByCategory.map(category => (
+                  <section key={category.id} className="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-800 relative">
+                          {category.name}
+                          <span className="absolute bottom-0 left-0 w-12 h-1 bg-blue-600 rounded-full"></span>
+                        </h2>
+                        <Link 
+                          to={`/category/${category.slug}`}
+                          className="text-sm font-medium text-blue-600 hover:underline flex items-center"
+                        >
+                          View All
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </Link>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        {category.articles.map(article => (
+                          <ArticleCardWrapper
+                            key={article.id}
+                            article={article}
+                            category={category}
+                            className="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 h-full"
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </section>
-              ))}
+                  </section>
+                ))
+              )}
             </div>
 
             {/* Full Width Sponsored Content Section - Responsive */}
             <div className="w-full">
-              {topAdvertisements.length > 0 && (
+              {topAdvertisements.length > 0 ? (
                 <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl shadow-md overflow-hidden border border-amber-100 mb-8">
                   <div className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
@@ -819,7 +940,28 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </section>
-              )}
+              ) : showLoadingShell ? (
+                <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl shadow-md overflow-hidden border border-amber-100 mb-8">
+                  <div className="p-4 sm:p-6 space-y-6 animate-pulse">
+                    <div className="flex items-center justify-between">
+                      <div className="h-7 bg-gray-200 rounded w-48" />
+                      <div className="h-6 bg-gray-200 rounded w-24" />
+                    </div>
+                    <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                      {Array.from({ length: 4 }).map((_, index) => (
+                        <div key={index} className="bg-white rounded-lg overflow-hidden shadow-sm h-full flex flex-col">
+                          <div className="aspect-video bg-gray-200" />
+                          <div className="p-4 space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-5/6" />
+                            <div className="h-3 bg-gray-200 rounded w-1/2" />
+                            <div className="h-3 bg-gray-200 rounded w-2/3" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              ) : null}
             </div>
 
             {/* Main Content and Sidebar */}

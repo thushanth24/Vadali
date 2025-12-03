@@ -14,6 +14,25 @@ const CategoryPage: React.FC = () => {
   const [nextKey, setNextKey] = useState<string | undefined>(undefined);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const BASE_TITLE = 'Vadali Media';
+  const showSkeletons = loading && !initialLoadComplete;
+
+  const renderCardSkeletons = (count: number) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden animate-pulse h-full"
+        >
+          <div className="aspect-video bg-gray-200" />
+          <div className="p-4 space-y-3">
+            <div className="h-4 bg-gray-200 rounded w-5/6" />
+            <div className="h-3 bg-gray-200 rounded w-1/2" />
+            <div className="h-3 bg-gray-200 rounded w-2/3" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   // Keep a single, globally sorted list so pagination chunks don't reorder when appended
   const mergeAndSortArticles = (items: Article[]) => {
@@ -109,7 +128,7 @@ const CategoryPage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="border-b-2 border-[#d32f2f] pb-2 mb-6">
         <h1 className="text-3xl font-bold text-gray-800">
-          {category ? category.name : 'Loading category...'}
+          {category?.name || (showSkeletons ? 'Loading category...' : 'Category')}
         </h1>
         <p className="text-gray-500 mt-1">
           {category
@@ -147,12 +166,9 @@ const CategoryPage: React.FC = () => {
           <h2 className="text-2xl font-semibold text-gray-700">No Articles Found</h2>
           <p className="text-gray-500 mt-2">There are no published articles in this category at the moment.</p>
         </div>
-      ) : (
-        <div className="text-center py-16">
-          <h2 className="text-2xl font-semibold text-gray-700">Loading articles...</h2>
-          <p className="text-gray-500 mt-2">Please wait while we fetch the latest stories.</p>
-        </div>
-      )}
+      ) : showSkeletons ? (
+        renderCardSkeletons(8)
+      ) : null}
     </div>
   );
 };

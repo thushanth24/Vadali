@@ -49,7 +49,6 @@ const ArticlePage: React.FC = () => {
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const BASE_TITLE = 'Vadali Media';
-  
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentMessage, setCommentMessage] = useState('');
@@ -131,6 +130,7 @@ const ArticlePage: React.FC = () => {
   const metaDescription = article?.summary || article?.title || 'Latest stories from Vadali Media.';
   const helmetTitle = article ? `${article.title} | ${BASE_TITLE}` : BASE_TITLE;
   const twitterCard = shareImage ? 'summary_large_image' : 'summary';
+  const showSkeleton = loading && !article;
 
   const helmetMarkup = (
     <Helmet>
@@ -167,6 +167,83 @@ const ArticlePage: React.FC = () => {
     }
   };
 
+  if (showSkeleton) {
+    return (
+      <div className="bg-gray-100 py-8 overflow-x-hidden">
+        {helmetMarkup}
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <article className="lg:col-span-8 bg-white p-8 shadow-sm space-y-6 animate-pulse">
+              <div className="inline-block h-6 w-24 bg-gray-200 rounded-full" />
+              <div className="h-8 bg-gray-200 rounded w-5/6" />
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="h-4 w-32 bg-gray-200 rounded" />
+                <div className="h-4 w-28 bg-gray-200 rounded" />
+                <div className="h-4 w-24 bg-gray-200 rounded" />
+              </div>
+              <div className="h-64 bg-gray-200 rounded-lg" />
+              <div className="space-y-3">
+                <div className="h-4 bg-gray-200 rounded w-full" />
+                <div className="h-4 bg-gray-200 rounded w-5/6" />
+                <div className="h-4 bg-gray-200 rounded w-4/6" />
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="h-32 bg-gray-200 rounded-md" />
+                <div className="h-32 bg-gray-200 rounded-md" />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="h-6 w-16 bg-gray-200 rounded-full" />
+                ))}
+              </div>
+              <div className="space-y-3 pt-4 border-t">
+                <div className="h-5 w-40 bg-gray-200 rounded" />
+                <div className="flex flex-wrap gap-3">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="h-10 w-28 bg-gray-200 rounded-md" />
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-4 pt-4 border-t">
+                <div className="h-6 w-48 bg-gray-200 rounded" />
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <div key={index} className="flex space-x-3">
+                    <div className="h-12 w-12 bg-gray-200 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-1/2 bg-gray-200 rounded" />
+                      <div className="h-3 w-3/4 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                ))}
+                <div className="h-24 bg-gray-100 rounded-md border border-dashed border-gray-200" />
+              </div>
+            </article>
+
+            <aside className="lg:col-span-4 space-y-6">
+              <div className="bg-white p-6 shadow-sm text-center space-y-3 animate-pulse">
+                <div className="h-24 w-24 bg-gray-200 rounded-full mx-auto" />
+                <div className="h-5 w-1/2 bg-gray-200 rounded mx-auto" />
+                <div className="h-4 w-1/3 bg-gray-200 rounded mx-auto" />
+              </div>
+              <div className="bg-white p-6 shadow-sm space-y-4 animate-pulse">
+                <div className="h-6 w-40 bg-gray-200 rounded" />
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <div className="h-16 w-24 bg-gray-200 rounded" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-5/6 bg-gray-200 rounded" />
+                      <div className="h-3 w-2/3 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!article) {
     return loading ? <>{helmetMarkup}</> : <Navigate to="/" replace />;
@@ -210,7 +287,7 @@ const ArticlePage: React.FC = () => {
                   <Link to={`/author/${author.id}`} className="hover:text-blue-600 hover:underline">
                     {author.name}
                   </Link>
-                ) : 'அறியப்படாத ஆசிரியர்'}
+                ) : 'Loading author...'}
               </div>
             {publishedDateLabel && (
               <div className="flex items-center">
@@ -383,4 +460,6 @@ const ArticlePage: React.FC = () => {
 };
 
 export default ArticlePage;
+
+
 
