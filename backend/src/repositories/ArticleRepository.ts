@@ -9,8 +9,8 @@ export class ArticleRepository extends BaseRepository<Article> {
   private readonly MAX_LIMIT = 20;
 
   private clampLimit(limit?: number): number {
-    if (typeof limit !== 'number' || limit <= 0) return this.DEFAULT_LIMIT;
-    return Math.min(limit, this.MAX_LIMIT);
+    if (!Number.isFinite(limit) || limit <= 0) return this.DEFAULT_LIMIT;
+    return Math.min(Math.floor(limit), this.MAX_LIMIT);
   }
 
   protected toDomain(item: any): Article {
@@ -121,19 +121,34 @@ export class ArticleRepository extends BaseRepository<Article> {
   private getListProjection() {
     return {
       projectionExpression:
-        '#id, title, slug, summary, coverImageUrl, imageUrls, categoryId, tags, #status, publishedAt, createdAt, updatedAt, isFeatured, isAdvertisement, views, videoUrl',
-      expressionAttributeNames: { '#id': 'id', '#status': 'status' }
+        '#id, title, slug, summary, coverImageUrl, imageUrls, categoryId, tags, #status, publishedAt, createdAt, updatedAt, isFeatured, isAdvertisement, #views, videoUrl',
+      expressionAttributeNames: { '#id': 'id', '#status': 'status', '#views': 'views' }
     };
   }
 
-  async queryByCreated(params: { status?: string; limit?: number; lastKey?: Record<string, any> }) {
+  async queryByCreated(params: {
+    status?: string;
+    limit?: number;
+    lastKey?: Record<string, any>;
+    filterExpression?: string;
+    expressionAttributeValues?: Record<string, any>;
+    expressionAttributeNames?: Record<string, string>;
+  }) {
     const statusValue = params.status ?? ArticleStatus.PUBLISHED;
     const projection = this.getListProjection();
     return this.query({
       indexName: 'createdAt-index',
       keyConditionExpression: '#status = :status',
-      expressionAttributeNames: { ...projection.expressionAttributeNames, '#status': 'status' },
-      expressionAttributeValues: { ':status': statusValue },
+      expressionAttributeNames: {
+        ...projection.expressionAttributeNames,
+        '#status': 'status',
+        ...(params.expressionAttributeNames ?? {}),
+      },
+      expressionAttributeValues: {
+        ':status': statusValue,
+        ...(params.expressionAttributeValues ?? {}),
+      },
+      filterExpression: params.filterExpression,
       limit: this.clampLimit(params.limit),
       lastEvaluatedKey: params.lastKey,
       scanIndexForward: false, // newest first
@@ -148,6 +163,9 @@ export class ArticleRepository extends BaseRepository<Article> {
     isAdvertisement?: boolean;
     limit?: number;
     lastKey?: Record<string, any>;
+    filterExpression?: string;
+    expressionAttributeValues?: Record<string, any>;
+    expressionAttributeNames?: Record<string, string>;
   }) {
     const expressionAttributeValues: Record<string, any> = {
       ':categoryId': params.categoryId,
@@ -175,13 +193,21 @@ export class ArticleRepository extends BaseRepository<Article> {
     return this.query({
       indexName: 'category-index',
       keyConditionExpression: 'categoryId = :categoryId',
-      expressionAttributeValues,
       expressionAttributeNames: {
         ...(Object.keys(expressionAttributeNames).length ? expressionAttributeNames : {}),
+        ...(params.expressionAttributeNames ?? {}),
         ...projection.expressionAttributeNames,
       },
+      expressionAttributeValues: {
+        ...expressionAttributeValues,
+        ...(params.expressionAttributeValues ?? {}),
+      },
       projectionExpression: projection.projectionExpression,
-      filterExpression: filterExpressions.length ? filterExpressions.join(' AND ') : undefined,
+      filterExpression: params.filterExpression
+        ? params.filterExpression
+        : filterExpressions.length
+          ? filterExpressions.join(' AND ')
+          : undefined,
       limit: this.clampLimit(params.limit),
       lastEvaluatedKey: params.lastKey,
       scanIndexForward: false, // newest first by createdAt

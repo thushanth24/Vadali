@@ -475,12 +475,15 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         const authorId = queryParams.authorId;
         const searchQuery = queryParams.query?.toLowerCase();
         const isFeatured = queryParams.featured === 'true';
-        const limit = queryParams.limit ? parseInt(queryParams.limit, 10) : 10;
+        const parsedLimit = queryParams.limit ? parseInt(queryParams.limit, 10) : undefined;
+        const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 10;
         const lastEvaluatedKey = queryParams.lastEvaluatedKey;
         const hasIsAdvertisementParam = Object.prototype.hasOwnProperty.call(queryParams, 'isAdvertisement');
         const rawIsAdvertisement = queryParams.isAdvertisement;
         const rawSortBy = (queryParams.sortBy || '').trim();
         const sortBy = rawSortBy.toLowerCase();
+        const rawSortOrder = (queryParams.sortOrder || '').trim().toLowerCase();
+        const sortOrder = rawSortOrder === 'asc' ? 'asc' : 'desc';
 
         const parseBooleanQueryParam = (value: string | undefined): boolean => {
             if (!value) {
@@ -491,7 +494,7 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
             return !falseValues.has(normalized);
         };
 
-        // Build filter expressions
+        // Build filter expressions (status handled separately because it may be in the key condition)
         const filterExpressions: string[] = [];
         const expressionAttributeValues: Record<string, any> = {};
         const expressionAttributeNames: Record<string, string> = {};
@@ -536,10 +539,7 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
                         return resolveStatusFilter(enumMatch);
                     }
                     // Fallback to published behaviour to avoid leaking unpublished content
-                    return {
-                        values: Array.from(new Set([ArticleStatus.PUBLISHED, 'Published', 'published', 'PUBLISHED'])),
-                        applyFilter: true,
-                    };
+                    return { values: [ArticleStatus.PUBLISHED], applyFilter: true };
                 }
             }
         };
@@ -548,64 +548,38 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
 
         const wantsCreatedSort = !rawSortBy || sortBy === 'createdat';
 
+        // Force category query; rely on the GSI for ordering. No scan fallback for category pages.
+        if (categoryId) {
+            console.log("DEBUG: Forcing Category Query");
+
+            const statusValue = resolvedStatuses[0] || ArticleStatus.PUBLISHED;
+            const decodedKey = lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
+
+            try {
+                const { items, lastEvaluatedKey: newKey } = await articleRepository.queryByCategoryCreated({
+                    categoryId,
+                    status: statusValue,
+                    limit,
+                    lastKey: decodedKey,
+                });
+
+                return respond(200, {
+                    items,
+                    total: items.length,
+                    lastEvaluatedKey: newKey ? encodeURIComponent(JSON.stringify(newKey)) : undefined,
+                    hasMore: Boolean(newKey),
+                });
+            } catch (err) {
+                console.error("Category Query Failed:", err);
+                return respond(500, { message: "Failed to load category feed" });
+            }
+        }
+
         const canUseCreatedIndex =
             wantsCreatedSort &&
-            !categoryId &&
-            !tag &&
-            !authorId &&
-            !isFeatured &&
-            !hasIsAdvertisementParam &&
             resolvedStatuses.length === 1;
 
-        if (canUseCreatedIndex) {
-            const statusValue = resolvedStatuses[0];
-            const decodedKey = lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
-            const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.queryByCreated({
-                status: statusValue,
-                limit,
-                lastKey: decodedKey,
-            });
-
-            return respond(200, {
-                items,
-                total: items.length,
-                lastEvaluatedKey: newLastEvaluatedKey
-                    ? encodeURIComponent(JSON.stringify(newLastEvaluatedKey))
-                    : undefined,
-                hasMore: Boolean(newLastEvaluatedKey),
-            });
-        }
-
-        const canUseCategoryIndex =
-            wantsCreatedSort &&
-            Boolean(categoryId) &&
-            !tag &&
-            !authorId &&
-            resolvedStatuses.length === 1;
-
-        if (canUseCategoryIndex && categoryId) {
-            const statusValue = resolvedStatuses[0];
-            const decodedKey = lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
-            const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.queryByCategoryCreated({
-                categoryId,
-                status: statusValue,
-                isFeatured: isFeatured || undefined,
-                isAdvertisement: hasIsAdvertisementParam ? parseBooleanQueryParam(rawIsAdvertisement) : undefined,
-                limit,
-                lastKey: decodedKey,
-            });
-
-            return respond(200, {
-                items,
-                total: items.length,
-                lastEvaluatedKey: newLastEvaluatedKey
-                    ? encodeURIComponent(JSON.stringify(newLastEvaluatedKey))
-                    : undefined,
-                hasMore: Boolean(newLastEvaluatedKey),
-            });
-        }
-
-        if (shouldFilterByStatus && resolvedStatuses.length > 0) {
+        if (!canUseCreatedIndex && shouldFilterByStatus && resolvedStatuses.length > 0) {
             expressionAttributeNames['#status'] = 'status';
 
             const dedupedStatuses = Array.from(new Set(resolvedStatuses));
@@ -620,7 +594,7 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
                 });
             }
         }
-        
+
         if (categoryId) {
             filterExpressions.push('categoryId = :categoryId');
             expressionAttributeValues[':categoryId'] = categoryId;
@@ -646,11 +620,152 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
             expressionAttributeValues[':tag'] = tag;
         }
 
-        // Get articles with pagination
+        const filterExpressionJoined = filterExpressions.filter(Boolean).join(' AND ');
+        const filterExpressionToUse = filterExpressionJoined || undefined;
+        const filterValuesToUse = filterExpressionToUse ? expressionAttributeValues : undefined;
+        const filterNamesToUse = filterExpressionToUse ? expressionAttributeNames : undefined;
+
+        if (canUseCreatedIndex) {
+            try {
+                const statusValue = resolvedStatuses[0];
+                const decodedKey = lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
+                const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.queryByCreated({
+                    status: statusValue,
+                    limit,
+                    lastKey: decodedKey,
+                    filterExpression: filterExpressionToUse,
+                    expressionAttributeValues: filterValuesToUse,
+                    expressionAttributeNames: filterNamesToUse,
+                });
+
+                // Apply additional filters client-side if Dynamo query filters were not used
+                let filteredItems = items;
+                if (categoryId) filteredItems = filteredItems.filter(item => item.categoryId === categoryId);
+                if (authorId) filteredItems = filteredItems.filter(item => item.authorId === authorId);
+                if (isFeatured) filteredItems = filteredItems.filter(item => item.isFeatured === true);
+                if (hasIsAdvertisementParam) {
+                    const boolVal = parseBooleanQueryParam(rawIsAdvertisement);
+                    filteredItems = filteredItems.filter(item => item.isAdvertisement === boolVal);
+                }
+                if (tag) filteredItems = filteredItems.filter(item => Array.isArray(item.tags) && item.tags.includes(tag));
+                if (searchQuery) {
+                    filteredItems = filteredItems.filter(article =>
+                        article.title.toLowerCase().includes(searchQuery) ||
+                        (article.summary?.toLowerCase() || '').includes(searchQuery) ||
+                        (article.content?.toLowerCase() || '').includes(searchQuery)
+                    );
+                }
+
+                return respond(200, {
+                    items: filteredItems,
+                    total: filteredItems.length,
+                    lastEvaluatedKey: newLastEvaluatedKey
+                        ? encodeURIComponent(JSON.stringify(newLastEvaluatedKey))
+                        : undefined,
+                    hasMore: Boolean(newLastEvaluatedKey),
+                });
+            } catch (error) {
+                console.warn('createdAt-index query failed, falling back to full scan', {
+                    error: error instanceof Error ? error.message : error,
+                });
+            }
+        }
+
+        const canUseCategoryIndex =
+            wantsCreatedSort &&
+            Boolean(categoryId) &&
+            resolvedStatuses.length === 1;
+
+        if (canUseCategoryIndex && categoryId) {
+            try {
+                const statusValue = resolvedStatuses[0];
+                const decodedKey = lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
+
+                // Keep fetching until we have enough items after filters, so drafts/pending
+                // don't push published items off the first page.
+                let aggregated: Article[] = [];
+                let pageKey: Record<string, any> | undefined = decodedKey;
+                let iterations = 0;
+                const maxIterations = 5; // safety guard to avoid runaway loops
+
+                while (aggregated.length < limit && iterations < maxIterations) {
+                    const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.queryByCategoryCreated({
+                        categoryId,
+                        status: statusValue,
+                        isFeatured: isFeatured || undefined,
+                        isAdvertisement: hasIsAdvertisementParam ? parseBooleanQueryParam(rawIsAdvertisement) : undefined,
+                        limit,
+                        lastKey: pageKey,
+                        filterExpression: filterExpressionToUse,
+                        expressionAttributeValues: filterValuesToUse,
+                        expressionAttributeNames: filterNamesToUse,
+                    });
+
+                    let filteredItems = items;
+                    if (authorId) filteredItems = filteredItems.filter(item => item.authorId === authorId);
+                    if (isFeatured) filteredItems = filteredItems.filter(item => item.isFeatured === true);
+                    if (hasIsAdvertisementParam) {
+                        const boolVal = parseBooleanQueryParam(rawIsAdvertisement);
+                        filteredItems = filteredItems.filter(item => item.isAdvertisement === boolVal);
+                    }
+                    if (tag) filteredItems = filteredItems.filter(item => Array.isArray(item.tags) && item.tags.includes(tag));
+                    if (searchQuery) {
+                        filteredItems = filteredItems.filter(article =>
+                            article.title.toLowerCase().includes(searchQuery) ||
+                            (article.summary?.toLowerCase() || '').includes(searchQuery) ||
+                            (article.content?.toLowerCase() || '').includes(searchQuery)
+                        );
+                    }
+
+                    const remaining = Math.max(0, limit - aggregated.length);
+                    aggregated = aggregated.concat(filteredItems.slice(0, remaining));
+
+                    pageKey = newLastEvaluatedKey;
+                    iterations += 1;
+
+                    if (!pageKey || aggregated.length >= limit) {
+                        break;
+                    }
+                }
+
+                return respond(200, {
+                    items: aggregated,
+                    total: aggregated.length,
+                    lastEvaluatedKey: pageKey
+                        ? encodeURIComponent(JSON.stringify(pageKey))
+                        : undefined,
+                    hasMore: Boolean(pageKey),
+                });
+            } catch (error) {
+                console.warn('category-index query failed, falling back to full scan', {
+                    error: error instanceof Error ? error.message : error,
+                });
+            }
+        }
+
+        if (shouldFilterByStatus && resolvedStatuses.length > 0 && !filterExpressions.some(expr => expr.includes('#status'))) {
+            expressionAttributeNames['#status'] = 'status';
+            const dedupedStatuses = Array.from(new Set(resolvedStatuses));
+            if (dedupedStatuses.length === 1) {
+                filterExpressions.push('#status = :status0');
+                expressionAttributeValues[':status0'] = dedupedStatuses[0];
+            } else {
+                const placeholders = dedupedStatuses.map((_, index) => `:status${index}`);
+                filterExpressions.push(`#status IN (${placeholders.join(', ')})`);
+                dedupedStatuses.forEach((statusValue, index) => {
+                    expressionAttributeValues[`:status${index}`] = statusValue;
+                });
+            }
+        }
+
+        const scanFilterExpressionJoined = filterExpressions.filter(Boolean).join(' AND ');
+        const scanFilterValues = scanFilterExpressionJoined ? expressionAttributeValues : undefined;
+        const scanFilterNames = scanFilterExpressionJoined ? expressionAttributeNames : undefined;
+
         const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.scan({
-            filterExpression: filterExpressions.join(' AND '),
-            expressionAttributeNames: Object.keys(expressionAttributeNames).length > 0 ? expressionAttributeNames : undefined,
-            expressionAttributeValues: Object.keys(expressionAttributeValues).length > 0 ? expressionAttributeValues : undefined,
+            filterExpression: scanFilterExpressionJoined || undefined,
+            expressionAttributeNames: scanFilterNames,
+            expressionAttributeValues: scanFilterValues,
             limit,
             lastEvaluatedKey: lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined
         });
@@ -663,6 +778,16 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
                 (article.summary?.toLowerCase() || '').includes(searchQuery) ||
                 (article.content?.toLowerCase() || '').includes(searchQuery)
             );
+        }
+
+        // When we fall back to scans (or category index fails), Dynamo does not guarantee order.
+        if (wantsCreatedSort) {
+            const direction = sortOrder === 'asc' ? 1 : -1;
+            const toTs = (value?: string | null) => {
+                const ts = value ? Date.parse(value) : NaN;
+                return Number.isFinite(ts) ? ts : 0;
+            };
+            filteredItems = filteredItems.sort((a, b) => (toTs(a.createdAt) - toTs(b.createdAt)) * direction);
         }
 
         const response: any = {

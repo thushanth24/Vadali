@@ -12,13 +12,32 @@ const CategoryPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextKey, setNextKey] = useState<string | undefined>(undefined);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const BASE_TITLE = 'Vadali Media';
+
+  // Keep a single, globally sorted list so pagination chunks don't reorder when appended
+  const mergeAndSortArticles = (items: Article[]) => {
+    const deduped = new Map<string, Article>();
+    for (const article of items) {
+      if (article.id) {
+        deduped.set(article.id, article);
+      }
+    }
+    return Array.from(deduped.values()).sort((a, b) => {
+      const toTs = (value?: string | null) => {
+        const ts = value ? Date.parse(value) : NaN;
+        return Number.isFinite(ts) ? ts : 0;
+      };
+      return toTs(b.createdAt) - toTs(a.createdAt);
+    });
+  };
   
   useEffect(() => {
     const loadData = async () => {
       if (!slug) {
         setCategory(null);
         setLoading(false);
+        setInitialLoadComplete(true);
         return;
       }
       try {
@@ -34,7 +53,7 @@ const CategoryPage: React.FC = () => {
             sortOrder: 'desc',
             limit: 20,
           });
-          setArticles(items);
+          setArticles(mergeAndSortArticles(items));
           setNextKey(hasMore && lastEvaluatedKey ? lastEvaluatedKey : undefined);
         }
       } catch (error) {
@@ -42,6 +61,7 @@ const CategoryPage: React.FC = () => {
         setCategory(null);
       } finally {
         setLoading(false);
+        setInitialLoadComplete(true);
       }
     };
     loadData();
@@ -58,7 +78,7 @@ const CategoryPage: React.FC = () => {
         limit: 20,
         lastEvaluatedKey: nextKey,
       });
-      setArticles(prev => [...prev, ...items]);
+      setArticles(prev => mergeAndSortArticles([...prev, ...items]));
       setNextKey(hasMore && lastEvaluatedKey ? lastEvaluatedKey : undefined);
     } catch (error) {
       console.error('Failed to load more category articles', error);
@@ -68,11 +88,6 @@ const CategoryPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (loading) {
-      document.title = `⏳ ${BASE_TITLE}`;
-      return;
-    }
-
     if (category) {
       document.title = `${category.name} | ${BASE_TITLE}`;
     } else {
@@ -82,20 +97,25 @@ const CategoryPage: React.FC = () => {
     return () => {
       document.title = BASE_TITLE;
     };
-  }, [loading, category, BASE_TITLE]);
+  }, [category, BASE_TITLE]);
 
-  // While loading, don't render the empty state to avoid flicker; defer rendering until data arrives
-  if (loading) return null;
+  const showEmptyState = initialLoadComplete && !loading && category && articles.length === 0;
 
-  if (!category) {
+  if (initialLoadComplete && !loading && !category) {
     return <Navigate to="/" replace />;
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="border-b-2 border-[#d32f2f] pb-2 mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">{category.name}</h1>
-        <p className="text-gray-500 mt-1">Showing all articles in the "{category.name}" category.</p>
+        <h1 className="text-3xl font-bold text-gray-800">
+          {category ? category.name : 'Loading category...'}
+        </h1>
+        <p className="text-gray-500 mt-1">
+          {category
+            ? `Showing all articles in the "${category.name}" category.`
+            : 'Fetching the latest articles...'}
+        </p>
       </div>
       
       {articles.length > 0 ? (
@@ -122,10 +142,15 @@ const CategoryPage: React.FC = () => {
             </div>
           )}
         </>
-      ) : (
+      ) : showEmptyState ? (
         <div className="text-center py-16">
           <h2 className="text-2xl font-semibold text-gray-700">No Articles Found</h2>
           <p className="text-gray-500 mt-2">There are no published articles in this category at the moment.</p>
+        </div>
+      ) : (
+        <div className="text-center py-16">
+          <h2 className="text-2xl font-semibold text-gray-700">Loading articles...</h2>
+          <p className="text-gray-500 mt-2">Please wait while we fetch the latest stories.</p>
         </div>
       )}
     </div>
