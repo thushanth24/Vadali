@@ -38,7 +38,7 @@ export class ArticleRepository extends BaseRepository<Article> {
   }
 
   protected toDB(article: Article) {
-    return {
+    const dbItem: Record<string, any> = {
       ...article,
       // Ensure we don't store undefined values
       ...(article.tags === undefined && { tags: [] }),
@@ -49,6 +49,14 @@ export class ArticleRepository extends BaseRepository<Article> {
       ...(article.rejectionReason === undefined && { rejectionReason: null }),
       ...(article.videoUrl === undefined && { videoUrl: null })
     };
+
+    // DynamoDB GSIs require indexed attributes to be the expected type (string for publishedAt-index).
+    // If the article isn't published, drop publishedAt entirely so we don't write a NULL into the index.
+    if (article.publishedAt === null || article.publishedAt === undefined || String(article.publishedAt).trim() === '') {
+      delete dbItem.publishedAt;
+    }
+
+    return dbItem;
   }
 
   async createArticle(articleData: Omit<Article, 'id' | 'createdAt' | 'updatedAt' | 'views'>): Promise<Article> {
