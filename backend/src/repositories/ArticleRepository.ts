@@ -19,7 +19,7 @@ export class ArticleRepository extends BaseRepository<Article> {
       title: item.title,
       slug: item.slug,
       summary: item.summary,
-      content: item.content,
+      content: item.content ?? '',
       coverImageUrl: item.coverImageUrl,
       imageUrls: Array.isArray(item.imageUrls) ? item.imageUrls : [],
       authorId: item.authorId,
@@ -118,16 +118,73 @@ export class ArticleRepository extends BaseRepository<Article> {
     });
   }
 
+  private getListProjection() {
+    return {
+      projectionExpression:
+        '#id, title, slug, summary, coverImageUrl, imageUrls, categoryId, tags, #status, publishedAt, createdAt, updatedAt, isFeatured, isAdvertisement, views, videoUrl',
+      expressionAttributeNames: { '#id': 'id', '#status': 'status' }
+    };
+  }
+
   async queryByCreated(params: { status?: string; limit?: number; lastKey?: Record<string, any> }) {
     const statusValue = params.status ?? ArticleStatus.PUBLISHED;
+    const projection = this.getListProjection();
     return this.query({
       indexName: 'createdAt-index',
       keyConditionExpression: '#status = :status',
-      expressionAttributeNames: { '#status': 'status' },
+      expressionAttributeNames: { ...projection.expressionAttributeNames, '#status': 'status' },
       expressionAttributeValues: { ':status': statusValue },
       limit: this.clampLimit(params.limit),
       lastEvaluatedKey: params.lastKey,
       scanIndexForward: false, // newest first
+      projectionExpression: projection.projectionExpression,
+    });
+  }
+
+  async queryByCategoryCreated(params: {
+    categoryId: string;
+    status?: string;
+    isFeatured?: boolean;
+    isAdvertisement?: boolean;
+    limit?: number;
+    lastKey?: Record<string, any>;
+  }) {
+    const expressionAttributeValues: Record<string, any> = {
+      ':categoryId': params.categoryId,
+    };
+    const expressionAttributeNames: Record<string, string> = {};
+    const filterExpressions: string[] = [];
+    const projection = this.getListProjection();
+
+    if (params.status) {
+      expressionAttributeNames['#status'] = 'status';
+      expressionAttributeValues[':status'] = params.status;
+      filterExpressions.push('#status = :status');
+    }
+
+    if (typeof params.isFeatured === 'boolean') {
+      expressionAttributeValues[':isFeatured'] = params.isFeatured;
+      filterExpressions.push('isFeatured = :isFeatured');
+    }
+
+    if (typeof params.isAdvertisement === 'boolean') {
+      expressionAttributeValues[':isAdvertisement'] = params.isAdvertisement;
+      filterExpressions.push('isAdvertisement = :isAdvertisement');
+    }
+
+    return this.query({
+      indexName: 'category-index',
+      keyConditionExpression: 'categoryId = :categoryId',
+      expressionAttributeValues,
+      expressionAttributeNames: {
+        ...(Object.keys(expressionAttributeNames).length ? expressionAttributeNames : {}),
+        ...projection.expressionAttributeNames,
+      },
+      projectionExpression: projection.projectionExpression,
+      filterExpression: filterExpressions.length ? filterExpressions.join(' AND ') : undefined,
+      limit: this.clampLimit(params.limit),
+      lastEvaluatedKey: params.lastKey,
+      scanIndexForward: false, // newest first by createdAt
     });
   }
 

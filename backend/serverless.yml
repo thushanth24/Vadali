@@ -258,6 +258,8 @@ resources:
             KeySchema:
               - AttributeName: categoryId
                 KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
             Projection:
               ProjectionType: ALL
           - IndexName: createdAt-index

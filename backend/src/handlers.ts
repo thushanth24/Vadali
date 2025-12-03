@@ -479,7 +479,8 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         const lastEvaluatedKey = queryParams.lastEvaluatedKey;
         const hasIsAdvertisementParam = Object.prototype.hasOwnProperty.call(queryParams, 'isAdvertisement');
         const rawIsAdvertisement = queryParams.isAdvertisement;
-        const sortBy = (queryParams.sortBy || '').toLowerCase();
+        const rawSortBy = (queryParams.sortBy || '').trim();
+        const sortBy = rawSortBy.toLowerCase();
 
         const parseBooleanQueryParam = (value: string | undefined): boolean => {
             if (!value) {
@@ -495,7 +496,9 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         const expressionAttributeValues: Record<string, any> = {};
         const expressionAttributeNames: Record<string, string> = {};
 
-        const resolveStatusFilter = (statusParam?: string): { values: string[]; applyFilter: boolean } => {
+        const resolveStatusFilter = (
+            statusParam?: string
+        ): { values: string[]; applyFilter: boolean } => {
             if (!statusParam || statusParam.trim().length === 0) {
                 return { values: [ArticleStatus.PUBLISHED], applyFilter: true };
             }
@@ -507,55 +510,24 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
             }
 
             const normalized = cleaned.replace(/[\s_-]+/g, ' ');
-            const pendingValues = [
-                ArticleStatus.PENDING_REVIEW,
-                'Pending Review',
-                'pending review',
-                'PENDING_REVIEW',
-                'Submitted',
-                'submitted',
-                'SUBMITTED',
-                'Pending',
-                'pending',
-                'PENDING',
-            ];
 
             switch (normalized) {
                 case 'draft':
                 case 'drafts':
-                    return {
-                        values: Array.from(new Set([ArticleStatus.DRAFT, 'Draft', 'draft', 'DRAFT'])),
-                        applyFilter: true,
-                    };
+                    return { values: [ArticleStatus.DRAFT], applyFilter: true };
                 case 'pending review':
                 case 'pending':
                 case 'submitted':
                 case 'awaiting review':
-                    return { values: Array.from(new Set(pendingValues)), applyFilter: true };
+                    return { values: [ArticleStatus.PENDING_REVIEW], applyFilter: true };
                 case 'published':
                 case 'approved':
                 case 'live':
-                    return {
-                        values: Array.from(
-                            new Set([
-                                ArticleStatus.PUBLISHED,
-                                'Published',
-                                'published',
-                                'PUBLISHED',
-                                'Approved',
-                                'approved',
-                                'APPROVED',
-                            ])
-                        ),
-                        applyFilter: true,
-                    };
+                    return { values: [ArticleStatus.PUBLISHED], applyFilter: true };
                 case 'rejected':
                 case 'declined':
                 case 'denied':
-                    return {
-                        values: Array.from(new Set([ArticleStatus.REJECTED, 'Rejected', 'rejected', 'REJECTED'])),
-                        applyFilter: true,
-                    };
+                    return { values: [ArticleStatus.REJECTED], applyFilter: true };
                 default: {
                     const enumMatch = (Object.values(ArticleStatus) as string[]).find(
                         (status) => status.toLowerCase() === normalized
@@ -574,8 +546,10 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
 
         const { values: resolvedStatuses, applyFilter: shouldFilterByStatus } = resolveStatusFilter(rawStatusParam);
 
+        const wantsCreatedSort = !rawSortBy || sortBy === 'createdat';
+
         const canUseCreatedIndex =
-            sortBy === 'createdat' &&
+            wantsCreatedSort &&
             !categoryId &&
             !tag &&
             !authorId &&
@@ -588,6 +562,35 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
             const decodedKey = lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
             const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.queryByCreated({
                 status: statusValue,
+                limit,
+                lastKey: decodedKey,
+            });
+
+            return respond(200, {
+                items,
+                total: items.length,
+                lastEvaluatedKey: newLastEvaluatedKey
+                    ? encodeURIComponent(JSON.stringify(newLastEvaluatedKey))
+                    : undefined,
+                hasMore: Boolean(newLastEvaluatedKey),
+            });
+        }
+
+        const canUseCategoryIndex =
+            wantsCreatedSort &&
+            Boolean(categoryId) &&
+            !tag &&
+            !authorId &&
+            resolvedStatuses.length === 1;
+
+        if (canUseCategoryIndex && categoryId) {
+            const statusValue = resolvedStatuses[0];
+            const decodedKey = lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
+            const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.queryByCategoryCreated({
+                categoryId,
+                status: statusValue,
+                isFeatured: isFeatured || undefined,
+                isAdvertisement: hasIsAdvertisementParam ? parseBooleanQueryParam(rawIsAdvertisement) : undefined,
                 limit,
                 lastKey: decodedKey,
             });

@@ -67,6 +67,7 @@ export abstract class BaseRepository<T> {
     expressionAttributeValues: Record<string, any>;
     filterExpression?: string;
     expressionAttributeNames?: Record<string, string>;
+    projectionExpression?: string;
     limit?: number;
     lastEvaluatedKey?: Record<string, any>;
     scanIndexForward?: boolean;
@@ -78,6 +79,7 @@ export abstract class BaseRepository<T> {
       ExpressionAttributeValues: params.expressionAttributeValues,
       FilterExpression: params.filterExpression,
       ExpressionAttributeNames: params.expressionAttributeNames,
+      ProjectionExpression: params.projectionExpression,
       Limit: params.limit,
       ExclusiveStartKey: params.lastEvaluatedKey,
       ...(params.scanIndexForward !== undefined ? { ScanIndexForward: params.scanIndexForward } : {}),
@@ -94,6 +96,7 @@ export abstract class BaseRepository<T> {
     filterExpression?: string;
     expressionAttributeValues?: Record<string, any>;
     expressionAttributeNames?: Record<string, string>;
+    projectionExpression?: string;
     limit?: number;
     lastEvaluatedKey?: Record<string, any>;
   } = {}): Promise<{ items: T[]; lastEvaluatedKey?: Record<string, any> }> {
@@ -101,6 +104,7 @@ export abstract class BaseRepository<T> {
       filterExpression,
       expressionAttributeValues,
       expressionAttributeNames,
+      projectionExpression,
       limit,
       lastEvaluatedKey
     } = params;
@@ -113,6 +117,7 @@ export abstract class BaseRepository<T> {
       ...(filterExpression ? { FilterExpression: filterExpression } : {}),
       ...(hasValues ? { ExpressionAttributeValues: expressionAttributeValues } : {}),
       ...(hasNames ? { ExpressionAttributeNames: expressionAttributeNames } : {}),
+      ...(projectionExpression ? { ProjectionExpression: projectionExpression } : {}),
       ...(typeof limit === 'number' ? { Limit: limit } : {}),
       ...(lastEvaluatedKey ? { ExclusiveStartKey: lastEvaluatedKey } : {})
     });

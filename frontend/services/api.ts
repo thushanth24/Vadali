@@ -603,15 +603,25 @@ function buildArticlesUrl(params: FetchArticlesParams): string {
   }
 
   if (params.lastEvaluatedKey) {
-    searchParams.append('lastEvaluatedKey', params.lastEvaluatedKey);
+    // Normalize to a single encoding pass; backend expects URI-encoded then JSON.parse
+    let encodedKey = params.lastEvaluatedKey;
+    try {
+      encodedKey = encodeURIComponent(decodeURIComponent(params.lastEvaluatedKey));
+    } catch {
+      encodedKey = encodeURIComponent(params.lastEvaluatedKey);
+    }
+    searchParams.append('lastEvaluatedKey', encodedKey);
   }
  
     
-  // Handle sorting
+  // Handle sorting (align with backend expectations and GSIs)
   if (params.sortBy) {
-    const order = params.sortOrder === 'desc' ? '-' : '';
-    searchParams.append('sort', `${order}${params.sortBy}`);
-    }
+    searchParams.append('sortBy', params.sortBy);
+  }
+
+  if (params.sortOrder) {
+    searchParams.append('sortOrder', params.sortOrder);
+  }
     
     // Only append search params if there are any
     const queryString = searchParams.toString();
