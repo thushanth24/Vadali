@@ -1,7 +1,8 @@
 const CDN_DOMAIN = 'https://cdn.vadalimedia.lk';
 
 export const getImageUrl = (path?: string | null): string => {
-  if (!path) return '/placeholder.png'; // Fallback for missing images
+  // Fallback for missing images — return an absolute CDN path so social previews work
+  if (!path) return `${CDN_DOMAIN}/placeholder.png`;
 
   // Already a CloudFront URL
   if (path.includes('cdn.vadalimedia.lk')) {

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Helmet } from 'react-helmet';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { API_BASE, fetchArticleBySlug, fetchArticles, fetchUser, fetchCategories, postComment } from '../services/api';
 import { Article, User, Category, Comment } from '../types';
@@ -133,23 +132,95 @@ const ArticlePage: React.FC = () => {
   const twitterCard = shareImage ? 'summary_large_image' : 'summary';
   const showSkeleton = loading && !article;
 
-  const helmetMarkup = (
-    <Helmet>
-      <title>{helmetTitle}</title>
-      <meta name="description" content={metaDescription} />
-      <link rel="canonical" href={canonicalUrl} />
-      <meta property="og:type" content="article" />
-      <meta property="og:title" content={article?.title || BASE_TITLE} />
-      <meta property="og:description" content={metaDescription} />
-      <meta property="og:url" content={canonicalUrl} />
-      {shareImage && <meta property="og:image" content={shareImage} />}
-      <meta property="og:site_name" content="Vadali Media" />
-      <meta name="twitter:card" content={twitterCard} />
-      <meta name="twitter:title" content={article?.title || BASE_TITLE} />
-      <meta name="twitter:description" content={metaDescription} />
-      {shareImage && <meta name="twitter:image" content={shareImage} />}
-    </Helmet>
-  );
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const cleanupFns: Array<() => void> = [];
+    const previousTitle = document.title;
+
+    if (helmetTitle) {
+      document.title = helmetTitle;
+    }
+
+    const setMeta = (attrName: 'name' | 'property', attrValue: string, content?: string | null) => {
+      if (!content) return;
+      const selector = `meta[${attrName}="${attrValue}"]`;
+      let el = document.head.querySelector(selector) as HTMLMetaElement | null;
+      const created = !el;
+      const prevContent = el?.getAttribute('content') ?? null;
+
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attrName, attrValue);
+        document.head.appendChild(el);
+      }
+
+      el.setAttribute('content', content);
+
+      cleanupFns.push(() => {
+        if (!el) return;
+        if (created) {
+          document.head.removeChild(el);
+        } else if (prevContent !== null) {
+          el.setAttribute('content', prevContent);
+        } else {
+          el.removeAttribute('content');
+        }
+      });
+    };
+
+    const setLink = (rel: string, href?: string | null) => {
+      if (!href) return;
+      const selector = `link[rel="${rel}"]`;
+      let el = document.head.querySelector(selector) as HTMLLinkElement | null;
+      const created = !el;
+      const prevHref = el?.getAttribute('href') ?? null;
+
+      if (!el) {
+        el = document.createElement('link');
+        el.setAttribute('rel', rel);
+        document.head.appendChild(el);
+      }
+
+      el.setAttribute('href', href);
+
+      cleanupFns.push(() => {
+        if (!el) return;
+        if (created) {
+          document.head.removeChild(el);
+        } else if (prevHref !== null) {
+          el.setAttribute('href', prevHref);
+        } else {
+          el.removeAttribute('href');
+        }
+      });
+    };
+
+    setMeta('name', 'description', metaDescription);
+    setMeta('property', 'og:type', 'article');
+    setMeta('property', 'og:title', article?.title || BASE_TITLE);
+    setMeta('property', 'og:description', metaDescription);
+    setMeta('property', 'og:url', canonicalUrl);
+    setMeta('property', 'og:site_name', 'Vadali Media');
+    if (shareImage) {
+      setMeta('property', 'og:image', shareImage);
+      setMeta('property', 'og:image:secure_url', shareImage);
+    }
+
+    setMeta('name', 'twitter:card', twitterCard);
+    setMeta('name', 'twitter:title', article?.title || BASE_TITLE);
+    setMeta('name', 'twitter:description', metaDescription);
+    if (shareImage) {
+      setMeta('name', 'twitter:image', shareImage);
+    }
+
+    setLink('canonical', canonicalUrl);
+
+    return () => {
+      document.title = previousTitle;
+      cleanupFns.forEach(fn => fn());
+    };
+  }, [helmetTitle, metaDescription, canonicalUrl, shareImage, twitterCard, article?.title, BASE_TITLE]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,8 +242,7 @@ const ArticlePage: React.FC = () => {
   if (showSkeleton) {
     return (
       <div className="bg-gray-100 py-8 overflow-x-hidden">
-        {helmetMarkup}
-        <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <article className="lg:col-span-8 bg-white p-8 shadow-sm space-y-6 animate-pulse">
               <div className="inline-block h-6 w-24 bg-gray-200 rounded-full" />
@@ -247,7 +317,7 @@ const ArticlePage: React.FC = () => {
   }
 
   if (!article) {
-    return loading ? <>{helmetMarkup}</> : <Navigate to="/" replace />;
+    return loading ? null : <Navigate to="/" replace />;
   }
 
   const approvedComments = article.comments.filter(c => c.status === 'APPROVED');
@@ -267,7 +337,6 @@ const ArticlePage: React.FC = () => {
 
   return (
     <div className="bg-gray-100 py-8 overflow-x-hidden">
-      {helmetMarkup}
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Content */}
