@@ -5,6 +5,7 @@ import { Article, ArticleStatus, User, Category } from '../../../types';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 const ReviewArticle: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -80,7 +81,7 @@ const ReviewArticle: React.FC = () => {
                 </div>
                 
                 <div className="mb-6">
-                    <img src={article.coverImageUrl} alt={article.title} className="w-full rounded-md" />
+                    <img src={getImageUrl(article.coverImageUrl)} alt={article.title} className="w-full rounded-md" />
                 </div>
                 
                 <div>

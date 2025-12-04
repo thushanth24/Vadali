@@ -4,6 +4,7 @@ import { fetchArticlesWithMeta, fetchUser, fetchCategories } from '../services/a
 import { Article, User, Category } from '../types';
 import ArticleCard from '../components/ui/ArticleCard';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { getImageUrl } from '../utils/imageUrl';
 
 const AuthorPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>(); // Using slug as authorId
@@ -66,7 +67,7 @@ const AuthorPage: React.FC = () => {
     <div className="bg-gray-50">
       <div className="container mx-auto px-4 py-12">
         <div className="bg-white p-8 rounded-lg shadow-md mb-8 flex flex-col md:flex-row items-center gap-8">
-          <img src={author.avatarUrl} alt={author.name} className="h-32 w-32 rounded-full ring-4 ring-blue-100" />
+          <img src={getImageUrl(author.avatarUrl)} alt={author.name} className="h-32 w-32 rounded-full ring-4 ring-blue-100" />
           <div>
             <h1 className="text-4xl font-bold text-gray-800">{author.name}</h1>
             <p className="text-lg text-gray-600 mt-1">{author.role}</p>

@@ -5,6 +5,7 @@ import { Article, User, Category } from '../../../types';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Calendar, User as UserIcon, MessageSquare, Tag, ArrowLeft } from 'lucide-react';
 import { formatArticleDate } from '../../../lib/articleDate';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 const PreviewArticle: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -87,7 +88,7 @@ const PreviewArticle: React.FC = () => {
                     
                     <p className="text-lg text-gray-600 mb-8">{article.summary}</p>
 
-                    <img src={article.coverImageUrl} alt={article.title} className="w-full mb-8 rounded-md" />
+                    <img src={getImageUrl(article.coverImageUrl)} alt={article.title} className="w-full mb-8 rounded-md" />
 
                     <div className="prose lg:prose-lg" dangerouslySetInnerHTML={{ __html: article.content }} />
                     

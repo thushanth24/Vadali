@@ -6,6 +6,7 @@ import { fetchArticles, fetchArticlesWithMeta, fetchCategories } from '../servic
 import { Article, Category } from '../types';
 import { Clock, ChevronUp, ChevronDown } from 'lucide-react';
 import { formatArticleDate } from '../lib/articleDate';
+import { getImageUrl } from '../utils/imageUrl';
 
 // Extended ArticleCard component with additional props
 interface ExtendedArticleCardProps extends Omit<ArticleCardProps, 'className'> {
@@ -572,7 +573,7 @@ const HomePage: React.FC = () => {
                                 {article.coverImageUrl ? (
                                   <div className="w-20 h-16 flex-shrink-0 rounded-md overflow-hidden bg-white shadow-sm">
                                     <img
-                                      src={article.coverImageUrl}
+                                      src={getImageUrl(article.coverImageUrl)}
                                       alt={article.title}
                                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                       loading="lazy"
@@ -613,11 +614,11 @@ const HomePage: React.FC = () => {
                     <div className="overflow-hidden h-80 md:h-96">
                       <Link to={`/article/${mainFeaturedArticle.slug}`}>
                         {mainFeaturedArticle.coverImageUrl?.trim() ? (
-                          <img
-                            src={mainFeaturedArticle.coverImageUrl}
-                            alt={mainFeaturedArticle.title}
-                            className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-                          />
+                            <img
+                              src={getImageUrl(mainFeaturedArticle.coverImageUrl)}
+                              alt={mainFeaturedArticle.title}
+                              className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+                            />
                         ) : (
                           <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
                             No image available
@@ -717,7 +718,7 @@ const HomePage: React.FC = () => {
                                 {article.coverImageUrl ? (
                                   <div className="w-20 h-16 flex-shrink-0 rounded-md overflow-hidden bg-white shadow-sm">
                                     <img
-                                      src={article.coverImageUrl}
+                                      src={getImageUrl(article.coverImageUrl)}
                                       alt={article.title}
                                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                       loading="lazy"
@@ -907,7 +908,7 @@ const HomePage: React.FC = () => {
                             <div className="aspect-video overflow-hidden">
                               {article.coverImageUrl?.trim() ? (
                                 <img
-                                  src={article.coverImageUrl}
+                                  src={getImageUrl(article.coverImageUrl)}
                                   alt={article.title}
                                   className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
                                   loading="lazy"

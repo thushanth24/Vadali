@@ -4,6 +4,7 @@ import { Article } from '../types';
 import { fetchArticleBySlug } from '../services/api';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { formatArticleDate } from '../lib/articleDate';
+import { getImageUrl } from '../utils/imageUrl';
 
 const AdvertisementPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -68,7 +69,7 @@ const AdvertisementPage: React.FC = () => {
 
           {advertisement.coverImageUrl?.trim() ? (
             <img
-              src={advertisement.coverImageUrl}
+              src={getImageUrl(advertisement.coverImageUrl)}
               alt={advertisement.title}
               className="w-full h-72 object-cover"
             />

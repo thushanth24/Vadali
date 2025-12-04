@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Article, Category } from '../../types';
 import { formatArticleDate } from '../../lib/articleDate';
 import { Clock } from 'lucide-react';
+import { getImageUrl } from '../../utils/imageUrl';
 
 export interface ArticleCardProps {
   article: Article;
@@ -39,7 +40,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({
         <div className="overflow-hidden">
             <Link to={targetPath}>
                 <img
-                  src={article.coverImageUrl}
+                  src={getImageUrl(article.coverImageUrl)}
                   alt={article.title}
                   loading="lazy"
                   decoding="async"

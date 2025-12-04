@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Article } from '../types';
 import { fetchArticles } from '../services/api';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { getImageUrl } from '../utils/imageUrl';
 
 const AdvertisementsPage: React.FC = () => {
   const [advertisements, setAdvertisements] = useState<Article[]>([]);
@@ -74,7 +75,7 @@ const AdvertisementsPage: React.FC = () => {
                 <div className="relative">
                   {ad.coverImageUrl?.trim() ? (
                     <img
-                      src={ad.coverImageUrl}
+                      src={getImageUrl(ad.coverImageUrl)}
                       alt={ad.title}
                       className="w-full h-48 object-cover"
                     />

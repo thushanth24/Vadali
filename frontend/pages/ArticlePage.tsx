@@ -7,6 +7,7 @@ import { ArticleStatus } from '../types';
 import { Calendar, User as UserIcon, MessageSquare, Tag, Facebook, Twitter, Linkedin } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { formatArticleDate } from '../lib/articleDate';
+import { getImageUrl } from '../utils/imageUrl';
 
 const extractGalleryFromContent = (html: string) => {
   if (!html) {
@@ -123,7 +124,7 @@ const ArticlePage: React.FC = () => {
     }
   }, [article, articleImageUrls, metadataGalleryUrls, galleryImages]);
 
-  const shareImage = article?.coverImageUrl || galleryImages[0] || '';
+  const shareImage = getImageUrl(article?.coverImageUrl || galleryImages[0] || '');
 
   const resolvedLocation = typeof window !== 'undefined' ? window.location.href : '';
   const canonicalUrl = article ? `https://vadalimedia.lk/article/${article.slug}` : resolvedLocation || 'https://vadalimedia.lk/';
@@ -302,7 +303,7 @@ const ArticlePage: React.FC = () => {
             
              <p className="text-lg text-gray-600 mb-8 break-words">{article.summary}</p>
 
-            <img src={article.coverImageUrl} alt={article.title} className="w-full mb-8 rounded-md" />
+            <img src={getImageUrl(article.coverImageUrl)} alt={article.title} className="w-full mb-8 rounded-md" />
 
             <style>{`.article-content [data-inline-gallery]{display:none !important;}`}</style>
             <div className="prose lg:prose-lg article-content" dangerouslySetInnerHTML={{ __html: contentWithoutMetadata }} />
@@ -314,7 +315,7 @@ const ArticlePage: React.FC = () => {
                   {galleryImages.map((imageUrl, index) => (
                     <figure key={`${imageUrl}-${index}`} className="overflow-hidden rounded-md bg-gray-50">
                       <img
-                        src={imageUrl}
+                        src={getImageUrl(imageUrl)}
                         alt={`${article.title} image ${index + 1}`}
                         className="w-full h-64 object-cover hover:scale-105 transition-transform duration-200"
                         loading="lazy"
@@ -403,7 +404,7 @@ const ArticlePage: React.FC = () => {
               <div className="space-y-6">
                 {approvedComments.map(comment => (
                   <div key={comment.id} className="flex items-start space-x-4">
-                    <img src={comment.authorAvatarUrl} alt={comment.authorName} className="h-12 w-12 rounded-full" />
+                    <img src={getImageUrl(comment.authorAvatarUrl)} alt={comment.authorName} className="h-12 w-12 rounded-full" />
                     <div>
                       <p className="font-semibold text-gray-800">{comment.authorName}</p>
                       <p className="text-xs text-gray-500 mb-1">{new Date(comment.date).toLocaleString()}</p>
@@ -435,7 +436,7 @@ const ArticlePage: React.FC = () => {
             {author && (
               <div className="bg-white p-6 shadow-sm text-center">
                 <Link to={`/author/${author.id}`}>
-                  <img src={author.avatarUrl} alt={author.name} className="h-24 w-24 rounded-full mx-auto mb-4" />
+                  <img src={getImageUrl(author.avatarUrl)} alt={author.name} className="h-24 w-24 rounded-full mx-auto mb-4" />
                   <h4 className="font-bold text-xl hover:text-blue-600 transition-colors">{author.name}</h4>
                 </Link>
                 <p className="text-gray-600">{author.role}</p>
@@ -446,7 +447,7 @@ const ArticlePage: React.FC = () => {
               <div className="space-y-4">
                 {relatedArticles.map(rel => (
                   <Link key={rel.id} to={`/article/${rel.slug}`} className="flex items-start space-x-3 group">
-                    <img src={rel.coverImageUrl} alt={rel.title} className="w-24 h-16 object-cover"/>
+                    <img src={getImageUrl(rel.coverImageUrl)} alt={rel.title} className="w-24 h-16 object-cover"/>
                     <h5 className="font-semibold text-sm text-gray-800 group-hover:text-blue-600 transition-colors leading-tight">{rel.title}</h5>
                   </Link>
                 ))}

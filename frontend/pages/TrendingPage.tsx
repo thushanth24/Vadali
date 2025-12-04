@@ -4,6 +4,7 @@ import { fetchArticlesWithMeta, fetchCategories } from '../services/api';
 import { Article, Category } from '../types';
 import { Eye, Flame } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { getImageUrl } from '../utils/imageUrl';
 
 const TrendingPage: React.FC = () => {
   const [trendingArticles, setTrendingArticles] = useState<Article[]>([]);
@@ -48,7 +49,7 @@ const TrendingPage: React.FC = () => {
                 </span>
                 <div className="col-span-3 md:col-span-2">
                   <Link to={`/article/${article.slug}`}>
-                    <img src={article.coverImageUrl} alt={article.title} className="w-full h-24 object-cover rounded-md" />
+                    <img src={getImageUrl(article.coverImageUrl)} alt={article.title} className="w-full h-24 object-cover rounded-md" />
                   </Link>
                 </div>
                 <div className="col-span-8 md:col-span-9">
