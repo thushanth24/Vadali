@@ -22,11 +22,9 @@ const Sidebar: React.FC = () => {
 
   const adminLinks = [
     { to: '/dashboard/admin', icon: LayoutDashboard, text: 'Overview' },
-    { to: '/dashboard/admin/reports', icon: BarChartBig, text: 'Reports & Analytics' },
     { to: '/dashboard/admin/users', icon: Users, text: 'User Management' },
     { to: '/dashboard/admin/articles', icon: Newspaper, text: 'All Articles' },
     { to: '/dashboard/admin/categories', icon: Tag, text: 'Categories' },
-    { to: '/dashboard/admin/comments', icon: MessageSquare, text: 'Comments' },
     { to: '/dashboard/admin/newsletter', icon: Mails, text: 'Newsletter' },
     { to: '/dashboard/admin/ads', icon: BadgeDollarSign, text: 'Advertisements' },
   ];
@@ -36,7 +34,6 @@ const Sidebar: React.FC = () => {
     { to: '/dashboard/editor/articles', icon: Newspaper, text: 'Manage Articles' },
     { to: '/dashboard/editor/create', icon: PenSquare, text: 'New Article' },
     { to: '/dashboard/editor/featured', icon: Star, text: 'Featured Manager' },
-    { to: '/dashboard/editor/comments', icon: MessageSquare, text: 'Comments' },
   ];
 
   const authorLinks = [

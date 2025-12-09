@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchArticlesWithMeta, fetchUsers, fetchCategories, deleteArticle } from '../../../services/api';
 import { Article, ArticleStatus, User, Category } from '../../../types';
@@ -13,11 +13,10 @@ const AllArticles: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [articlesLoading, setArticlesLoading] = useState(true);
     const [metaLoading, setMetaLoading] = useState(true);
-    const [pageTokens, setPageTokens] = useState<Record<number, string | undefined>>({ 1: undefined });
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
-    const [hasMore, setHasMore] = useState(false);
 
+    const totalPages = Math.max(1, Math.ceil(articles.length / pageSize));
     const isLoading = articlesLoading || metaLoading;
     const getUploadTimestamp = (article: Article) => {
         const dateString = article.createdAt || article.publishedAt || article.updatedAt;
@@ -28,10 +27,7 @@ const AllArticles: React.FC = () => {
         if (window.confirm('Are you sure you want to permanently delete this article?')) {
             try {
                 await deleteArticle(articleId);
-                const refreshedArticles = await loadArticles(currentPage);
-                if (refreshedArticles.length === 0 && currentPage > 1) {
-                    setCurrentPage(prev => Math.max(1, prev - 1));
-                }
+                await loadArticles();
                 alert('Article deleted successfully.');
             } catch {
                 alert('Failed to delete article.');
@@ -62,43 +58,54 @@ const AllArticles: React.FC = () => {
         }
     };
 
-    const loadArticles = async (pageToLoad: number): Promise<Article[]> => {
+    const loadArticles = async (): Promise<Article[]> => {
         setArticlesLoading(true);
         try {
-            const startKey = pageTokens[pageToLoad];
-            const { items, lastEvaluatedKey, hasMore: moreAvailable } = await fetchArticlesWithMeta({
+            // Fetch all articles across pages so we can sort globally.
+            const { items } = await fetchArticlesWithMeta({
                 status: 'ALL',
-                limit: pageSize,
-                pageSize,
-                lastEvaluatedKey: startKey,
+                fetchAllMax: 5000,
                 sortBy: 'createdAt',
                 sortOrder: 'desc'
             });
 
-            const orderedItems = [...items].sort(
-                (a, b) => getUploadTimestamp(b) - getUploadTimestamp(a)
-            );
-
+            // Ensure final ordering is by newest upload timestamp.
+            const orderedItems = [...items].sort((a, b) => getUploadTimestamp(b) - getUploadTimestamp(a));
             setArticles(orderedItems);
-            setHasMore(Boolean(lastEvaluatedKey) || Boolean(moreAvailable));
-            setPageTokens(prev => {
-                const updated = { ...prev };
-                if (lastEvaluatedKey) {
-                    updated[pageToLoad + 1] = lastEvaluatedKey;
-                } else {
-                    delete updated[pageToLoad + 1];
-                }
-                return updated;
-            });
 
             return items;
         } catch (error) {
-            console.error('Failed to load articles for page', pageToLoad, error);
-            setHasMore(false);
+            console.error('Failed to load articles', error);
             return [];
         } finally {
             setArticlesLoading(false);
         }
+    };
+
+    // Keep current page in bounds if the total number of items changes.
+    useEffect(() => {
+        setCurrentPage(prev => Math.min(prev, totalPages));
+    }, [totalPages]);
+
+    const paginatedArticles = useMemo(() => {
+        const startIndex = (currentPage - 1) * pageSize;
+        return articles.slice(startIndex, startIndex + pageSize);
+    }, [articles, currentPage, pageSize]);
+
+    const handlePageChange = (direction: 'prev' | 'next') => {
+        if (direction === 'prev' && currentPage > 1) {
+            setCurrentPage(prev => prev - 1);
+        }
+        if (direction === 'next' && currentPage < totalPages) {
+            setCurrentPage(prev => prev + 1);
+        }
+    };
+
+    const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const nextSize = Number(event.target.value);
+        if (Number.isNaN(nextSize) || nextSize <= 0) return;
+        setPageSize(nextSize);
+        setCurrentPage(1);
     };
 
     useEffect(() => {
@@ -106,28 +113,8 @@ const AllArticles: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        loadArticles(currentPage);
-    }, [currentPage, pageSize]);
-
-    const canGoPrevious = currentPage > 1 && !isLoading;
-    const canGoNext = !isLoading && (hasMore || Boolean(pageTokens[currentPage + 1]));
-
-    const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const nextSize = Number(event.target.value);
-        if (Number.isNaN(nextSize) || nextSize <= 0) return;
-        setPageTokens({ 1: undefined });
-        setCurrentPage(1);
-        setPageSize(nextSize);
-    };
-
-    const handlePageChange = (direction: 'prev' | 'next') => {
-        if (direction === 'prev' && canGoPrevious) {
-            setCurrentPage(prev => Math.max(1, prev - 1));
-        }
-        if (direction === 'next' && canGoNext) {
-            setCurrentPage(prev => prev + 1);
-        }
-    };
+        loadArticles();
+    }, []);
     
     return (
         <div>
@@ -150,13 +137,13 @@ const AllArticles: React.FC = () => {
                     <tbody>
                        {isLoading ? (
                            <tr><td colSpan={6} className="p-8"><LoadingSpinner label="Loading articles..." className="py-0" /></td></tr>
-                         ) : articles.length === 0 ? (
+                         ) : paginatedArticles.length === 0 ? (
                              <tr><td colSpan={6} className="p-6 text-center text-gray-500">No articles found.</td></tr>
-                         ) : articles.map(article => {
+                         ) : paginatedArticles.map(article => {
                               const author = users.find(u => u.id === article.authorId);
                               const category = categories.find(c => c.id === article.categoryId);
                               const publishedLabel = formatArticleDate(article, {
-                                  year: 'numeric',
+                                 year: 'numeric',
                                   month: 'short',
                                   day: 'numeric',
                               });
@@ -167,20 +154,35 @@ const AllArticles: React.FC = () => {
                                       <td className="p-4 text-gray-600">{category?.name || 'N/A'}</td>
                                       <td className="p-4">{getStatusChip(article.status)}</td>
                                       <td className="p-4 text-gray-600">{publishedLabel || 'N/A'}</td>
-                                    <td className="p-4 space-x-2">
-                                        <Link to={`/article/${article.slug}`} target="_blank" rel="noopener noreferrer">
-                                            <Button size="sm" variant="ghost" className="text-gray-600 hover:bg-gray-100">
-                                                <Eye className="h-4 w-4" />
+                                    <td className="p-4">
+                                        <div className="flex items-center gap-2">
+                                            <Link to={`/article/${article.slug}`} target="_blank" rel="noopener noreferrer">
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="h-9 w-9 rounded-full text-gray-700 border border-gray-200 hover:bg-gray-100"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                            </Link>
+                                            <Link to={`/dashboard/admin/articles/edit/${article.id}`}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="h-9 w-9 rounded-full text-blue-700 border border-blue-100 hover:bg-blue-50"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                            </Link>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-9 w-9 rounded-full text-red-700 border border-red-100 hover:bg-red-50"
+                                                onClick={() => handleDelete(article.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
                                             </Button>
-                                        </Link>
-                                        <Link to={`/dashboard/admin/articles/edit/${article.id}`}>
-                                            <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50">
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                        </Link>
-                                        <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleDelete(article.id)}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                        </div>
                                     </td>
                                 </tr>
                             );
@@ -190,7 +192,7 @@ const AllArticles: React.FC = () => {
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white rounded-lg shadow-sm mt-4 px-4 py-3 border border-gray-100">
                 <div className="text-sm text-gray-700 mb-2 sm:mb-0">
-                    Page {currentPage} {isLoading ? '(loading...)' : ''}
+                    Page {currentPage} of {totalPages} {isLoading ? '(loading...)' : ''}
                 </div>
                 <div className="flex items-center space-x-3">
                     <label className="text-sm text-gray-700 flex items-center space-x-2">
@@ -206,10 +208,10 @@ const AllArticles: React.FC = () => {
                         </select>
                     </label>
                     <div className="flex items-center space-x-2">
-                        <Button size="sm" variant="secondary" disabled={!canGoPrevious} onClick={() => handlePageChange('prev')}>
+                        <Button size="sm" variant="secondary" disabled={isLoading || currentPage <= 1} onClick={() => handlePageChange('prev')}>
                             Previous
                         </Button>
-                        <Button size="sm" variant="secondary" disabled={!canGoNext} onClick={() => handlePageChange('next')}>
+                        <Button size="sm" variant="secondary" disabled={isLoading || currentPage >= totalPages} onClick={() => handlePageChange('next')}>
                             Next
                         </Button>
                     </div>

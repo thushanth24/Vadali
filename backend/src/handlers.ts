@@ -43,6 +43,21 @@ const toPlainText = (html: string | undefined, fallback: string): string => {
     return stripped || fallback;
 };
 
+const DEFAULT_CDN_DOMAIN = 'https://cdn.vadalimedia.lk';
+const cdnDomain = (
+    process.env.CDN_DOMAIN ||
+    process.env.ASSET_CDN_DOMAIN ||
+    process.env.CLOUDFRONT_DOMAIN ||
+    DEFAULT_CDN_DOMAIN
+).replace(/\/+$/, '');
+const cdnHost = (() => {
+    try {
+        return new URL(cdnDomain).host.toLowerCase();
+    } catch {
+        return '';
+    }
+})();
+
 const getSiteOrigin = (): string => {
     const origin =
         process.env.SHARE_SITE_ORIGIN ||
@@ -55,10 +70,41 @@ const getSiteOrigin = (): string => {
 
 const toAbsoluteUrl = (value: string | undefined, siteOrigin: string): string => {
     if (!value) return '';
-    if (/^https?:\/\//i.test(value)) return value;
-    if (value.startsWith('//')) return `https:${value}`;
-    if (value.startsWith('/')) return `${siteOrigin}${value}`;
-    return `${siteOrigin}/${value}`;
+
+    const trimmed = value.trim();
+    if (!trimmed) return '';
+
+    const rewriteToCdn = (absoluteUrl: string): string => {
+        if (!absoluteUrl) return '';
+        try {
+            const parsed = new URL(absoluteUrl);
+            const host = parsed.host.toLowerCase();
+
+            if (cdnHost && host === cdnHost) {
+                return parsed.toString();
+            }
+
+            const isS3Host = host.includes('s3.amazonaws.com') || host.includes('vadaliarticles.s3');
+            if (isS3Host) {
+                const key = parsed.pathname.replace(/^\/+/, '');
+                return key ? `${cdnDomain}/${key}` : cdnDomain;
+            }
+
+            return parsed.toString();
+        } catch {
+            return absoluteUrl;
+        }
+    };
+
+    const absolute = (() => {
+        if (trimmed.startsWith('//')) return `https:${trimmed}`;
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        const cleanPath = trimmed.replace(/^\/+/, '');
+        const base = cdnDomain || siteOrigin;
+        return `${base}/${cleanPath}`;
+    })();
+
+    return rewriteToCdn(absolute);
 };
 
 // Initialize repositories

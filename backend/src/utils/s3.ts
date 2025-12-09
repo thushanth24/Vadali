@@ -3,6 +3,12 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
 
 const region = process.env.AWS_REGION || 'us-east-1';
+const cdnDomain =
+  process.env.CDN_DOMAIN ||
+  process.env.ASSET_CDN_DOMAIN ||
+  process.env.CLOUDFRONT_DOMAIN ||
+  'https://cdn.vadalimedia.lk';
+const normalizedCdnDomain = cdnDomain.replace(/\/+$/, '');
 
 const sessionToken = process.env.AWS_SESSION_TOKEN || process.env.AWS_SECURITY_TOKEN;
 
@@ -28,6 +34,13 @@ interface UploadFileParams {
   contentType: string;
 }
 
+const buildPublicUrl = (fileKey: string) => {
+  if (normalizedCdnDomain) {
+    return `${normalizedCdnDomain}/${fileKey}`;
+  }
+  return `https://${BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
+};
+
 export const generateUploadUrl = async (fileName: string, contentType: string) => {
   const fileKey = `${uuidv4()}-${fileName}`;
   
@@ -43,10 +56,10 @@ export const generateUploadUrl = async (fileName: string, contentType: string) =
   return {
     uploadUrl: url,
     fileKey,
-    fileUrl: `https://${BUCKET_NAME}.s3.amazonaws.com/${fileKey}`
+    fileUrl: buildPublicUrl(fileKey)
   };
 };
 
 export const getFileUrl = (fileKey: string) => {
-  return `https://${BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
+  return buildPublicUrl(fileKey);
 };

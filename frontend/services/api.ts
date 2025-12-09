@@ -431,6 +431,8 @@ interface FetchArticlesParams {
   sortBy?: 'createdAt' | 'updatedAt' | 'publishedAt' | 'title';
   sortOrder?: 'asc' | 'desc';
   query?: string;
+  /** Max items to retrieve when fetchAll mode is triggered (defaults to MAX_FETCH_ALL_ITEMS) */
+  fetchAllMax?: number;
 }
 
 const DEFAULT_ARTICLE_LIMIT = 20;
@@ -459,6 +461,9 @@ export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): P
     }
 
     const allItems: Article[] = [];
+    const maxItems = typeof params.fetchAllMax === 'number' && params.fetchAllMax > 0
+      ? params.fetchAllMax
+      : MAX_FETCH_ALL_ITEMS;
     let lastEvaluatedKey: string | undefined = undefined;
     let hasMore = true;
     let total: number | undefined;
@@ -475,7 +480,7 @@ export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): P
       const pageItems = response.items ?? [];
       allItems.push(...pageItems);
 
-      if (allItems.length >= MAX_FETCH_ALL_ITEMS) {
+      if (allItems.length >= maxItems) {
         hasMore = false;
         break;
       }

@@ -19,6 +19,7 @@ const StatCard: React.FC<{ icon: React.ElementType, title: string, value: number
 
 const AdminDashboard: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
+    const [articleTotal, setArticleTotal] = useState(0);
     const [users, setUsers] = useState<User[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,11 +27,12 @@ const AdminDashboard: React.FC = () => {
     useEffect(() => {
         setLoading(true);
         Promise.all([
-            fetchArticlesWithMeta({ sortBy: 'createdAt', sortOrder: 'desc', status: 'ALL', limit: 20 }),
+            fetchArticlesWithMeta({ sortBy: 'createdAt', sortOrder: 'desc', status: 'ALL', fetchAllMax: 5000 }),
             fetchUsers(),
             fetchCategories()
         ]).then(([articleData, userData, categoryData]) => {
             setArticles(articleData.items);
+            setArticleTotal(articleData.total ?? articleData.items.length);
             setUsers(userData);
             setCategories(categoryData);
         }).finally(() => setLoading(false));
@@ -46,7 +48,7 @@ const AdminDashboard: React.FC = () => {
         <div>
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Admin Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <StatCard icon={Newspaper} title="Total Articles" value={articles.length} color="bg-blue-500" />
+                <StatCard icon={Newspaper} title="Total Articles" value={articleTotal || articles.length} color="bg-blue-500" />
                 <StatCard icon={Users} title="Total Users" value={users.length} color="bg-green-500" />
                 <StatCard icon={Tag} title="Categories" value={categories.length} color="bg-yellow-500" />
                 <StatCard icon={BarChart2} title="Total Views" value={totalViews} color="bg-purple-500" />
