@@ -152,6 +152,8 @@ const HomePage: React.FC = () => {
   const [isTrendingAnimating, setIsTrendingAnimating] = useState(false);
   const trendingAnimationTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const BASE_TITLE = 'Vadali Media';
+  const HOME_DESCRIPTION = 'Vadali Media brings breaking Tamil news, politics, business, sports, and culture from Sri Lanka and around the world.';
+  const CANONICAL_URL = 'https://vadalimedia.lk/';
 
   useEffect(() => {
     let isMounted = true;
@@ -233,11 +235,82 @@ const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const cleanupFns: Array<() => void> = [];
+    const previousTitle = document.title;
+
     document.title = BASE_TITLE;
-    return () => {
-      document.title = BASE_TITLE;
+
+    const setMeta = (attrName: 'name' | 'property', attrValue: string, content?: string | null) => {
+      if (!content) return;
+      const selector = `meta[${attrName}="${attrValue}"]`;
+      let el = document.head.querySelector(selector) as HTMLMetaElement | null;
+      const created = !el;
+      const prevContent = el?.getAttribute('content') ?? null;
+
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attrName, attrValue);
+        document.head.appendChild(el);
+      }
+
+      el.setAttribute('content', content);
+
+      cleanupFns.push(() => {
+        if (!el) return;
+        if (created) {
+          document.head.removeChild(el);
+        } else if (prevContent !== null) {
+          el.setAttribute('content', prevContent);
+        } else {
+          el.removeAttribute('content');
+        }
+      });
     };
-  }, []);
+
+    const setLink = (rel: string, href?: string | null) => {
+      if (!href) return;
+      const selector = `link[rel="${rel}"]`;
+      let el = document.head.querySelector(selector) as HTMLLinkElement | null;
+      const created = !el;
+      const prevHref = el?.getAttribute('href') ?? null;
+
+      if (!el) {
+        el = document.createElement('link');
+        el.setAttribute('rel', rel);
+        document.head.appendChild(el);
+      }
+
+      el.setAttribute('href', href);
+
+      cleanupFns.push(() => {
+        if (!el) return;
+        if (created) {
+          document.head.removeChild(el);
+        } else if (prevHref !== null) {
+          el.setAttribute('href', prevHref);
+        } else {
+          el.removeAttribute('href');
+        }
+      });
+    };
+
+    setMeta('name', 'description', HOME_DESCRIPTION);
+    setMeta('property', 'og:type', 'website');
+    setMeta('property', 'og:title', BASE_TITLE);
+    setMeta('property', 'og:description', HOME_DESCRIPTION);
+    setMeta('property', 'og:url', CANONICAL_URL);
+    setMeta('name', 'twitter:card', 'summary');
+    setMeta('name', 'twitter:title', BASE_TITLE);
+    setMeta('name', 'twitter:description', HOME_DESCRIPTION);
+    setLink('canonical', CANONICAL_URL);
+
+    return () => {
+      document.title = previousTitle;
+      cleanupFns.forEach(fn => fn());
+    };
+  }, [BASE_TITLE, HOME_DESCRIPTION, CANONICAL_URL]);
 
   const articlesForFeed = useMemo(
     () => publishedArticles.filter(a => !a.isAdvertisement),
