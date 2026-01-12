@@ -40,6 +40,7 @@ const ScheduleArticle = lazy(() => import('./pages/dashboard/editor/ScheduleArti
 const FeaturedManager = lazy(() => import('./pages/dashboard/editor/FeaturedManager'));
 const CommentModeration = lazy(() => import('./pages/dashboard/editor/CommentModeration'));
 const ArticleManagement = lazy(() => import('./pages/dashboard/editor/ArticleManagement'));
+const PendingArticles = lazy(() => import('./pages/dashboard/editor/PendingArticles'));
 const AdManagement = lazy(() => import('./pages/dashboard/admin/AdManagement'));
 const NewsletterManagement = lazy(() => import('./pages/dashboard/admin/NewsletterManagement'));
 const ReportsAnalytics = lazy(() => import('./pages/dashboard/admin/ReportsAnalytics'));
@@ -165,6 +166,7 @@ const App: React.FC = () => {
             }>
               <Route index element={<EditorDashboard />} />
               <Route path="articles" element={<ArticleManagement />} />
+              <Route path="pending" element={<PendingArticles />} />
               <Route path="create" element={<CreateArticle />} />
               <Route path="edit/:id" element={<AdminEditArticle />} />
               <Route path="review/:id" element={<ReviewArticle />} />

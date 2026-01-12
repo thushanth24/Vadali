@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { UserRole } from '../../types';
 import { 
     LayoutDashboard, Users, Tag, Newspaper, PenSquare, Home, LogOut, Bell, User as UserIcon, Star, MessageSquare, 
-    BadgeDollarSign, Mails, BarChartBig
+    BadgeDollarSign, Mails, BarChartBig, Clock
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -32,6 +32,7 @@ const Sidebar: React.FC = () => {
   const editorLinks = [
     { to: '/dashboard/editor', icon: LayoutDashboard, text: 'Overview' },
     { to: '/dashboard/editor/articles', icon: Newspaper, text: 'Manage Articles' },
+    { to: '/dashboard/editor/pending', icon: Clock, text: 'Pending Articles' },
     { to: '/dashboard/editor/create', icon: PenSquare, text: 'New Article' },
     { to: '/dashboard/editor/featured', icon: Star, text: 'Featured Manager' },
   ];
