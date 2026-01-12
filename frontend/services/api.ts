@@ -438,7 +438,7 @@ interface FetchArticlesParams {
 }
 
 const DEFAULT_ARTICLE_LIMIT = 20;
-const MAX_FETCH_ALL_ITEMS = 400;
+const MAX_FETCH_ALL_ITEMS = 1000;
 
 export const fetchArticlesWithMeta = async (
   params: FetchArticlesParams = {},

@@ -119,7 +119,7 @@ export default function ArticleManagement() {
 
       // When filtering by status or using smaller page sizes, fetch a larger slice and paginate client-side
       const fetchAllForStatus = statusFilter !== 'ALL' || pageSize < 50;
-      const effectiveLimit = fetchAllForStatus ? 300 : pageSize;
+      const effectiveLimit = fetchAllForStatus ? 1000 : pageSize;
 
       const { items, lastEvaluatedKey, hasMore: moreAvailable } = await fetchArticlesWithMeta(
         {
