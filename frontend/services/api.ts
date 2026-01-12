@@ -233,6 +233,8 @@ export interface ArticlesWithMeta {
   hasMore?: boolean;
 }
 
+type ApiRequestCacheOptions = Pick<ApiRequestOptions, 'cacheTtlMs' | 'skipCache' | 'cacheKey'>;
+
 const normalizeArticleStatus = (status: unknown): ArticleStatus => {
   if (typeof status !== 'string') {
     return ArticleStatus.PENDING_REVIEW;
@@ -438,7 +440,10 @@ interface FetchArticlesParams {
 const DEFAULT_ARTICLE_LIMIT = 20;
 const MAX_FETCH_ALL_ITEMS = 400;
 
-export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): Promise<ArticlesWithMeta> => {
+export const fetchArticlesWithMeta = async (
+  params: FetchArticlesParams = {},
+  requestOptions: ApiRequestCacheOptions = {}
+): Promise<ArticlesWithMeta> => {
   try {
     // If no pagination hints were provided, fetch all pages until exhaustion.
     const fetchAll =
@@ -450,7 +455,7 @@ export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): P
 
     if (!fetchAll) {
       const url = buildArticlesUrl(params);
-      const response = await apiRequest<ArticlesResponse>(url);
+      const response = await apiRequest<ArticlesResponse>(url, requestOptions);
 
       return {
         items: normalizeArticles(response.items ?? []),
@@ -475,7 +480,7 @@ export const fetchArticlesWithMeta = async (params: FetchArticlesParams = {}): P
         limit: pageLimit,
         lastEvaluatedKey,
       });
-      const response = await apiRequest<ArticlesResponse>(url);
+      const response = await apiRequest<ArticlesResponse>(url, requestOptions);
 
       const pageItems = response.items ?? [];
       allItems.push(...pageItems);

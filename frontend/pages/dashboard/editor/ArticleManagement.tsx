@@ -121,15 +121,20 @@ export default function ArticleManagement() {
       const fetchAllForStatus = statusFilter !== 'ALL' || pageSize < 50;
       const effectiveLimit = fetchAllForStatus ? 300 : pageSize;
 
-      const { items, lastEvaluatedKey, hasMore: moreAvailable } = await fetchArticlesWithMeta({
-        limit: effectiveLimit,
-        pageSize: effectiveLimit,
-        sortBy: 'updatedAt',
-        sortOrder: 'desc',
-        status: statusParam,
-        query: searchQuery || undefined,
-        lastEvaluatedKey: fetchAllForStatus ? undefined : startKey,
-      });
+      const { items, lastEvaluatedKey, hasMore: moreAvailable } = await fetchArticlesWithMeta(
+        {
+          limit: effectiveLimit,
+          pageSize: effectiveLimit,
+          sortBy: 'updatedAt',
+          sortOrder: 'desc',
+          status: statusParam,
+          query: searchQuery || undefined,
+          lastEvaluatedKey: fetchAllForStatus ? undefined : startKey,
+        },
+        {
+          skipCache: true,
+        }
+      );
 
       const normalizedArticles: ArticleWithAuthor[] = Array.isArray(items)
         ? items.map((article) => {
