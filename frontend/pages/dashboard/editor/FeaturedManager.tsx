@@ -19,25 +19,16 @@ const FeaturedManager: React.FC = () => {
     useEffect(() => {
         const loadAllArticles = async () => {
             try {
-                let lastEvaluatedKey: string | undefined;
-                const collected: Article[] = [];
-
-                // Fetch every page so we don't stop at the default 10 item limit
-                do {
-                    const { items, lastEvaluatedKey: nextKey } = await fetchArticlesWithMeta({
-                        status: 'ALL',
-                        limit: 100,
-                        pageSize: 100,
-                        lastEvaluatedKey,
-                    });
-                    collected.push(...items);
-                    lastEvaluatedKey = nextKey;
-                } while (lastEvaluatedKey);
-
-                const published = collected.filter(a => a.status === ArticleStatus.PUBLISHED);
-                setAllArticles(published);
-                setFeatured(published.filter(a => a.isFeatured));
-                setAvailable(published.filter(a => !a.isFeatured));
+                const { items } = await fetchArticlesWithMeta({
+                    status: ArticleStatus.PUBLISHED,
+                    sortBy: 'publishedAt',
+                    sortOrder: 'desc',
+                    limit: 20,
+                    pageSize: 20,
+                });
+                setAllArticles(items);
+                setFeatured(items.filter(a => a.isFeatured));
+                setAvailable(items.filter(a => !a.isFeatured));
             } catch (error) {
                 console.error('Failed to load articles for Featured Manager', error);
             } finally {

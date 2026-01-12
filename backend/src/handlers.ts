@@ -1,6 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 import { Article, ArticleStatus, Category, Comment, Notification, Subscriber, User, UserRole } from './types';
+import type { Article as ArticleModel } from './models/Article';
 import { comparePasswords, createAuthResponse, generateRefreshToken, generateToken } from './auth';
 import { generateUploadUrl } from './utils/s3';
 import { UserRepository } from './repositories/UserRepository';
@@ -521,7 +522,7 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         const authorId = queryParams.authorId;
         const searchQuery = queryParams.query?.toLowerCase();
         const isFeatured = queryParams.featured === 'true';
-        const parsedLimit = queryParams.limit ? parseInt(queryParams.limit, 10) : undefined;
+        const parsedLimit = Number.parseInt(queryParams.limit ?? '', 10);
         const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 10;
         const lastEvaluatedKey = queryParams.lastEvaluatedKey;
         const hasIsAdvertisementParam = Object.prototype.hasOwnProperty.call(queryParams, 'isAdvertisement');
@@ -593,6 +594,7 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         const { values: resolvedStatuses, applyFilter: shouldFilterByStatus } = resolveStatusFilter(rawStatusParam);
 
         const wantsCreatedSort = !rawSortBy || sortBy === 'createdat';
+        const wantsPublishedSort = sortBy === 'publishedat';
 
         // Force category query; rely on the GSI for ordering. No scan fallback for category pages.
         if (categoryId) {
@@ -621,9 +623,55 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
             }
         }
 
+        const canUsePublishedIndex =
+            wantsPublishedSort &&
+            resolvedStatuses.length === 1;
+
         const canUseCreatedIndex =
             wantsCreatedSort &&
             resolvedStatuses.length === 1;
+
+        if (canUsePublishedIndex) {
+            try {
+                const statusValue = resolvedStatuses[0];
+                const decodedKey = lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
+                const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.queryByPublished({
+                    status: statusValue,
+                    limit,
+                    lastKey: decodedKey,
+                });
+
+                let filteredItems = items;
+                if (categoryId) filteredItems = filteredItems.filter(item => item.categoryId === categoryId);
+                if (authorId) filteredItems = filteredItems.filter(item => item.authorId === authorId);
+                if (isFeatured) filteredItems = filteredItems.filter(item => item.isFeatured === true);
+                if (hasIsAdvertisementParam) {
+                    const boolVal = parseBooleanQueryParam(rawIsAdvertisement);
+                    filteredItems = filteredItems.filter(item => item.isAdvertisement === boolVal);
+                }
+                if (tag) filteredItems = filteredItems.filter(item => Array.isArray(item.tags) && item.tags.includes(tag));
+                if (searchQuery) {
+                    filteredItems = filteredItems.filter(article =>
+                        article.title.toLowerCase().includes(searchQuery) ||
+                        (article.summary?.toLowerCase() || '').includes(searchQuery) ||
+                        (article.content?.toLowerCase() || '').includes(searchQuery)
+                    );
+                }
+
+                return respond(200, {
+                    items: filteredItems,
+                    total: filteredItems.length,
+                    lastEvaluatedKey: newLastEvaluatedKey
+                        ? encodeURIComponent(JSON.stringify(newLastEvaluatedKey))
+                        : undefined,
+                    hasMore: Boolean(newLastEvaluatedKey),
+                });
+            } catch (error) {
+                console.warn('publishedAt-index query failed, falling back to full scan', {
+                    error: error instanceof Error ? error.message : error,
+                });
+            }
+        }
 
         if (!canUseCreatedIndex && shouldFilterByStatus && resolvedStatuses.length > 0) {
             expressionAttributeNames['#status'] = 'status';
@@ -729,7 +777,7 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
 
                 // Keep fetching until we have enough items after filters, so drafts/pending
                 // don't push published items off the first page.
-                let aggregated: Article[] = [];
+                let aggregated: ArticleModel[] = [];
                 let pageKey: Record<string, any> | undefined = decodedKey;
                 let iterations = 0;
                 const maxIterations = 5; // safety guard to avoid runaway loops
@@ -827,13 +875,17 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         // When we fall back to scans (or category index fails), Dynamo does not guarantee order.
-        if (wantsCreatedSort) {
+        if (wantsCreatedSort || wantsPublishedSort) {
             const direction = sortOrder === 'asc' ? 1 : -1;
             const toTs = (value?: string | null) => {
                 const ts = value ? Date.parse(value) : NaN;
                 return Number.isFinite(ts) ? ts : 0;
             };
-            filteredItems = filteredItems.sort((a, b) => (toTs(a.createdAt) - toTs(b.createdAt)) * direction);
+            if (wantsPublishedSort) {
+                filteredItems = filteredItems.sort((a, b) => (toTs(a.publishedAt) - toTs(b.publishedAt)) * direction);
+            } else {
+                filteredItems = filteredItems.sort((a, b) => (toTs(a.createdAt) - toTs(b.createdAt)) * direction);
+            }
         }
 
         const response: any = {
@@ -885,10 +937,11 @@ export const getArticleBySlug: APIGatewayProxyHandlerV2 = async (event) => {
 export const getArticleSharePreview: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         const slug = event.pathParameters?.slug;
+        const baseHeaders = { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' };
         if (!slug) {
             return {
                 statusCode: 400,
-                headers: { 'Content-Type': 'text/html; charset=utf-8' },
+                headers: baseHeaders,
                 body: '<!doctype html><html><body>Missing slug</body></html>',
             };
         }
@@ -898,7 +951,7 @@ export const getArticleSharePreview: APIGatewayProxyHandlerV2 = async (event) =>
         if (!article || article.status !== ArticleStatus.PUBLISHED) {
             return {
                 statusCode: 404,
-                headers: { 'Content-Type': 'text/html; charset=utf-8' },
+                headers: baseHeaders,
                 body: '<!doctype html><html><body>Article not found</body></html>',
             };
         }
@@ -964,7 +1017,7 @@ export const getArticleSharePreview: APIGatewayProxyHandlerV2 = async (event) =>
         console.error('Error generating share preview:', error);
         return {
             statusCode: 500,
-            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+            headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
             body: '<!doctype html><html><body>Failed to generate share preview</body></html>',
         };
     }
