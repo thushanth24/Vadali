@@ -68,7 +68,7 @@ export default function ArticleManagement() {
   const [pageSize, setPageSize] = useState(10);
   const [hasMore, setHasMore] = useState(false);
 
-  const getUpdatedTimestamp = (article: ArticleWithAuthor) => {
+  const getCreatedTimestamp = (article: ArticleWithAuthor) => {
     const toTs = (value?: string | null) => {
       if (!value) return 0;
       const ts = Date.parse(value);
@@ -76,9 +76,9 @@ export default function ArticleManagement() {
     };
 
     return (
-      toTs(article.updatedAt) ||
       toTs(article.createdAt) ||
       toTs(article.publishedAt) ||
+      toTs(article.updatedAt) ||
       0
     );
   };
@@ -117,20 +117,29 @@ export default function ArticleManagement() {
       const statusParam = statusFilter === 'ALL' ? 'all' : statusFilter;
       const startKey = pageTokens[pageToLoad];
 
-      // When filtering by status or using smaller page sizes, fetch a larger slice and paginate client-side
-      const fetchAllForStatus = statusFilter !== 'ALL' || pageSize < 50;
-      const effectiveLimit = fetchAllForStatus ? 1000 : pageSize;
+      const fetchAllForStatus = statusFilter === 'ALL';
+      const fetchAllMax = 1000;
+
+      const params = fetchAllForStatus
+        ? {
+            sortBy: 'createdAt' as const,
+            sortOrder: 'desc' as const,
+            status: statusParam,
+            query: searchQuery || undefined,
+            fetchAllMax,
+          }
+        : {
+            limit: pageSize,
+            pageSize,
+            sortBy: 'createdAt' as const,
+            sortOrder: 'desc' as const,
+            status: statusParam,
+            query: searchQuery || undefined,
+            lastEvaluatedKey: startKey,
+          };
 
       const { items, lastEvaluatedKey, hasMore: moreAvailable } = await fetchArticlesWithMeta(
-        {
-          limit: effectiveLimit,
-          pageSize: effectiveLimit,
-          sortBy: 'updatedAt',
-          sortOrder: 'desc',
-          status: statusParam,
-          query: searchQuery || undefined,
-          lastEvaluatedKey: fetchAllForStatus ? undefined : startKey,
-        },
+        params,
         {
           skipCache: true,
         }
@@ -159,18 +168,18 @@ export default function ArticleManagement() {
               (article) => normalizeStatus(article.status) === statusFilter
             );
 
-      const sortedByUpdate = [...filteredArticles].sort(
-        (a, b) => getUpdatedTimestamp(b) - getUpdatedTimestamp(a)
+      const sortedByCreated = [...filteredArticles].sort(
+        (a, b) => getCreatedTimestamp(b) - getCreatedTimestamp(a)
       );
 
       if (fetchAllForStatus) {
         const startIndex = (pageToLoad - 1) * pageSize;
-        const paginated = sortedByUpdate.slice(startIndex, startIndex + pageSize);
+        const paginated = sortedByCreated.slice(startIndex, startIndex + pageSize);
         setArticles(paginated);
-        setHasMore(sortedByUpdate.length > startIndex + pageSize);
+        setHasMore(sortedByCreated.length > startIndex + pageSize);
         setPageTokens({ 1: undefined });
       } else {
-        setArticles(sortedByUpdate);
+        setArticles(sortedByCreated);
         setHasMore(Boolean(lastEvaluatedKey) || Boolean(moreAvailable));
         setPageTokens((prev) => {
           const updated = { ...prev };
