@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, useMemo, ChangeEvent } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Article, ArticleStatus } from '../../../types';
@@ -63,10 +63,8 @@ export default function ArticleManagement() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<ArticleStatus | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [pageTokens, setPageTokens] = useState<Record<number, string | undefined>>({ 1: undefined });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [hasMore, setHasMore] = useState(false);
 
   const getCreatedTimestamp = (article: ArticleWithAuthor) => {
     const toTs = (value?: string | null) => {
@@ -103,46 +101,24 @@ export default function ArticleManagement() {
 
   useEffect(() => {
     setCurrentPage(1);
-    setPageTokens({ 1: undefined });
   }, [statusFilter, searchQuery]);
 
   useEffect(() => {
-    loadArticles(currentPage);
-  }, [statusFilter, searchQuery, currentPage, pageSize]);
+    loadArticles();
+  }, []);
 
-  const loadArticles = async (pageToLoad: number) => {
+  const loadArticles = async () => {
     try {
       setLoading(true);
 
-      const statusParam = statusFilter === 'ALL' ? 'all' : statusFilter;
-      const startKey = pageTokens[pageToLoad];
-
-      const fetchAllForStatus = statusFilter === 'ALL';
-      const fetchAllMax = 1000;
-
-      const params = fetchAllForStatus
-        ? {
-            sortBy: 'createdAt' as const,
-            sortOrder: 'desc' as const,
-            status: statusParam,
-            query: searchQuery || undefined,
-            fetchAllMax,
-          }
-        : {
-            limit: pageSize,
-            pageSize,
-            sortBy: 'createdAt' as const,
-            sortOrder: 'desc' as const,
-            status: statusParam,
-            query: searchQuery || undefined,
-            lastEvaluatedKey: startKey,
-          };
-
-      const { items, lastEvaluatedKey, hasMore: moreAvailable } = await fetchArticlesWithMeta(
-        params,
+      const { items } = await fetchArticlesWithMeta(
         {
-          skipCache: true,
-        }
+          status: 'ALL',
+          sortBy: 'createdAt',
+          sortOrder: 'desc',
+          fetchAllMax: 5000,
+        },
+        { skipCache: true }
       );
 
       const normalizedArticles: ArticleWithAuthor[] = Array.isArray(items)
@@ -161,36 +137,10 @@ export default function ArticleManagement() {
           })
         : [];
 
-      const filteredArticles =
-        statusFilter === 'ALL'
-          ? normalizedArticles
-          : normalizedArticles.filter(
-              (article) => normalizeStatus(article.status) === statusFilter
-            );
-
-      const sortedByCreated = [...filteredArticles].sort(
+      const sortedByCreated = [...normalizedArticles].sort(
         (a, b) => getCreatedTimestamp(b) - getCreatedTimestamp(a)
       );
-
-      if (fetchAllForStatus) {
-        const startIndex = (pageToLoad - 1) * pageSize;
-        const paginated = sortedByCreated.slice(startIndex, startIndex + pageSize);
-        setArticles(paginated);
-        setHasMore(sortedByCreated.length > startIndex + pageSize);
-        setPageTokens({ 1: undefined });
-      } else {
-        setArticles(sortedByCreated);
-        setHasMore(Boolean(lastEvaluatedKey) || Boolean(moreAvailable));
-        setPageTokens((prev) => {
-          const updated = { ...prev };
-          if (lastEvaluatedKey) {
-            updated[pageToLoad + 1] = lastEvaluatedKey;
-          } else {
-            delete updated[pageToLoad + 1];
-          }
-          return updated;
-        });
-      }
+      setArticles(sortedByCreated);
     } catch (error) {
       console.error('Error loading articles:', error);
       setArticles([]);
@@ -199,17 +149,49 @@ export default function ArticleManagement() {
     }
   };
 
+  const filteredArticles = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const matchesQuery = (article: ArticleWithAuthor) => {
+      if (!normalizedQuery) return true;
+      const title = article.title?.toLowerCase() ?? '';
+      const summary = article.summary?.toLowerCase() ?? '';
+      const authorName = article.author?.name?.toLowerCase() ?? '';
+      return (
+        title.includes(normalizedQuery) ||
+        summary.includes(normalizedQuery) ||
+        authorName.includes(normalizedQuery)
+      );
+    };
+
+    return articles.filter((article) => {
+      if (statusFilter !== 'ALL' && normalizeStatus(article.status) !== statusFilter) {
+        return false;
+      }
+      return matchesQuery(article);
+    });
+  }, [articles, searchQuery, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredArticles.length / pageSize));
+
+  useEffect(() => {
+    setCurrentPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
+
+  const paginatedArticles = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredArticles.slice(startIndex, startIndex + pageSize);
+  }, [filteredArticles, currentPage, pageSize]);
+
   const handlePageSizeChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const nextSize = Number(event.target.value);
     if (Number.isNaN(nextSize) || nextSize <= 0) return;
-    setPageTokens({ 1: undefined });
     setCurrentPage(1);
     setPageSize(nextSize);
   };
 
   const handlePageChange = (direction: 'prev' | 'next') => {
     const canGoPrevious = currentPage > 1 && !loading;
-    const canGoNext = !loading && (hasMore || Boolean(pageTokens[currentPage + 1]));
+    const canGoNext = !loading && currentPage < totalPages;
 
     if (direction === 'prev' && canGoPrevious) {
       setCurrentPage((prev) => Math.max(1, prev - 1));
@@ -294,12 +276,12 @@ export default function ArticleManagement() {
       ) : (
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul className="divide-y divide-gray-200">
-            {articles.length === 0 ? (
+            {paginatedArticles.length === 0 ? (
               <li className="px-6 py-4 text-center text-gray-500">
                 No articles found
               </li>
             ) : (
-              articles.map((article) => {
+              paginatedArticles.map((article) => {
                 const publishedDateString = getArticleDateString(article);
                 const publishedLabel = publishedDateString
                   ? `Published on ${format(new Date(publishedDateString), 'MMM d, yyyy')}`
@@ -397,7 +379,7 @@ export default function ArticleManagement() {
 
       <div className="mt-4 bg-white shadow-sm border border-gray-100 rounded-lg px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-gray-700 mb-2 sm:mb-0">
-          Page {currentPage} {loading ? '(loading...)' : ''}
+          Page {currentPage} of {totalPages} {loading ? '(loading...)' : ''}
         </div>
         <div className="flex items-center space-x-3">
           <label className="text-sm text-gray-700 flex items-center space-x-2">
@@ -425,7 +407,7 @@ export default function ArticleManagement() {
             </button>
             <button
               onClick={() => handlePageChange('next')}
-              disabled={loading || (!hasMore && !pageTokens[currentPage + 1])}
+              disabled={loading || currentPage >= totalPages}
               className="px-3 py-1 text-sm border border-gray-300 rounded-md bg-white text-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-gray-50"
             >
               Next
