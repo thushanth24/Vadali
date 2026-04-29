@@ -3,7 +3,7 @@ service: vadali-media-backend
 
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs24.x
   region: us-east-1
   iamRoleStatements:
     - Effect: Allow
