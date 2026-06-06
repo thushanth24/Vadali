@@ -525,6 +525,14 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
         const parsedLimit = Number.parseInt(queryParams.limit ?? '', 10);
         const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 10;
         const lastEvaluatedKey = queryParams.lastEvaluatedKey;
+        // Page-based pagination (used by the editor management list). When `page`
+        // is present we return a server-sliced page + total instead of a cursor.
+        const parsedPage = Number.parseInt(queryParams.page ?? '', 10);
+        const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : undefined;
+        const parsedPageSize = Number.parseInt(queryParams.pageSize ?? '', 10);
+        const pageSize = Number.isFinite(parsedPageSize) && parsedPageSize > 0
+            ? Math.min(parsedPageSize, 100)
+            : 20;
         const hasIsAdvertisementParam = Object.prototype.hasOwnProperty.call(queryParams, 'isAdvertisement');
         const rawIsAdvertisement = queryParams.isAdvertisement;
         const rawSortBy = (queryParams.sortBy || '').trim();
@@ -620,6 +628,65 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
             } catch (err) {
                 console.error("Category Query Failed:", err);
                 return respond(500, { message: "Failed to load category feed" });
+            }
+        }
+
+        // --- Editor management list: page-based, newest-first, server-side search ---
+        // When `page` is provided with createdAt ordering and no category, read the
+        // full ordered set from the all-created-index (server-side, ~1s), apply the
+        // status/search/other filters in memory, then return only the requested
+        // page plus the total. The browser downloads one small page instead of the
+        // whole table.
+        if (page !== undefined && wantsCreatedSort && !categoryId) {
+            try {
+                const all: ArticleModel[] = [];
+                let pageKey: Record<string, any> | undefined =
+                    lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
+                do {
+                    const { items, lastEvaluatedKey: nextKey } = await articleRepository.queryByCreatedAllStatuses({
+                        limit: 1000,
+                        lastKey: pageKey,
+                    });
+                    all.push(...items);
+                    pageKey = nextKey;
+                } while (pageKey);
+
+                let filtered = all;
+                if (shouldFilterByStatus && resolvedStatuses.length > 0) {
+                    const allowed = new Set(resolvedStatuses);
+                    filtered = filtered.filter((a) => allowed.has(a.status));
+                }
+                if (authorId) filtered = filtered.filter((a) => a.authorId === authorId);
+                if (isFeatured) filtered = filtered.filter((a) => a.isFeatured === true);
+                if (hasIsAdvertisementParam) {
+                    const boolVal = parseBooleanQueryParam(rawIsAdvertisement);
+                    filtered = filtered.filter((a) => a.isAdvertisement === boolVal);
+                }
+                if (tag) filtered = filtered.filter((a) => Array.isArray(a.tags) && a.tags.includes(tag));
+                if (searchQuery) {
+                    filtered = filtered.filter((a) =>
+                        a.title.toLowerCase().includes(searchQuery) ||
+                        (a.summary?.toLowerCase() || '').includes(searchQuery)
+                    );
+                }
+
+                const total = filtered.length;
+                const totalPages = Math.max(1, Math.ceil(total / pageSize));
+                const start = (page - 1) * pageSize;
+                const pageItems = filtered.slice(start, start + pageSize);
+
+                return respond(200, {
+                    items: pageItems,
+                    total,
+                    page,
+                    pageSize,
+                    totalPages,
+                    hasMore: start + pageSize < total,
+                });
+            } catch (error) {
+                console.warn('managed page query failed, falling back', {
+                    error: error instanceof Error ? error.message : error,
+                });
             }
         }
 

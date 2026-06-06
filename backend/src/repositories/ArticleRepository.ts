@@ -11,9 +11,10 @@ export class ArticleRepository extends BaseRepository<Article> {
   protected tableName = process.env.ARTICLES_TABLE || 'Articles';
   private readonly DEFAULT_LIMIT = 20;
   private readonly MAX_LIMIT = 20;
-  // The all-created-index reads are paginated full-list fetches, so allow a
-  // larger page than the per-status indexes to keep round-trips low.
-  private readonly MAX_ALL_LIMIT = 250;
+  // The all-created-index reads are full-list fetches for the editor management
+  // view, so allow large pages to keep round-trips low. DynamoDB still caps a
+  // Query response at 1MB and returns a cursor, so the loop stays correct.
+  private readonly MAX_ALL_LIMIT = 1000;
 
   private clampLimit(limit?: number): number {
     if (!Number.isFinite(limit) || limit <= 0) return this.DEFAULT_LIMIT;

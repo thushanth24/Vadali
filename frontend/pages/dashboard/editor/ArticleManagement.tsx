@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Article, ArticleStatus } from '../../../types';
@@ -63,23 +63,10 @@ export default function ArticleManagement() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<ArticleStatus | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-
-  const getCreatedTimestamp = (article: ArticleWithAuthor) => {
-    const toTs = (value?: string | null) => {
-      if (!value) return 0;
-      const ts = Date.parse(value);
-      return Number.isFinite(ts) ? ts : 0;
-    };
-
-    return (
-      toTs(article.createdAt) ||
-      toTs(article.publishedAt) ||
-      toTs(article.updatedAt) ||
-      0
-    );
-  };
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -99,27 +86,32 @@ export default function ArticleManagement() {
     setStatusFilter(normalized);
   }, [location.search]);
 
+  // Debounce the search box so we issue one request after typing settles.
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 350);
+    return () => clearTimeout(handle);
+  }, [searchQuery]);
+
+  // Any filter change resets to the first page.
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, searchQuery]);
+  }, [statusFilter, debouncedSearch, pageSize]);
 
-  useEffect(() => {
-    loadArticles();
-  }, []);
-
-  const loadArticles = async () => {
+  // Server-side pagination: fetch only the current page, newest-first. Search and
+  // status filtering run on the server (see getArticles managed-list path), so the
+  // browser downloads ~one page instead of the whole table.
+  const loadArticles = useCallback(async () => {
     try {
       setLoading(true);
 
-      const { items } = await fetchArticlesWithMeta(
+      const { items, total: totalCount } = await fetchArticlesWithMeta(
         {
-          status: 'ALL',
+          status: statusFilter === 'ALL' ? 'ALL' : statusFilter,
           sortBy: 'createdAt',
           sortOrder: 'desc',
-          fetchAllMax: 5000,
-          // Pull large ordered pages from the all-created-index so the full list
-          // loads in a handful of round-trips instead of dozens of scans.
-          fetchAllPageSize: 250,
+          page: currentPage,
+          pageSize,
+          query: debouncedSearch || undefined,
         },
         { skipCache: true }
       );
@@ -140,50 +132,30 @@ export default function ArticleManagement() {
           })
         : [];
 
-      const sortedByCreated = [...normalizedArticles].sort(
-        (a, b) => getCreatedTimestamp(b) - getCreatedTimestamp(a)
-      );
-      setArticles(sortedByCreated);
+      setArticles(normalizedArticles);
+      setTotal(typeof totalCount === 'number' ? totalCount : normalizedArticles.length);
     } catch (error) {
       console.error('Error loading articles:', error);
       setArticles([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, currentPage, pageSize, debouncedSearch]);
 
-  const filteredArticles = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    const matchesQuery = (article: ArticleWithAuthor) => {
-      if (!normalizedQuery) return true;
-      const title = article.title?.toLowerCase() ?? '';
-      const summary = article.summary?.toLowerCase() ?? '';
-      const authorName = article.author?.name?.toLowerCase() ?? '';
-      return (
-        title.includes(normalizedQuery) ||
-        summary.includes(normalizedQuery) ||
-        authorName.includes(normalizedQuery)
-      );
-    };
+  useEffect(() => {
+    loadArticles();
+  }, [loadArticles]);
 
-    return articles.filter((article) => {
-      if (statusFilter !== 'ALL' && normalizeStatus(article.status) !== statusFilter) {
-        return false;
-      }
-      return matchesQuery(article);
-    });
-  }, [articles, searchQuery, statusFilter]);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  const totalPages = Math.max(1, Math.ceil(filteredArticles.length / pageSize));
-
+  // If the active page falls past the end after filtering, step back into range.
   useEffect(() => {
     setCurrentPage((prev) => Math.min(prev, totalPages));
   }, [totalPages]);
 
-  const paginatedArticles = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return filteredArticles.slice(startIndex, startIndex + pageSize);
-  }, [filteredArticles, currentPage, pageSize]);
+  // The server already returns just this page, newest-first.
+  const paginatedArticles = articles;
 
   const handlePageSizeChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const nextSize = Number(event.target.value);
@@ -208,7 +180,7 @@ export default function ArticleManagement() {
   const handleStatusChange = async (articleId: string, newStatus: ArticleStatus, rejectionReason?: string) => {
     try {
       await updateArticleStatus(articleId, newStatus, rejectionReason);
-      loadArticles(currentPage);
+      loadArticles();
     } catch (error) {
       console.error('Error updating article status:', error);
     }
