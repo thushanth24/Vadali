@@ -117,6 +117,9 @@ export default function ArticleManagement() {
           sortBy: 'createdAt',
           sortOrder: 'desc',
           fetchAllMax: 5000,
+          // Pull large ordered pages from the all-created-index so the full list
+          // loads in a handful of round-trips instead of dozens of scans.
+          fetchAllPageSize: 250,
         },
         { skipCache: true }
       );

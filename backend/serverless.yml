@@ -244,6 +244,8 @@ resources:
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
+          - AttributeName: gsiAll
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH # Partition Key
@@ -275,6 +277,17 @@ resources:
               - AttributeName: status
                 KeyType: HASH
               - AttributeName: publishedAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          # Global newest-first ordering across ALL statuses.
+          # Constant partition key (gsiAll = "ARTICLE") so a single query
+          # returns every article ordered by createdAt. See queryByCreatedAllStatuses.
+          - IndexName: all-created-index
+            KeySchema:
+              - AttributeName: gsiAll
+                KeyType: HASH
+              - AttributeName: createdAt
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL

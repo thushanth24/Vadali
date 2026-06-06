@@ -3,14 +3,26 @@ import { Article, createArticle } from '../models/Article';
 import { BaseRepository } from './BaseRepository';
 import { ArticleStatus } from '../types';
 
+// Constant partition-key value for the all-created-index GSI. Every article
+// carries this so a single ordered query can return all statuses newest-first.
+export const ARTICLE_GSI_ALL = 'ARTICLE';
+
 export class ArticleRepository extends BaseRepository<Article> {
   protected tableName = process.env.ARTICLES_TABLE || 'Articles';
   private readonly DEFAULT_LIMIT = 20;
   private readonly MAX_LIMIT = 20;
+  // The all-created-index reads are paginated full-list fetches, so allow a
+  // larger page than the per-status indexes to keep round-trips low.
+  private readonly MAX_ALL_LIMIT = 250;
 
   private clampLimit(limit?: number): number {
     if (!Number.isFinite(limit) || limit <= 0) return this.DEFAULT_LIMIT;
     return Math.min(Math.floor(limit), this.MAX_LIMIT);
+  }
+
+  private clampAllLimit(limit?: number): number {
+    if (limit === undefined || !Number.isFinite(limit) || limit <= 0) return this.DEFAULT_LIMIT;
+    return Math.min(Math.floor(limit), this.MAX_ALL_LIMIT);
   }
 
   protected toDomain(item: any): Article {
@@ -40,6 +52,8 @@ export class ArticleRepository extends BaseRepository<Article> {
   protected toDB(article: Article) {
     const dbItem: Record<string, any> = {
       ...article,
+      // Constant key so every article is indexed by all-created-index.
+      gsiAll: ARTICLE_GSI_ALL,
       // Ensure we don't store undefined values
       ...(article.tags === undefined && { tags: [] }),
       ...(article.imageUrls === undefined && { imageUrls: [] }),
@@ -150,6 +164,39 @@ export class ArticleRepository extends BaseRepository<Article> {
       },
       filterExpression: params.filterExpression,
       limit: this.clampLimit(params.limit),
+      lastEvaluatedKey: params.lastKey,
+      scanIndexForward: false, // newest first
+      projectionExpression: projection.projectionExpression,
+    });
+  }
+
+  /**
+   * Returns articles of ALL statuses ordered newest-first by createdAt, using
+   * the single-partition all-created-index. This is the only path that yields a
+   * correct global ordering in one query (per-status indexes can't span statuses).
+   */
+  async queryByCreatedAllStatuses(params: {
+    limit?: number;
+    lastKey?: Record<string, any>;
+    filterExpression?: string;
+    expressionAttributeValues?: Record<string, any>;
+    expressionAttributeNames?: Record<string, string>;
+  } = {}) {
+    const projection = this.getListProjection();
+    return this.query({
+      indexName: 'all-created-index',
+      keyConditionExpression: '#gsiAll = :gsiAll',
+      expressionAttributeNames: {
+        ...projection.expressionAttributeNames,
+        '#gsiAll': 'gsiAll',
+        ...(params.expressionAttributeNames ?? {}),
+      },
+      expressionAttributeValues: {
+        ':gsiAll': ARTICLE_GSI_ALL,
+        ...(params.expressionAttributeValues ?? {}),
+      },
+      filterExpression: params.filterExpression,
+      limit: this.clampAllLimit(params.limit),
       lastEvaluatedKey: params.lastKey,
       scanIndexForward: false, // newest first
       projectionExpression: projection.projectionExpression,

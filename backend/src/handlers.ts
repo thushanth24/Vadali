@@ -765,6 +765,50 @@ export const getArticles: APIGatewayProxyHandlerV2 = async (event) => {
             }
         }
 
+        // status=all + newest-first: use the single-partition all-created-index so
+        // we get a correct global ordering with real pagination, instead of an
+        // unordered full-table scan. Other filters (author/featured/ad/tag) ride
+        // along as a DynamoDB filter expression; search stays client-side.
+        const canUseAllCreatedIndex =
+            !shouldFilterByStatus &&
+            wantsCreatedSort &&
+            !categoryId;
+
+        if (canUseAllCreatedIndex) {
+            try {
+                const decodedKey = lastEvaluatedKey ? JSON.parse(decodeURIComponent(lastEvaluatedKey)) : undefined;
+                const { items, lastEvaluatedKey: newLastEvaluatedKey } = await articleRepository.queryByCreatedAllStatuses({
+                    limit,
+                    lastKey: decodedKey,
+                    filterExpression: filterExpressionToUse,
+                    expressionAttributeValues: filterValuesToUse,
+                    expressionAttributeNames: filterNamesToUse,
+                });
+
+                let filteredItems = items;
+                if (searchQuery) {
+                    filteredItems = filteredItems.filter(article =>
+                        article.title.toLowerCase().includes(searchQuery) ||
+                        (article.summary?.toLowerCase() || '').includes(searchQuery) ||
+                        (article.content?.toLowerCase() || '').includes(searchQuery)
+                    );
+                }
+
+                return respond(200, {
+                    items: filteredItems,
+                    total: filteredItems.length,
+                    lastEvaluatedKey: newLastEvaluatedKey
+                        ? encodeURIComponent(JSON.stringify(newLastEvaluatedKey))
+                        : undefined,
+                    hasMore: Boolean(newLastEvaluatedKey),
+                });
+            } catch (error) {
+                console.warn('all-created-index query failed, falling back to full scan', {
+                    error: error instanceof Error ? error.message : error,
+                });
+            }
+        }
+
         const canUseCategoryIndex =
             wantsCreatedSort &&
             Boolean(categoryId) &&

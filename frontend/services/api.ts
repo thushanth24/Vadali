@@ -435,6 +435,12 @@ interface FetchArticlesParams {
   query?: string;
   /** Max items to retrieve when fetchAll mode is triggered (defaults to MAX_FETCH_ALL_ITEMS) */
   fetchAllMax?: number;
+  /**
+   * Per-request page size used while in fetchAll mode. Larger pages mean fewer
+   * sequential round-trips. Does NOT disable fetchAll (unlike limit/pageSize).
+   * The backend clamps this per index, so oversized values are safe.
+   */
+  fetchAllPageSize?: number;
 }
 
 const DEFAULT_ARTICLE_LIMIT = 20;
@@ -472,7 +478,7 @@ export const fetchArticlesWithMeta = async (
     let lastEvaluatedKey: string | undefined = undefined;
     let hasMore = true;
     let total: number | undefined;
-    const pageLimit = params.pageSize ?? params.limit ?? DEFAULT_ARTICLE_LIMIT;
+    const pageLimit = params.fetchAllPageSize ?? params.pageSize ?? params.limit ?? DEFAULT_ARTICLE_LIMIT;
 
     while (hasMore) {
       const url = buildArticlesUrl({
